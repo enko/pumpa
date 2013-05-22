@@ -1,0 +1,6 @@
+*~
+moc_*.cpp
+*.o
+/.gdb_history
+/Makefile
+/pumpa
