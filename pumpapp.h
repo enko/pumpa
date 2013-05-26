@@ -25,6 +25,7 @@
 #include <QDebug>
 #include <QDesktopServices>
 #include <QJsonDocument>
+#include <QJsonArray>
 
 #include "QtKOAuth"
 
@@ -48,7 +49,8 @@ private:
   void fetchInbox();
   void postNote(QString);
   void feed(QString verb, QVariantMap object);
-  void request(QString endpoint, QString method="GET",
+  void request(QString endpoint, 
+               KQOAuthRequest::RequestHttpMethod method = KQOAuthRequest::GET,
                QVariantMap data=QVariantMap()); //attempts=10
 
   void getOAuthAccess();

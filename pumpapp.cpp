@@ -22,6 +22,8 @@
 
 #include "pumpapp.h"
 
+#include "qactivitystreams.h"
+
 //------------------------------------------------------------------------------
 
 PumpApp::PumpApp(QObject* parent) : QObject(parent) {
@@ -40,14 +42,24 @@ PumpApp::PumpApp(QObject* parent) : QObject(parent) {
   if (token.isEmpty()) {
     getOAuthAccess();
   } else {
-    postNote("Hello from pumpa!");
-    // fetchInbox();  
+    // postNote("Hello from pumpa!");
+    fetchInbox();  
   }
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::fetchInbox() {
+  QString inbox = "major"; // "minor"
+
+  QString endpoint = "api/user/"+userName+"/inbox";
+
+  // if (direct)
+  //   endpoint += "/direct";
+
+  endpoint += "/"+inbox;
+
+  request(endpoint);
 }
 
 //------------------------------------------------------------------------------
@@ -76,12 +88,13 @@ void PumpApp::feed(QString verb, QVariantMap object) {
     data["object"] = object;
   }
 
-  request(endpoint, "POST", data);
+  request(endpoint, KQOAuthRequest::POST, data);
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::request(QString endpoint, QString method,
+void PumpApp::request(QString endpoint,
+                      KQOAuthRequest::RequestHttpMethod method,
                       QVariantMap data) {
   if (endpoint[0] != '/')
     endpoint = '/'+endpoint;
@@ -94,16 +107,17 @@ void PumpApp::request(QString endpoint, QString method,
   oaRequest->setToken(token);
   oaRequest->setTokenSecret(tokenSecret);
 
-  // FIXME: support GET as well...
-  oaRequest->setHttpMethod(KQOAuthRequest::POST); 
+  oaRequest->setHttpMethod(method); 
 
-  QJsonDocument jd(QJsonObject::fromVariantMap(data));
-  QByteArray ba(jd.toJson());
+  if (method == KQOAuthRequest::POST) {
+    QJsonDocument jd(QJsonObject::fromVariantMap(data));
+  //   QByteArray ba();
 
-  qDebug() << "Sending" << ba;
+  // qDebug() << "Sending" << ba;
 
-  oaRequest->setContentType("application/json");
-  oaRequest->setRawData(ba);
+    oaRequest->setContentType("application/json");
+    oaRequest->setRawData(jd.toJson());
+  }
 
   oaManager->executeRequest(oaRequest);
     
@@ -182,7 +196,17 @@ void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
 //------------------------------------------------------------------------------
 
 void PumpApp::onRequestReady(QByteArray response) {
-  qDebug() << "Response from the service: " << response;
+  qDebug() << "onRequestReady"; // << response;
+  QJsonObject obj = QJsonDocument::fromJson(response).object();
+  
+  QASCollection coll(obj, this);
+  // QJsonArray arr = obj["items"].toArray();
+  
+  // for (int i=0; i<arr.count(); i++) {
+  //   QJsonObject obj = arr.at(i).toObject(); 
+  //   qDebug() << obj["object"].toObject()["content"].toString();
+  // }
+
   qDebug() << "DONE2!";
 }
 
