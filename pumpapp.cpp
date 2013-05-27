@@ -8,13 +8,13 @@
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Pumpa is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  General Public License for more details.
+  Pumpa is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+  License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
+  along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.  
 */
 
 #include <QJsonDocument>
@@ -24,33 +24,187 @@
 
 #include "qactivitystreams.h"
 
+#define OAR_USER_ACCESS       0
+#define OAR_FETCH_INBOX       1
+
 //------------------------------------------------------------------------------
 
 PumpApp::PumpApp(QObject* parent) : QObject(parent) {
-  settings = new QSettings("pumpa", "pumpa", this);
+  settings = new QSettings(CLIENT_NAME, CLIENT_NAME, this);
   readSettings();
 
-  // frodo:8000
-  client_id = "qCPXxO_D5knAGhD8yLP99A";
-  client_secret = "bPViYRQWRBTkbQ568nWrTyHSVCxBiL9zVnqKwVhVQCk";
+  netManager = new QNetworkAccessManager(this);
 
   oaRequest = new KQOAuthRequest(this);
   oaManager = new KQOAuthManager(this);
+  connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
+          this, SLOT(onAuthorizedRequestReady(QByteArray, int)));
 
-  oaRequest->setEnableDebugOutput(true);
+  // oaRequest->setEnableDebugOutput(true);
 
-  if (token.isEmpty()) {
+  if (clientId.isEmpty())
+    registerOAuthClient();
+  else if (token.isEmpty())
     getOAuthAccess();
-  } else {
-    // postNote("Hello from pumpa!");
-    fetchInbox();  
+  else
+    fetchAll();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::errorMessage(const QString& msg) {
+  qDebug() << "errorMessage:" << msg;
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::writeSettings() {
+  QSettings& s = *settings;
+  s.beginGroup("Account");
+
+  s.setValue("site_url", siteUrl);
+  s.setValue("username", userName);
+
+  s.setValue("oauth_client_id", clientId);
+  s.setValue("oauth_client_secret", clientSecret);
+
+  s.setValue("oauth_token", token);
+  s.setValue("oauth_token_secret", tokenSecret);
+
+  s.endGroup();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::readSettings() {
+  QSettings& s = *settings;
+  s.beginGroup("Account");
+
+  siteUrl = s.value("site_url", "http://frodo:8000").toString();
+  userName = s.value("username", "").toString();
+
+  clientId = s.value("oauth_client_id", "").toString();
+  clientSecret = s.value("oauth_client_secret", "").toString();
+
+  token = s.value("oauth_token", "").toString();
+  tokenSecret = s.value("oauth_token_secret", "").toString();
+
+  s.endGroup();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::registerOAuthClient() {
+  QNetworkRequest req;
+  req.setUrl(QUrl(siteUrl+"/api/client/register"));
+  req.setHeader(QNetworkRequest::ContentTypeHeader, 
+                "application/x-www-form-urlencoded");
+
+  QString data = QString("client_name=") + CLIENT_FANCY_NAME +
+    "&type=client_associate&application_type=native";
+  QByteArray postData = QUrl::toPercentEncoding(data, "=&");
+  
+  QNetworkReply *reply = netManager->post(req, postData);
+
+  connect(reply, SIGNAL(finished()), this, SLOT(onOAuthClientRegDone()));
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::onOAuthClientRegDone() {
+  QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+  QByteArray data = reply->readAll();
+
+  QJsonObject json = QJsonDocument::fromJson(data).object();
+  clientId = json["client_id"].toString();
+  clientSecret = json["client_secret"].toString();
+
+  qDebug() << "Registered client to [" << siteUrl << "] successfully.";
+  writeSettings();
+
+  getOAuthAccess();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::getOAuthAccess() {
+  connect(oaManager, SIGNAL(temporaryTokenReceived(QString, QString)),
+          this, SLOT(onTemporaryTokenReceived(QString, QString)));
+  connect(oaManager, SIGNAL(authorizationReceived(QString,QString)),
+          this, SLOT(onAuthorizationReceived(QString, QString)));
+  connect(oaManager, SIGNAL(accessTokenReceived(QString,QString)),
+          this, SLOT(onAccessTokenReceived(QString,QString)));
+
+  oaRequest->initRequest(KQOAuthRequest::TemporaryCredentials,
+                         QUrl(siteUrl+"/oauth/request_token"));
+
+  oaRequest->setConsumerKey(clientId);
+  oaRequest->setConsumerSecretKey(clientSecret);
+
+  oaManager->setHandleUserAuthorization(true);
+  oaManager->executeRequest(oaRequest);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::onTemporaryTokenReceived(QString /*token*/,
+                                       QString /*tokenSecret*/) {
+  QUrl userAuthURL(siteUrl+"/oauth/authorize");
+
+  if (oaManager->lastError() == KQOAuthManager::NoError) {
+    qDebug() << "Asking for user's permission to access protected resources."
+             << "Opening URL: " << userAuthURL;
+    oaManager->getUserAuthorization(userAuthURL);
   }
 }
 
 //------------------------------------------------------------------------------
 
+void PumpApp::onAuthorizationReceived(QString /*token*/,
+                                      QString /*verifier*/) {
+  oaManager->getUserAccessTokens(QUrl(siteUrl+"/oauth/access_token"));
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
+    this->token = token;
+    this->tokenSecret = tokenSecret;
+
+    writeSettings();
+
+    qDebug() << "User authorised for [" << siteUrl << "]";
+
+    fetchAll();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
+  qDebug() << "onRequestReady" << id;
+
+  if (id == OAR_USER_ACCESS) {
+    qDebug() << "uhm, ok.";
+  } else if (id == OAR_FETCH_INBOX) {
+    QJsonObject obj = QJsonDocument::fromJson(response).object();
+  
+    QASCollection coll(obj, this);
+  } else {
+    qDebug() << "Unknown request id!";
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::fetchAll() {
+  fetchInbox();
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::fetchInbox() {
-  QString inbox = "major"; // "minor"
+  QString inbox = "major"; 
+    // "minor";
 
   QString endpoint = "api/user/"+userName+"/inbox";
 
@@ -101,8 +255,8 @@ void PumpApp::request(QString endpoint,
 
   oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, 
                          QUrl(siteUrl+endpoint));
-  oaRequest->setConsumerKey(client_id);
-  oaRequest->setConsumerSecretKey(client_secret);
+  oaRequest->setConsumerKey(clientId);
+  oaRequest->setConsumerSecretKey(clientSecret);
 
   oaRequest->setToken(token);
   oaRequest->setTokenSecret(tokenSecret);
@@ -119,131 +273,13 @@ void PumpApp::request(QString endpoint,
     oaRequest->setRawData(jd.toJson());
   }
 
-  oaManager->executeRequest(oaRequest);
+  oaManager->executeAuthorizedRequest(oaRequest, OAR_FETCH_INBOX);
     
-  connect(oaManager, SIGNAL(requestReady(QByteArray)),
-          this, SLOT(onRequestReady(QByteArray)));
-  connect(oaManager, SIGNAL(authorizedRequestDone()),
-          this, SLOT(onAuthorizedRequestDone()));
+  // connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray)),
+  //         this, SLOT(onRequestReady(QByteArray)));
+  // connect(oaManager, SIGNAL(authorizedRequestDone()),
+  //         this, SLOT(onAuthorizedRequestDone()));
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::getOAuthAccess() {
-  connect(oaManager, SIGNAL(temporaryTokenReceived(QString, QString)),
-          this, SLOT(onTemporaryTokenReceived(QString, QString)));
-  connect(oaManager, SIGNAL(authorizationReceived(QString,QString)),
-          this, SLOT(onAuthorizationReceived(QString, QString)));
-  connect(oaManager, SIGNAL(accessTokenReceived(QString,QString)),
-          this, SLOT(onAccessTokenReceived(QString,QString)));
-  connect(oaManager, SIGNAL(requestReady(QByteArray)),
-          this, SLOT(onRequestReady(QByteArray)));
-
-  oaRequest->initRequest(KQOAuthRequest::TemporaryCredentials,
-                         QUrl(siteUrl+"/oauth/request_token"));
-
-  oaRequest->setConsumerKey(client_id);
-  oaRequest->setConsumerSecretKey(client_secret);
-
-  oaManager->setHandleUserAuthorization(true);
-  oaManager->executeRequest(oaRequest);
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::errorMessage(const QString& msg) {
-  qDebug() << "errorMessage:" << msg;
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::onTemporaryTokenReceived(QString token, QString tokenSecret) {
-  qDebug() << "Temporary token received: " << token << tokenSecret;
-
-    QUrl userAuthURL(siteUrl+"/oauth/authorize");
-
-    if (oaManager->lastError() == KQOAuthManager::NoError) {
-      qDebug() << "Asking for user's permission to access protected resources."
-               << "Opening URL: " << userAuthURL;
-      oaManager->getUserAuthorization(userAuthURL);
-    }
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::onAuthorizationReceived(QString token, QString verifier) {
-    qDebug() << "User authorization received: " << token << verifier;
-
-    oaManager->getUserAccessTokens(QUrl(siteUrl+"/oauth/access_token"));
-    if (oaManager->lastError() != KQOAuthManager::NoError) {
-      qDebug() << "DONE1";
-    }
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
-    qDebug() << "Access token received: " << token << tokenSecret;
-
-    this->token = token;
-    this->tokenSecret = tokenSecret;
-
-    writeSettings();
-
-    qDebug() << "Access tokens now stored.";
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::onRequestReady(QByteArray response) {
-  qDebug() << "onRequestReady"; // << response;
-  QJsonObject obj = QJsonDocument::fromJson(response).object();
-  
-  QASCollection coll(obj, this);
-  // QJsonArray arr = obj["items"].toArray();
-  
-  // for (int i=0; i<arr.count(); i++) {
-  //   QJsonObject obj = arr.at(i).toObject(); 
-  //   qDebug() << obj["object"].toObject()["content"].toString();
-  // }
-
-  qDebug() << "DONE2!";
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::onAuthorizedRequestDone() {
-  qDebug() << "onAuthorizedRequestDone";
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::writeSettings() {
-  QSettings& s = *settings;
-  s.beginGroup("Account");
-
-  s.setValue("site_url", siteUrl);
-  s.setValue("username", userName);
-
-  s.setValue("oauth_token", token);
-  s.setValue("oauth_token_secret", tokenSecret);
-
-  s.endGroup();
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::readSettings() {
-  QSettings& s = *settings;
-  s.beginGroup("Account");
-
-  siteUrl = s.value("site_url", "http://frodo:8000").toString();
-  userName = s.value("username", "").toString();
-
-  token = s.value("oauth_token", "").toString();
-  tokenSecret = s.value("oauth_token_secret", "").toString();
-
-  s.endGroup();
-}
-
-//------------------------------------------------------------------------------
