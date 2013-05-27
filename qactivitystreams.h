@@ -32,8 +32,10 @@ public:
   QASObject(QObject* parent=0);
   QASObject(QJsonObject json, QObject* parent=0);
 
+  QString content() const { return m_content; }
+
 private:
-  QString content;
+  QString m_content;
   bool liked;
 };
 
@@ -46,12 +48,14 @@ public:
   QASActivity(QObject* parent=0);
   QASActivity(QJsonObject json, QObject* parent=0);
 
+  QASObject* object() const { return m_object; }
+
 private:
   QString id;
   QString url;
   QString content;
 
-  QASObject* object;
+  QASObject* m_object;
   QString verb;
 };
 
@@ -64,10 +68,18 @@ public:
   QASCollection(QObject* parent=0);
   QASCollection(QJsonObject json, QObject* parent=0);
 
+  size_t size() const { return items.size(); }
+
+  QASActivity* at(size_t i) const {
+    if (i >= size())
+      return NULL;
+    return items[i];
+  }
+
 private:
   QString displayName;
   QString url;
-  int totalItems;
+  size_t totalItems;
   QList<QASActivity*> items;
 };
 

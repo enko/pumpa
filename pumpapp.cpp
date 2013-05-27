@@ -29,7 +29,7 @@
 
 //------------------------------------------------------------------------------
 
-PumpApp::PumpApp(QObject* parent) : QObject(parent) {
+PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   settings = new QSettings(CLIENT_NAME, CLIENT_NAME, this);
   readSettings();
 
@@ -39,6 +39,12 @@ PumpApp::PumpApp(QObject* parent) : QObject(parent) {
   oaManager = new KQOAuthManager(this);
   connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
           this, SLOT(onAuthorizedRequestReady(QByteArray, int)));
+
+  inboxWidget = new CollectionWidget(this);
+
+  setWindowTitle(CLIENT_FANCY_NAME);
+  setCentralWidget(inboxWidget);
+  show();
 
   // oaRequest->setEnableDebugOutput(true);
 
@@ -60,17 +66,19 @@ void PumpApp::errorMessage(const QString& msg) {
 
 void PumpApp::writeSettings() {
   QSettings& s = *settings;
-  s.beginGroup("Account");
 
+  s.beginGroup("MainWindow");
+  s.setValue("size", size());
+  s.setValue("pos", pos());
+  s.endGroup();
+
+  s.beginGroup("Account");
   s.setValue("site_url", siteUrl);
   s.setValue("username", userName);
-
   s.setValue("oauth_client_id", clientId);
   s.setValue("oauth_client_secret", clientSecret);
-
   s.setValue("oauth_token", token);
   s.setValue("oauth_token_secret", tokenSecret);
-
   s.endGroup();
 }
 
@@ -78,17 +86,19 @@ void PumpApp::writeSettings() {
 
 void PumpApp::readSettings() {
   QSettings& s = *settings;
-  s.beginGroup("Account");
 
+  s.beginGroup("MainWindow");
+  resize(s.value("size", QSize(550, 500)).toSize());
+  move(s.value("pos", QPoint(0, 0)).toPoint());
+  s.endGroup();
+
+  s.beginGroup("Account");
   siteUrl = s.value("site_url", "http://frodo:8000").toString();
   userName = s.value("username", "").toString();
-
   clientId = s.value("oauth_client_id", "").toString();
   clientSecret = s.value("oauth_client_secret", "").toString();
-
   token = s.value("oauth_token", "").toString();
   tokenSecret = s.value("oauth_token_secret", "").toString();
-
   s.endGroup();
 }
 
@@ -186,9 +196,12 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   if (id == OAR_USER_ACCESS) {
     qDebug() << "uhm, ok.";
   } else if (id == OAR_FETCH_INBOX) {
+    qDebug() << response;
     QJsonObject obj = QJsonDocument::fromJson(response).object();
   
     QASCollection coll(obj, this);
+
+    inboxWidget->setCollection(coll);
   } else {
     qDebug() << "Unknown request id!";
   }

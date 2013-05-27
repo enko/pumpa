@@ -26,17 +26,20 @@
 #include <QDesktopServices>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QMainWindow>
 
 #include "QtKOAuth"
+
+#include "collectionwidget.h"
 
 #define CLIENT_NAME           "pumpa"
 #define CLIENT_FANCY_NAME     "pumpa"
 
-class PumpApp : public QObject {
+class PumpApp : public QMainWindow {
   Q_OBJECT
 
 public:
-  PumpApp(QObject* parent=0);
+  PumpApp(QWidget* parent=0);
 
 private slots:
   void errorMessage(const QString& msg);
@@ -81,6 +84,8 @@ private:
   KQOAuthRequest *oaRequest;
 
   QNetworkAccessManager *netManager;
+
+  CollectionWidget* inboxWidget;
 };
 
 #endif /* _PUMPAPP_H_ */

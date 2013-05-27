@@ -39,6 +39,6 @@ CONFIG += kqoauth
 ######################################################################
 
 # Input
-HEADERS += pumpapp.h qactivitystreams.h
-SOURCES += main.cpp pumpapp.cpp qactivitystreams.cpp
+HEADERS += pumpapp.h qactivitystreams.h collectionwidget.h
+SOURCES += main.cpp pumpapp.cpp qactivitystreams.cpp collectionwidget.cpp
 

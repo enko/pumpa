@@ -21,19 +21,28 @@
 
 #include <QDebug>
 #include <QJsonArray>
+#include <QStringList>
 
 //------------------------------------------------------------------------------
 
 QASObject::QASObject(QObject* parent) : QObject(parent), liked(false) {}
 
 QASObject::QASObject(QJsonObject json, QObject* parent) : QObject(parent) {
-  QString content = json["content"].toString();
+  m_content = json["content"].toString();
   QString objectType = json["objectType"].toString();
   QString id = json["id"].toString();
   QString url = json["url"].toString();
   liked = json["liked"].toBool();
   
-  qDebug() << "QASObject" << content;
+  qDebug() << "QASObject [" << id << "]";
+  QStringList keys = json.keys();
+  for (int i=0; i<keys.size(); i++) {
+    const QString& key = keys[i];
+    QString value = "...";
+    if (json[key].isString())
+      value = json[key].toString();
+    qDebug() << "         " << key << ":" << value;
+  }
       //   "updated": "2013-05-25T21:06:07Z",
       //   "published": "2013-05-25T21:06:07Z",
       //   "links": {
@@ -62,7 +71,7 @@ QASObject::QASObject(QJsonObject json, QObject* parent) : QObject(parent) {
 //------------------------------------------------------------------------------
 
 QASActivity::QASActivity(QObject* parent) : QObject(parent),
-                                            object(NULL) {}
+                                            m_object(NULL) {}
 
 //------------------------------------------------------------------------------
 
@@ -72,7 +81,7 @@ QASActivity::QASActivity(QJsonObject json, QObject* parent) : QObject(parent) {
   QString url = json["url"].toString();
   QString content = json["content"].toString();
   
-  object = new QASObject(json["object"].toObject());
+  m_object = new QASObject(json["object"].toObject(), parent);
 
   // Stuff not handled yet:
 
@@ -174,7 +183,7 @@ QASCollection::QASCollection(QJsonObject json, QObject* parent) :
 
   QJsonArray items_json = json["items"].toArray();
   for (int i=0; i<items_json.count(); i++) {
-    QASActivity* act = new QASActivity(items_json.at(i).toObject());
+    QASActivity* act = new QASActivity(items_json.at(i).toObject(), parent);
     items.append(act);
   }
 
