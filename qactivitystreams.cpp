@@ -25,16 +25,100 @@
 
 //------------------------------------------------------------------------------
 
-QASObject::QASObject(QObject* parent) : QObject(parent), liked(false) {}
+QDateTime parseTime(QString timeStr) {
+  // 2013-05-28T16:43:06Z 
+  // 55 minutes ago kl. 20:39 -> 19:44
+
+  QDateTime dt = QDateTime::fromString(timeStr, Qt::ISODate); 
+                                       // "yyyy-MM-ddThh:mm:ssZ");
+  dt.setTimeSpec(Qt::UTC);
+
+  return dt;
+}
+
+//------------------------------------------------------------------------------
+
+QASActor::QASActor(QObject* parent) : QObject(parent) {}
+
+QASActor::QASActor(QJsonObject json, QObject* parent) : QObject(parent) {
+  m_preferredUsername = json["preferredUsername"].toString();
+  m_url = json["url"].toString();
+  m_displayName = json["displayName"].toString();
+  m_id = json["id"].toString();
+
+        //   "links": {
+      //     "self": {
+      //       "href": "https:\/\/microca.st\/api\/user\/encycl\/profile"
+      //     },
+      //     "activity-inbox": {
+      //       "href": "https:\/\/microca.st\/api\/user\/encycl\/inbox"
+      //     },
+      //     "activity-outbox": {
+      //       "href": "https:\/\/microca.st\/api\/user\/encycl\/feed"
+      //     }
+      //   },
+      //   "objectType": "person",
+      //   "followers": {
+      //     "url": "https:\/\/microca.st\/api\/user\/encycl\/followers",
+      //     "author": {
+      //       "id": "acct:encycl@microca.st",
+      //       "objectType": "person"
+      //     },
+      //     "links": {
+      //       "self": {
+      //         "href": "https:\/\/microca.st\/api\/user\/encycl\/followers"
+      //       }
+      //     },
+      //     "displayName": "Followers",
+      //     "members": {
+      //       "url": "https:\/\/microca.st\/api\/user\/encycl\/followers"
+      //     },
+      //     "objectType": "collection",
+      //     "id": "https:\/\/microca.st\/api\/user\/encycl\/followers",
+      //     "pump_io": {
+      //       "proxyURL": "https:\/\/io.saz.im\/api\/proxy\/35H_pp91SW657XmH3m3tPw"
+      //     }
+      //   },
+      //   "following": {
+      //     "url": "https:\/\/microca.st\/api\/user\/encycl\/following",
+      //     "pump_io": {
+      //       "proxyURL": "https:\/\/io.saz.im\/api\/proxy\/809G1WAHSzGe68K5Ls0T8g"
+      //     }
+      //   },
+      //   "favorites": {
+      //     "url": "https:\/\/microca.st\/api\/user\/encycl\/favorites"
+      //   },
+      //   "lists": {
+      //     "url": "https:\/\/microca.st\/api\/user\/encycl\/lists\/person",
+      //     "displayName": "Collections of persons for encycl",
+      //     "objectTypes": [
+      //       "collection"
+      //     ],
+      //     "links": {
+      //       "first": {
+      //         "href": "https:\/\/microca.st\/api\/user\/encycl\/lists\/person"
+      //       },
+      //       "self": {
+      //         "href": "https:\/\/microca.st\/api\/user\/encycl\/lists\/person"
+      //       },
+      //       "prev": {
+      //         "href": "https:\/\/microca.st\/api\/user\/encycl\/lists\/person?since=https%3A%2F%2Fmicroca.st%2Fapi%2Fcollection%2FujrvzbkZTaWfqNkwMxy0hw"
+      //       }
+      //     },
+}
+
+//------------------------------------------------------------------------------
+
+QASObject::QASObject(QObject* parent) : QObject(parent), m_liked(false) {}
 
 QASObject::QASObject(QJsonObject json, QObject* parent) : QObject(parent) {
   m_content = json["content"].toString();
-  QString objectType = json["objectType"].toString();
-  QString id = json["id"].toString();
-  QString url = json["url"].toString();
-  liked = json["liked"].toBool();
+  m_objectType = json["objectType"].toString();
+  m_id = json["id"].toString();
+  m_url = json["url"].toString();
+  m_liked = json["liked"].toBool();
   
-  qDebug() << "QASObject [" << id << "]";
+  qDebug() << "QASObject [" << m_id << "]";
   QStringList keys = json.keys();
   for (int i=0; i<keys.size(); i++) {
     const QString& key = keys[i];
@@ -76,34 +160,19 @@ QASActivity::QASActivity(QObject* parent) : QObject(parent),
 //------------------------------------------------------------------------------
 
 QASActivity::QASActivity(QJsonObject json, QObject* parent) : QObject(parent) {
-  QString id = json["id"].toString();
-  QString verb = json["verb"].toString();
-  QString url = json["url"].toString();
-  QString content = json["content"].toString();
+  m_id = json["id"].toString();
+  m_verb = json["verb"].toString();
+  m_url = json["url"].toString();
+  m_content = json["content"].toString();
   
   m_object = new QASObject(json["object"].toObject(), parent);
+  m_actor = new QASActor(json["actor"].toObject(), parent);
+
+  m_published = parseTime(json["published"].toString());
+  m_updated = parseTime(json["updated"].toString());
 
   // Stuff not handled yet:
 
-  // "published": "2013-05-25T21:06:07Z",
-  // "updated": "2013-05-25T21:06:07Z",
-
-  // "actor": {
-  //   "preferredUsername": "sazius",
-  //   "url": "http:\/\/frodo:8000\/sazius",
-  //   "displayName": "sazius",
-  //   "id": "http:\/\/frodo:8000\/api\/user\/sazius\/profile",
-  //   "links": {
-  //     "self": {"href": "http:\/\/frodo:8000\/api\/user\/sazius\/profile"},
-  //     "activity-inbox": {"href": "http:\/\/frodo:8000\/api\/user\/sazius\/inbox"},
-  //     "activity-outbox": {"href": "http:\/\/frodo:8000\/api\/user\/sazius\/feed"}
-  //   },
-  //   "objectType": "person",
-  //   "followers": {"url": "http:\/\/frodo:8000\/api\/user\/sazius\/followers"},
-  //   "following": {"url": "http:\/\/frodo:8000\/api\/user\/sazius\/following"},
-  //   "favorites": {"url": "http:\/\/frodo:8000\/api\/user\/sazius\/favorites"},
-  //   "lists": {"url": "http:\/\/frodo:8000\/api\/user\/sazius\/lists\/person"}
-  // },
   // "generator": {
   //   "objectType": "application",
   //   "id": "http:\/\/frodo:8000\/api\/application\/oGi8xnNvS1GXZHjiCn9CFQ",
@@ -170,21 +239,21 @@ QASActivity::QASActivity(QJsonObject json, QObject* parent) : QObject(parent) {
 //------------------------------------------------------------------------------
 
 QASCollection::QASCollection(QObject* parent) : QObject(parent),
-                                                totalItems(0) {}
+                                                m_totalItems(0) {}
 
 //------------------------------------------------------------------------------
 
 QASCollection::QASCollection(QJsonObject json, QObject* parent) :
   QObject(parent) 
 {
-  displayName = json["displayName"].toString();
-  url = json["url"].toString();
-  totalItems = (int)json["totalItems"].toDouble();
+  m_displayName = json["displayName"].toString();
+  m_url = json["url"].toString();
+  m_totalItems = (int)json["totalItems"].toDouble();
 
   QJsonArray items_json = json["items"].toArray();
   for (int i=0; i<items_json.count(); i++) {
     QASActivity* act = new QASActivity(items_json.at(i).toObject(), parent);
-    items.append(act);
+    m_items.append(act);
   }
 
   // Stuff not handled yet:
