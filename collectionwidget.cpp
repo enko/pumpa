@@ -20,6 +20,9 @@
 #include "collectionwidget.h"
 
 #include <QDebug>
+// #include <QPalette>
+
+//------------------------------------------------------------------------------
 
 QString relativeFuzzyTime(QDateTime sTime) {
   QString dateStr = sTime.toString("ddd d MMMM yyyy");
@@ -55,6 +58,10 @@ ObjectWidget::ObjectWidget(QWidget* parent, Qt::WindowFlags f) :
   setLineWidth(2);
   setMargin(0);
   setFocusPolicy(Qt::NoFocus);
+
+  // QPalette pal;
+  // pal.setColor(QPalette::AlternateBase, Qt::white);
+  // setPalette(pal);
 }
 
 //------------------------------------------------------------------------------
@@ -90,15 +97,33 @@ CollectionWidget::CollectionWidget(QWidget* parent) :
 void CollectionWidget::setCollection(const QASCollection& coll) {
   for (size_t i=0; i<coll.size(); i++) {
     QASActivity* activity = coll.at(i);
-    QASObject* obj = activity->object();
+    QASObject* noteObj = activity->object();
     QASActor* actor = activity->actor();
 
     ObjectWidget* ow = new ObjectWidget(this);
-    ow->setText(QString("%1 at <a href=\"%3\">%2</a>").
+    ow->setText(QString("<p>%1 at <a href=\"%3\">%2</a><br/>%4</p>").
                 arg(actor->displayName()).
                 arg(relativeFuzzyTime(activity->published())).
-                arg(obj->url())
-                + "<br/>" + obj->content());
+                arg(noteObj->url()).
+                arg(noteObj->content()));
+    ow->setBackgroundRole(QPalette::Base);
     itemLayout->addWidget(ow);
+
+    if (noteObj->hasReplies()) {
+      const QASObjectList* ol = noteObj->replies();
+      for (size_t j=0; j<ol->size(); j++) {
+        QASObject* replyObj = ol->at(ol->size()-j-1);
+        const QASActor* author = replyObj->author();
+
+        ObjectWidget* ow = new ObjectWidget(this);
+        ow->setText(QString("<p style=\"margin-left: 40px\">%1<br/>"
+                            "%2 at <a href=\"%4\">%3</a></p>").
+                    arg(replyObj->content()).
+                    arg(author->displayName()).
+                    arg(relativeFuzzyTime(replyObj->published())).
+                    arg(replyObj->url()));
+        itemLayout->addWidget(ow);
+      }
+    }
   }
 }

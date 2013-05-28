@@ -20,8 +20,9 @@
 #include "qactivitystreams.h"
 
 #include <QDebug>
-#include <QJsonArray>
 #include <QStringList>
+#include <QJsonArray>
+#include <QJsonDocument>
 
 //------------------------------------------------------------------------------
 
@@ -38,6 +39,18 @@ QDateTime parseTime(QString timeStr) {
 
 //------------------------------------------------------------------------------
 
+QString jsonDump(const QJsonObject& obj) {
+  return QString(QJsonDocument(obj).toJson());
+}
+
+//------------------------------------------------------------------------------
+
+const char* jsonDumpC(const QJsonObject& obj) {
+  return jsonDump(obj).toLatin1().data();
+}
+
+//------------------------------------------------------------------------------
+
 QASActor::QASActor(QObject* parent) : QObject(parent) {}
 
 QASActor::QASActor(QJsonObject json, QObject* parent) : QObject(parent) {
@@ -45,6 +58,8 @@ QASActor::QASActor(QJsonObject json, QObject* parent) : QObject(parent) {
   m_url = json["url"].toString();
   m_displayName = json["displayName"].toString();
   m_id = json["id"].toString();
+
+  Q_ASSERT_X(!m_id.isEmpty(), "QASActor", jsonDumpC(json));
 
         //   "links": {
       //     "self": {
@@ -109,14 +124,31 @@ QASActor::QASActor(QJsonObject json, QObject* parent) : QObject(parent) {
 
 //------------------------------------------------------------------------------
 
-QASObject::QASObject(QObject* parent) : QObject(parent), m_liked(false) {}
+QASObject::QASObject(QObject* parent) :
+  QObject(parent),
+  m_liked(false),
+  m_author(NULL),
+  m_replies(NULL)
+{}
 
-QASObject::QASObject(QJsonObject json, QObject* parent) : QObject(parent) {
+QASObject::QASObject(QJsonObject json, QObject* parent) :
+  QObject(parent)
+{
   m_content = json["content"].toString();
   m_objectType = json["objectType"].toString();
   m_id = json["id"].toString();
   m_url = json["url"].toString();
   m_liked = json["liked"].toBool();
+
+  m_published = parseTime(json["published"].toString());
+  m_updated = parseTime(json["updated"].toString());
+
+  Q_ASSERT_X(!m_id.isEmpty(), "QASObject", jsonDumpC(json));
+
+  m_replies = new QASObjectList(json["replies"].toObject());
+
+  m_author = json.contains("author") ? 
+    new QASActor(json["author"].toObject()) : NULL;
   
   qDebug() << "QASObject [" << m_id << "]";
   QStringList keys = json.keys();
@@ -127,6 +159,13 @@ QASObject::QASObject(QJsonObject json, QObject* parent) : QObject(parent) {
       value = json[key].toString();
     qDebug() << "         " << key << ":" << value;
   }
+
+  // if objectType == "comment"
+  // "inReplyTo": {
+  //   "id": "https:\/\/io.saz.im\/api\/note\/8ohKMwBzTeGLI1SG6-jl9w",
+  //   "objectType": "note"
+  // },
+
       //   "updated": "2013-05-25T21:06:07Z",
       //   "published": "2013-05-25T21:06:07Z",
       //   "links": {
@@ -154,8 +193,17 @@ QASObject::QASObject(QJsonObject json, QObject* parent) : QObject(parent) {
 
 //------------------------------------------------------------------------------
 
-QASActivity::QASActivity(QObject* parent) : QObject(parent),
-                                            m_object(NULL) {}
+bool QASObject::hasReplies() const { 
+  return m_replies && m_replies->size(); 
+}
+
+//------------------------------------------------------------------------------
+
+QASActivity::QASActivity(QObject* parent) : 
+  QObject(parent),
+  m_object(NULL),
+  m_actor(NULL)
+{}
 
 //------------------------------------------------------------------------------
 
@@ -165,8 +213,16 @@ QASActivity::QASActivity(QJsonObject json, QObject* parent) : QObject(parent) {
   m_url = json["url"].toString();
   m_content = json["content"].toString();
   
+  Q_ASSERT_X(!m_id.isEmpty(), "QASActivity", jsonDumpC(json));
+
   m_object = new QASObject(json["object"].toObject(), parent);
   m_actor = new QASActor(json["actor"].toObject(), parent);
+
+  // m_object = json.contains("object") ?
+  //   new QASObject(json["object"].toObject(), parent) : NULL;
+
+  // m_actor = json.contains("actor") ?
+  //   new QASActor(json["actor"].toObject(), parent) : NULL;
 
   m_published = parseTime(json["published"].toString());
   m_updated = parseTime(json["updated"].toString());
@@ -234,6 +290,26 @@ QASActivity::QASActivity(QJsonObject json, QObject* parent) : QObject(parent) {
   //     "href": "http:\/\/frodo:8000\/api\/activity\/H1rhziiJRiSkihKckkHJ3A"
   //   }
   // },
+}
+
+//------------------------------------------------------------------------------
+
+QASObjectList::QASObjectList(QObject* parent) : QObject(parent),
+                                                m_totalItems(0) {}
+
+//------------------------------------------------------------------------------
+
+QASObjectList::QASObjectList(QJsonObject json, QObject* parent) :
+  QObject(parent) 
+{
+  m_url = json["url"].toString();
+  m_totalItems = (int)json["totalItems"].toDouble();
+
+  QJsonArray items_json = json["items"].toArray();
+  for (int i=0; i<items_json.count(); i++) {
+    QASObject* act = new QASObject(items_json.at(i).toObject(), parent);
+    m_items.append(act);
+  }
 }
 
 //------------------------------------------------------------------------------

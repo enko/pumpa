@@ -25,6 +25,12 @@
 #include <QDateTime>
 
 //------------------------------------------------------------------------------
+// Forward declarations
+
+class QASCollection;
+class QASObjectList;
+
+//------------------------------------------------------------------------------
 
 class QASActor : public QObject {
   Q_OBJECT
@@ -53,6 +59,12 @@ public:
 
   QString content() const { return m_content; }
   QString url() const { return m_url; }
+  QDateTime published() const { return m_published; }
+
+  bool hasReplies() const;
+  const QASObjectList* replies() const { return m_replies; }
+
+  const QASActor* author() const { return m_author; }
 
 private:
   QString m_content;
@@ -60,6 +72,12 @@ private:
   QString m_objectType;
   QString m_id;
   QString m_url;
+
+  QDateTime m_published;
+  QDateTime m_updated;
+
+  QASActor* m_author;
+  QASObjectList* m_replies;
 };
 
 //------------------------------------------------------------------------------
@@ -88,6 +106,31 @@ private:
 
   QASObject* m_object;
   QASActor* m_actor;
+};
+
+//------------------------------------------------------------------------------
+
+// FIXME: probably QASObjectList and QASCollection should be merged
+// into one class... have QASAbstractObject as list item ?
+
+class QASObjectList : public QObject {
+  Q_OBJECT
+public:
+  QASObjectList(QObject* parent=0);
+  QASObjectList(QJsonObject json, QObject* parent=0);
+
+  size_t size() const { return m_items.size(); }
+
+  QASObject* at(size_t i) const {
+    if (i >= size())
+      return NULL;
+    return m_items[i];
+  }
+
+private:
+  QString m_url;
+  size_t m_totalItems;
+  QList<QASObject*> m_items;
 };
 
 //------------------------------------------------------------------------------
