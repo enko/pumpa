@@ -21,6 +21,25 @@
 
 #include <QDebug>
 
+QString relativeFuzzyTime(QDateTime sTime) {
+  QString dateStr = sTime.toString("ddd d MMMM yyyy");
+
+  int secs = sTime.secsTo(QDateTime::currentDateTime().toUTC());
+  if (secs < 0)
+    secs = 0;
+  int mins = qRound((float)secs/60);
+  int hours = qRound((float)secs/60/60);
+    
+  if (secs < 60) { 
+    dateStr = QString("a few seconds ago");
+  } else if (mins < 60) {
+    dateStr = QString("%1 minute%2 ago").arg(mins).arg(mins==1?"":"s");
+  } else if (hours < 24) {
+    dateStr = QString("%1 hour%2 ago").arg(hours).arg(hours==1?"":"s");
+  }
+  return dateStr;
+}
+
 //------------------------------------------------------------------------------
 
 ObjectWidget::ObjectWidget(QWidget* parent, Qt::WindowFlags f) :
@@ -70,11 +89,16 @@ CollectionWidget::CollectionWidget(QWidget* parent) :
 
 void CollectionWidget::setCollection(const QASCollection& coll) {
   for (size_t i=0; i<coll.size(); i++) {
-    QASActivity* act = coll.at(i);
-    QString content = act->object()->content();
-    qDebug() << "Setting content" << content;
+    QASActivity* activity = coll.at(i);
+    QASObject* obj = activity->object();
+    QASActor* actor = activity->actor();
+
     ObjectWidget* ow = new ObjectWidget(this);
-    ow->setText(content);
+    ow->setText(QString("%1 at <a href=\"%3\">%2</a>").
+                arg(actor->displayName()).
+                arg(relativeFuzzyTime(activity->published())).
+                arg(obj->url())
+                + "<br/>" + obj->content());
     itemLayout->addWidget(ow);
   }
 }
