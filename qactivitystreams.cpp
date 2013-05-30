@@ -26,6 +26,12 @@
 
 //------------------------------------------------------------------------------
 
+QMap<QString, QASActor*> QASActor::s_actors;
+QMap<QString, QASObject*> QASObject::s_objects;
+QMap<QString, QASActivity*> QASActivity::s_activities;
+
+//------------------------------------------------------------------------------
+
 QDateTime parseTime(QString timeStr) {
   // 2013-05-28T16:43:06Z 
   // 55 minutes ago kl. 20:39 -> 19:44
@@ -51,13 +57,19 @@ const char* jsonDumpC(const QJsonObject& obj) {
 
 //------------------------------------------------------------------------------
 
-QASActor::QASActor(QObject* parent) : QObject(parent) {}
+QASActor::QASActor(QString id, QObject* parent) :
+  QObject(parent),
+  m_id(id) 
+{
+  qDebug() << "new QASActor" << m_id;
+}
 
-QASActor::QASActor(QJsonObject json, QObject* parent) : QObject(parent) {
+//------------------------------------------------------------------------------
+
+void QASActor::update(QJsonObject json) {
   m_preferredUsername = json["preferredUsername"].toString();
   m_url = json["url"].toString();
   m_displayName = json["displayName"].toString();
-  m_id = json["id"].toString();
 
   Q_ASSERT_X(!m_id.isEmpty(), "QASActor", jsonDumpC(json));
 
@@ -124,21 +136,38 @@ QASActor::QASActor(QJsonObject json, QObject* parent) : QObject(parent) {
 
 //------------------------------------------------------------------------------
 
-QASObject::QASObject(QObject* parent) :
+QASActor* QASActor::getActor(QJsonObject json, QObject* parent) {
+  QString id = json["id"].toString();
+  Q_ASSERT_X(!id.isEmpty(), "getActor", jsonDumpC(json));
+
+  QASActor* act = s_actors.contains(id) ?  s_actors[id] :
+    new QASActor(id, parent);
+  s_actors.insert(id, act);
+
+  act->update(json);
+  return act;
+}
+
+//------------------------------------------------------------------------------
+
+QASObject::QASObject(QString id, QObject* parent) :
   QObject(parent),
+  m_id(id),
   m_liked(false),
   m_author(NULL),
   m_replies(NULL)
-{}
-
-QASObject::QASObject(QJsonObject json, QObject* parent) :
-  QObject(parent)
 {
+  qDebug() << "new QASObject" << m_id;
+}
+
+//------------------------------------------------------------------------------
+
+void QASObject::update(QJsonObject json) {
+
   bool debug = false;
 
   m_content = json["content"].toString();
   m_objectType = json["objectType"].toString();
-  m_id = json["id"].toString();
   m_url = json["url"].toString();
   m_liked = json["liked"].toBool();
 
@@ -150,7 +179,7 @@ QASObject::QASObject(QJsonObject json, QObject* parent) :
   m_replies = new QASObjectList(json["replies"].toObject());
 
   m_author = json.contains("author") ? 
-    new QASActor(json["author"].toObject()) : NULL;
+    QASActor::getActor(json["author"].toObject(), parent()) : NULL;
 
   if (debug) {
     qDebug() << "QASObject [" << m_id << "]";
@@ -199,30 +228,46 @@ QASObject::QASObject(QJsonObject json, QObject* parent) :
 
 //------------------------------------------------------------------------------
 
+QASObject* QASObject::getObject(QJsonObject json, QObject* parent) {
+  QString id = json["id"].toString();
+  Q_ASSERT_X(!id.isEmpty(), "getObject", jsonDumpC(json));
+
+  QASObject* obj = s_objects.contains(id) ?  s_objects[id] :
+    new QASObject(id, parent);
+  s_objects.insert(id, obj);
+
+  obj->update(json);
+  return obj;
+}
+
+//------------------------------------------------------------------------------
+
 bool QASObject::hasReplies() const { 
   return m_replies && m_replies->size(); 
 }
 
 //------------------------------------------------------------------------------
 
-QASActivity::QASActivity(QObject* parent) : 
+QASActivity::QASActivity(QString id, QObject* parent) : 
   QObject(parent),
+  m_id(id),
   m_object(NULL),
   m_actor(NULL)
-{}
+{
+  qDebug() << "new QASActivity" << m_id;
+}
 
 //------------------------------------------------------------------------------
 
-QASActivity::QASActivity(QJsonObject json, QObject* parent) : QObject(parent) {
-  m_id = json["id"].toString();
+void QASActivity::update(QJsonObject json) {
   m_verb = json["verb"].toString();
   m_url = json["url"].toString();
   m_content = json["content"].toString();
   
-  Q_ASSERT_X(!m_id.isEmpty(), "QASActivity", jsonDumpC(json));
+  Q_ASSERT_X(!m_id.isEmpty(), "QASActivity::update", jsonDumpC(json));
 
-  m_object = new QASObject(json["object"].toObject(), parent);
-  m_actor = new QASActor(json["actor"].toObject(), parent);
+  m_object = QASObject::getObject(json["object"].toObject(), parent());
+  m_actor = QASActor::getActor(json["actor"].toObject(), parent());
 
   // m_object = json.contains("object") ?
   //   new QASObject(json["object"].toObject(), parent) : NULL;
@@ -300,6 +345,20 @@ QASActivity::QASActivity(QJsonObject json, QObject* parent) : QObject(parent) {
 
 //------------------------------------------------------------------------------
 
+QASActivity* QASActivity::getActivity(QJsonObject json, QObject* parent) {
+  QString id = json["id"].toString();
+  Q_ASSERT_X(!id.isEmpty(), "getActivity", jsonDumpC(json));
+
+  QASActivity* act = s_activities.contains(id) ? s_activities[id] :
+    new QASActivity(id, parent);
+  s_activities.insert(id, act);
+
+  act->update(json);
+  return act;
+}
+
+//------------------------------------------------------------------------------
+
 QASObjectList::QASObjectList(QObject* parent) : QObject(parent),
                                                 m_totalItems(0) {}
 
@@ -313,7 +372,8 @@ QASObjectList::QASObjectList(QJsonObject json, QObject* parent) :
 
   QJsonArray items_json = json["items"].toArray();
   for (int i=0; i<items_json.count(); i++) {
-    QASObject* act = new QASObject(items_json.at(i).toObject(), parent);
+    QASObject* act = QASObject::getObject(items_json.at(i).toObject(),
+                                          parent);
     m_items.append(act);
   }
 }
@@ -334,7 +394,8 @@ QASCollection::QASCollection(QJsonObject json, QObject* parent) :
 
   QJsonArray items_json = json["items"].toArray();
   for (int i=0; i<items_json.count(); i++) {
-    QASActivity* act = new QASActivity(items_json.at(i).toObject(), parent);
+    QASActivity* act = QASActivity::getActivity(items_json.at(i).toObject(),
+                                                parent);
     m_items.append(act);
   }
 

@@ -35,9 +35,12 @@ class QASObjectList;
 class QASActor : public QObject {
   Q_OBJECT
 
+private:
+  QASActor(QString id="", QObject* parent=0);
+
 public:
-  QASActor(QObject* parent=0);
-  QASActor(QJsonObject json, QObject* parent=0);
+  static QASActor* getActor(QJsonObject json, QObject* parent);
+  void update(QJsonObject json);
 
   QString displayName() const { return m_displayName; }
 
@@ -46,6 +49,8 @@ private:
   QString m_url;
   QString m_displayName;
   QString m_id;
+
+  static QMap<QString, QASActor*> s_actors;
 };
 
 //------------------------------------------------------------------------------
@@ -53,9 +58,12 @@ private:
 class QASObject : public QObject {
   Q_OBJECT
 
+private:
+  QASObject(QString id="", QObject* parent=0);
+
 public:
-  QASObject(QObject* parent=0);
-  QASObject(QJsonObject json, QObject* parent=0);
+  static QASObject* getObject(QJsonObject json, QObject* parent);
+  void update(QJsonObject json);
 
   QString content() const { return m_content; }
   QString url() const { return m_url; }
@@ -67,10 +75,10 @@ public:
   const QASActor* author() const { return m_author; }
 
 private:
+  QString m_id;
   QString m_content;
   bool m_liked;
   QString m_objectType;
-  QString m_id;
   QString m_url;
 
   QDateTime m_published;
@@ -78,6 +86,8 @@ private:
 
   QASActor* m_author;
   QASObjectList* m_replies;
+
+  static QMap<QString, QASObject*> s_objects;
 };
 
 //------------------------------------------------------------------------------
@@ -85,9 +95,12 @@ private:
 class QASActivity : public QObject {
   Q_OBJECT
 
+private:
+  QASActivity(QString id="", QObject* parent=0);
+
 public:
-  QASActivity(QObject* parent=0);
-  QASActivity(QJsonObject json, QObject* parent=0);
+  static QASActivity* getActivity(QJsonObject json, QObject* parent);
+  void update(QJsonObject json);
 
   QASObject* object() const { return m_object; }
   QASActor* actor() const { return m_actor; }
@@ -106,6 +119,8 @@ private:
 
   QASObject* m_object;
   QASActor* m_actor;
+
+  static QMap<QString, QASActivity*> s_activities;
 };
 
 //------------------------------------------------------------------------------
