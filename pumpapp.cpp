@@ -40,9 +40,13 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
           this, SLOT(onAuthorizedRequestReady(QByteArray, int)));
 
+  createActions();
+  createMenu();
+
   inboxWidget = new CollectionWidget(this);
 
   setWindowTitle(CLIENT_FANCY_NAME);
+  setWindowIcon(QIcon(":/pumpa.png"));
   setCentralWidget(inboxWidget);
   show();
 
@@ -58,8 +62,126 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
 
 //------------------------------------------------------------------------------
 
+PumpApp::~PumpApp() {
+  writeSettings();
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::errorMessage(const QString& msg) {
   qDebug() << "errorMessage:" << msg;
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::createActions() {
+  exitAction = new QAction(tr("E&xit"), this);
+  exitAction->setShortcut(tr("Ctrl+Q"));
+  connect(exitAction, SIGNAL(triggered()), this, SLOT(exit()));
+
+  openPrefsAction = new QAction(tr("Preferences"), this);
+  // prefsAct->setShortcut(tr("Ctrl+P"));
+  connect(openPrefsAction, SIGNAL(triggered()), this, SLOT(preferences()));
+
+  reloadAction = new QAction(tr("&Reload timeline"), this);
+  reloadAction->setShortcut(tr("Ctrl+R"));
+  connect(reloadAction, SIGNAL(triggered()), 
+          this, SLOT(reload()));
+
+  // loadOlderAct = new QAction(tr("Load &older in timeline"), this);
+  // loadOlderAct->setShortcut(tr("Ctrl+O"));
+  // connect(loadOlderAct, SIGNAL(triggered()), this, SLOT(loadOlder()));
+
+  // pauseAct = new QAction(tr("&Pause home timeline"), this);
+  // pauseAct->setShortcut(tr("Ctrl+P"));
+  // pauseAct->setCheckable(true);
+  // connect(pauseAct, SIGNAL(triggered()), this, SLOT(pauseTimeline()));
+
+  aboutAction = new QAction(tr("&About"), this);
+  connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
+
+  aboutQtAction = new QAction("About &Qt", this);
+  connect(aboutQtAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
+
+  newNoteAction = new QAction(tr("New &Note"), this);
+  newNoteAction->setShortcut(tr("Ctrl+N"));
+  connect(newNoteAction, SIGNAL(triggered()), this, SLOT(newNote()));
+
+  newPictureAction = new QAction(tr("New &Picture"), this);
+  newPictureAction->setShortcut(tr("Ctrl+P"));
+  connect(newPictureAction, SIGNAL(triggered()), this, SLOT(newPicture()));
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::createMenu() {
+  fileMenu = new QMenu(tr("&Pumpa"), this);
+  fileMenu->addAction(newNoteAction);
+  fileMenu->addAction(newPictureAction);
+  // fileMenu->addSeparator();
+  fileMenu->addAction(reloadAction);
+  // fileMenu->addAction(loadOlderAct);
+  // fileMenu->addAction(pauseAct);
+  fileMenu->addSeparator();
+  fileMenu->addAction(openPrefsAction);
+  fileMenu->addSeparator();
+  fileMenu->addAction(exitAction);
+  menuBar()->addMenu(fileMenu);
+
+  helpMenu = new QMenu(tr("&Help"), this);
+  helpMenu->addAction(aboutAction);
+  helpMenu->addAction(aboutQtAction);
+  menuBar()->addMenu(helpMenu);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::preferences() {
+  //settingsDialog->exec();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::exit() { 
+  qApp->exit();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::about() { 
+  static const QString GPL = 
+    "<p>Pumpa is free software: you can redistribute it and/or modify it "
+    "under the terms of the GNU General Public License as published by "
+    "the Free Software Foundation, either version 3 of the License, or "
+    "(at your option) any later version.</p>"
+    "<p>Pumpa is distributed in the hope that it will be useful, but "
+    "WITHOUT ANY WARRANTY; without even the implied warranty of "
+    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU "
+    "General Public License for more details.</p>"
+    "<p>You should have received a copy of the GNU General Public License "
+    "along with Pumpa.  If not, see "
+    "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>."
+    "</p>";
+
+  QMessageBox::about(this, tr("About " CLIENT_FANCY_NAME), 
+                     "<p><b>" CLIENT_FANCY_NAME " " CLIENT_VERSION "</b> - "
+                     "A simple Qt-based pump.io client.</p>"
+                     "<p>Copyright &copy; 2013 Mats Sj&ouml;berg.</p>"+GPL);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::newNote() {
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::newPicture() {
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::reload() {
 }
 
 //------------------------------------------------------------------------------
@@ -196,7 +318,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   if (id == OAR_USER_ACCESS) {
     qDebug() << "uhm, ok.";
   } else if (id == OAR_FETCH_INBOX) {
-    qDebug() << response;
+    // qDebug() << response;
     QJsonObject obj = QJsonDocument::fromJson(response).object();
   
     QASCollection coll(obj, this);

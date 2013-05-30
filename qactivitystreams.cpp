@@ -134,6 +134,8 @@ QASObject::QASObject(QObject* parent) :
 QASObject::QASObject(QJsonObject json, QObject* parent) :
   QObject(parent)
 {
+  bool debug = false;
+
   m_content = json["content"].toString();
   m_objectType = json["objectType"].toString();
   m_id = json["id"].toString();
@@ -149,15 +151,19 @@ QASObject::QASObject(QJsonObject json, QObject* parent) :
 
   m_author = json.contains("author") ? 
     new QASActor(json["author"].toObject()) : NULL;
-  
-  qDebug() << "QASObject [" << m_id << "]";
-  QStringList keys = json.keys();
-  for (int i=0; i<keys.size(); i++) {
-    const QString& key = keys[i];
-    QString value = "...";
-    if (json[key].isString())
-      value = json[key].toString();
-    qDebug() << "         " << key << ":" << value;
+
+  if (debug) {
+    qDebug() << "QASObject [" << m_id << "]";
+    QStringList keys = json.keys();
+    for (int i=0; i<keys.size(); i++) {
+      const QString& key = keys[i];
+      QString value = "...";
+      if (json[key].isString())
+        value = json[key].toString();
+      if (value.length() > 79) 
+        value = value.left(75) + " ...";
+      qDebug() << "         " << key << ":" << value;
+    }
   }
 
   // if objectType == "comment"

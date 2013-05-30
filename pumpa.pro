@@ -21,6 +21,8 @@
 TEMPLATE = app
 TARGET = pumpa
 INCLUDEPATH += .
+RESOURCES += pumpa.qrc
+
 QT += core gui network
 QT += widgets
 

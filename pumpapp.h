@@ -26,20 +26,27 @@
 #include <QDesktopServices>
 #include <QJsonDocument>
 #include <QJsonArray>
+#include <QApplication>
 #include <QMainWindow>
+#include <QAction>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
 
 #include "QtKOAuth"
 
 #include "collectionwidget.h"
 
 #define CLIENT_NAME           "pumpa"
-#define CLIENT_FANCY_NAME     "pumpa"
+#define CLIENT_FANCY_NAME     "Pumpa"
+#define CLIENT_VERSION        "0.01"
 
 class PumpApp : public QMainWindow {
   Q_OBJECT
 
 public:
   PumpApp(QWidget* parent=0);
+  virtual ~PumpApp();                            
 
 private slots:
   void errorMessage(const QString& msg);
@@ -53,6 +60,13 @@ private slots:
   void onOAuthClientRegDone();
 
   void onAuthorizedRequestReady(QByteArray response, int id);
+
+  void exit();
+  void about();
+  void preferences();
+  void newNote();
+  void newPicture();
+  void reload();
 
 private:
   void getOAuthAccess();
@@ -70,6 +84,24 @@ private:
   void readSettings();
 
   QSettings* settings;
+
+  void createActions();
+  void createMenu();
+
+  QAction* newNoteAction;
+  QAction* newPictureAction;
+  QAction* reloadAction;
+  QAction* openPrefsAction;
+  QAction* exitAction;
+  QMenu* fileMenu;
+
+  QAction* aboutAction;
+  QAction* aboutQtAction;
+  QMenu* helpMenu;
+
+  // QSystemTrayIcon* trayIcon;
+  // QMenu* trayIconMenu;
+
   
   QString siteUrl;
   QString userName;
