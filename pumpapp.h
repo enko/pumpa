@@ -31,7 +31,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 
-// #include "QtKOAuth"
+#include "QtKOAuth"
 
 #include "collectionwidget.h"
 

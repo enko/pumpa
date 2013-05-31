@@ -317,7 +317,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     qDebug() << "uhm, ok.";
   } else if (id == OAR_FETCH_INBOX) {
     // qDebug() << response;
-    QJsonObject obj = convertJson(data); // QJsonDocument::fromJson(response).object();
+    QJsonObject obj = convertJson(response); // QJsonDocument::fromJson(response).object();
   
     QASCollection coll(obj, this);
 

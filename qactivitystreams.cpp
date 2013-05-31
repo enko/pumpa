@@ -45,18 +45,6 @@ QDateTime parseTime(QString timeStr) {
 
 //------------------------------------------------------------------------------
 
-QString jsonDump(const QJsonObject& obj) {
-  return QString(QJsonDocument(obj).toJson());
-}
-
-//------------------------------------------------------------------------------
-
-const char* jsonDumpC(const QJsonObject& obj) {
-  return jsonDump(obj).toLatin1().data();
-}
-
-//------------------------------------------------------------------------------
-
 QASActor::QASActor(QString id, QObject* parent) :
   QObject(parent),
   m_id(id) 

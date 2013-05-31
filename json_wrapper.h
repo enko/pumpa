@@ -25,46 +25,79 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
+//------------------------------------------------------------------------------
+
 QJsonObject convertJson(const QByteArray& data) {
   return QJsonDocument::fromJson(data).object();
 }
+
+//------------------------------------------------------------------------------
 
 QByteArray toJson(const QVariantMap& map) {
   QJsonDocument jd(QJsonObject::fromVariantMap(map));
   return jd.toJson();
 }
 
+//------------------------------------------------------------------------------
+
+QString jsonDump(const QJsonObject& obj) {
+  return QString(QJsonDocument(obj).toJson());
+}
+
+//------------------------------------------------------------------------------
+
+const char* jsonDumpC(const QJsonObject& obj) {
+  return jsonDump(obj).toLatin1().data();
+}
+
+//------------------------------------------------------------------------------
+
 #else
 #include <QVariantMap>
-#include <QJson>
-typedef QJsonObject QVariantMap
+// #include <QJson>
+typedef QVariantMap QJsonObject;
 
-QJsonObject convertJson(const QByteArray& data) {
-  QJson::Parser parser;
-  bool ok;
+QJsonObject convertJson(const QByteArray& /*data*/) {
+  // QJson::Parser parser;
+  // bool ok;
 
-  QVariantMap result = parser.parse(data, &ok).toMap();
-  if (!ok) {
-    qFatal("An error occurred during parsing");
-    exit (1);
-  }
+  // QVariantMap result = parser.parse(data, &ok).toMap();
+  // if (!ok) {
+  //   qFatal("An error occurred during parsing");
+  //   exit (1);
+  // }
 
-  return result;
+  // return result;
+  return QVariantMap();
 }
 
-QByteArray toJson(const QVariantMap& map) {
-  QJson::Serializer serializer;
+//------------------------------------------------------------------------------
+
+QByteArray toJson(const QVariantMap& /*map*/) {
+  // QJson::Serializer serializer;
  
-  bool ok;
-  QByteArray json = serializer.serialize(map, &ok);
+  // bool ok;
+  // QByteArray json = serializer.serialize(map, &ok);
   
-  if (!ok) {
-    qCritical() << "Something went wrong:" << serializer.errorMessage();
-  }
-  return json;
+  // if (!ok) {
+  //   qCritical() << "Something went wrong:" << serializer.errorMessage();
+  // }
+  // return json;
+  return QByteArray();
 }
 
+//------------------------------------------------------------------------------
+
+QString jsonDump(const QJsonObject& obj) {
+  return QString(toJson(obj));
+}
 
 #endif
+
+//------------------------------------------------------------------------------
+
+const char* jsonDumpC(const QJsonObject& obj) {
+  return jsonDump(obj).toLatin1().data();
+}
 
 #endif /* _JSON_WRAPPER_H_ */
