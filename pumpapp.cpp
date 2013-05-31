@@ -321,7 +321,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   
     QASCollection coll(obj, this);
 
-    inboxWidget->setCollection(coll);
+    inboxWidget->addCollection(coll);
   } else {
     qDebug() << "Unknown request id!";
   }

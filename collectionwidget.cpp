@@ -81,22 +81,32 @@ CollectionWidget::CollectionWidget(QWidget* parent) :
   // loadSignalMapper = new QSignalMapper(this);
   // connect(loadSignalMapper, SIGNAL(mapped(int)), this, SLOT(loadOlder(int)));
   
-  itemLayout = new QVBoxLayout;
-  itemLayout->setSpacing(10);
-  itemLayout->addStretch();
+  m_itemLayout = new QVBoxLayout;
+  m_itemLayout->setSpacing(10);
+  m_itemLayout->addStretch();
 
-  listContainer = new QWidget;
-  listContainer->setLayout(itemLayout);
+  m_listContainer = new QWidget;
+  m_listContainer->setLayout(m_itemLayout);
 
-  setWidget(listContainer);
+  setWidget(m_listContainer);
   setWidgetResizable(true);
 }
 
 //------------------------------------------------------------------------------
 
-void CollectionWidget::setCollection(const QASCollection& coll) {
+void CollectionWidget::addCollection(const QASCollection& coll) {
+  int li = 0; // index into internal m_list
+
   for (size_t i=0; i<coll.size(); i++) {
     QASActivity* activity = coll.at(i);
+    QString activity_id = activity->id();
+
+    if (m_activity_map.contains(activity_id))
+      continue; // do nothing, assume some signal will be emitted to
+                // keep widget updated
+
+    m_activity_map.insert(activity_id, activity);
+      
     QASObject* noteObj = activity->object();
     QASActor* actor = activity->actor();
 
@@ -107,7 +117,7 @@ void CollectionWidget::setCollection(const QASCollection& coll) {
                 arg(noteObj->url()).
                 arg(noteObj->content()));
     ow->setBackgroundRole(QPalette::Base);
-    itemLayout->addWidget(ow);
+    m_itemLayout->insertWidget(li++, ow);
 
     if (noteObj->hasReplies()) {
       const QASObjectList* ol = noteObj->replies();
@@ -122,7 +132,7 @@ void CollectionWidget::setCollection(const QASCollection& coll) {
                     arg(author->displayName()).
                     arg(relativeFuzzyTime(replyObj->published())).
                     arg(replyObj->url()));
-        itemLayout->addWidget(ow);
+        m_itemLayout->insertWidget(li++, ow);
       }
     }
   }

@@ -31,7 +31,11 @@
 #include <QMenuBar>
 #include <QMessageBox>
 
-#include "QtKOAuth"
+#include "kqoauthrequest.h"
+#include "kqoauthrequest_1.h"
+#include "kqoauthrequest_xauth.h"
+#include "kqoauthmanager.h"
+#include "kqoauthglobals.h"
 
 #include "collectionwidget.h"
 

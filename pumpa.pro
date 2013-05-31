@@ -22,13 +22,14 @@ TEMPLATE = app
 TARGET = pumpa
 INCLUDEPATH += .
 RESOURCES += pumpa.qrc
+OBJECTS_DIR = obj
 
 QT += core gui network
 
 # Enable for gdb debug info
 CONFIG += debug
 
-#INCLUDEPATH += ./kQOAuth/src
+INCLUDEPATH += ./kQOAuth/src
 
 # Additions for Qt 4
 lessThan(QT_MAJOR_VERSION, 5) {

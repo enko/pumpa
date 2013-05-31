@@ -103,6 +103,8 @@ public:
   static QASActivity* getActivity(QVariantMap json, QObject* parent);
   void update(QVariantMap json);
 
+  QString id() const { return m_id; }
+
   QASObject* object() const { return m_object; }
   QASActor* actor() const { return m_actor; }
 

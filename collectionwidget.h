@@ -48,11 +48,13 @@ class CollectionWidget : public QScrollArea {
 public:
   CollectionWidget(QWidget* parent=0);
 
-  void setCollection(const QASCollection& coll);
+  void addCollection(const QASCollection& coll);
 
 private:
-  QVBoxLayout* itemLayout;
-  QWidget* listContainer;
+  QVBoxLayout* m_itemLayout;
+  QWidget* m_listContainer;
+  // QList<QASActivity*> m_list;
+  QMap<QString, QASActivity*> m_activity_map;
 };
 
 #endif /* _COLLECTIONWIDGET_H_ */
