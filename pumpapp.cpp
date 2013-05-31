@@ -17,11 +17,8 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.  
 */
 
-#include <QJsonDocument>
-#include <QJsonObject>
-
 #include "pumpapp.h"
-
+#include "json_wrapper.h"
 #include "qactivitystreams.h"
 
 #define OAR_USER_ACCESS       0
@@ -248,7 +245,7 @@ void PumpApp::onOAuthClientRegDone() {
   QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
   QByteArray data = reply->readAll();
 
-  QJsonObject json = QJsonDocument::fromJson(data).object();
+  QJsonObject json = convertJson(data); //QJsonDocument::fromJson(data).object();
   clientId = json["client_id"].toString();
   clientSecret = json["client_secret"].toString();
 
@@ -320,7 +317,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     qDebug() << "uhm, ok.";
   } else if (id == OAR_FETCH_INBOX) {
     // qDebug() << response;
-    QJsonObject obj = QJsonDocument::fromJson(response).object();
+    QJsonObject obj = convertJson(data); // QJsonDocument::fromJson(response).object();
   
     QASCollection coll(obj, this);
 
@@ -400,13 +397,12 @@ void PumpApp::request(QString endpoint,
   oaRequest->setHttpMethod(method); 
 
   if (method == KQOAuthRequest::POST) {
-    QJsonDocument jd(QJsonObject::fromVariantMap(data));
   //   QByteArray ba();
 
   // qDebug() << "Sending" << ba;
 
     oaRequest->setContentType("application/json");
-    oaRequest->setRawData(jd.toJson());
+    oaRequest->setRawData(toJson(data));
   }
 
   oaManager->executeAuthorizedRequest(oaRequest, OAR_FETCH_INBOX);

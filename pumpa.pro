@@ -24,7 +24,6 @@ INCLUDEPATH += .
 RESOURCES += pumpa.qrc
 
 QT += core gui network
-QT += widgets
 
 # Enable for gdb debug info
 CONFIG += debug
@@ -33,14 +32,22 @@ INCLUDEPATH += /home/mats/sw/include/QtKOAuth
 LIBS += -L/home/mats/sw/lib64
 CONFIG += kqoauth
 
+# Additions for Qt 4
+lessThan(QT_MAJOR_VERSION, 5) {
+  message("Configuring for Qt 4")
+  LIBS += lqjson
+}
 
-# lesserThan(QT_MAJOR_VERSION, 5) {
-#   message("WARNING: requires qt5")
-# }
+# Additions for Qt 5
+greaterThan(QT_MAJOR_VERSION, 4) { 
+  message("Configuring for Qt 5")
+  QT += widgets
+  DEFINES += QT5
+}
 
 ######################################################################
 
 # Input
-HEADERS += pumpapp.h qactivitystreams.h collectionwidget.h
+HEADERS += pumpapp.h qactivitystreams.h collectionwidget.h json_wrapper.h
 SOURCES += main.cpp pumpapp.cpp qactivitystreams.cpp collectionwidget.cpp
 

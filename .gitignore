@@ -4,3 +4,4 @@ moc_*.cpp
 /.gdb_history
 /Makefile
 /pumpa
+/qrc_pumpa.cpp

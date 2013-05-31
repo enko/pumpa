@@ -24,8 +24,6 @@
 #include <QSettings>
 #include <QDebug>
 #include <QDesktopServices>
-#include <QJsonDocument>
-#include <QJsonArray>
 #include <QApplication>
 #include <QMainWindow>
 #include <QAction>
@@ -33,7 +31,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 
-#include "QtKOAuth"
+// #include "QtKOAuth"
 
 #include "collectionwidget.h"
 

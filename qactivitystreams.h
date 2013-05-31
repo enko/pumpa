@@ -21,7 +21,7 @@
 #define _QACTIVITYSTREAMS_H_
 
 #include <QObject>
-#include <QJsonObject>
+#include "json_wrapper.h"
 #include <QDateTime>
 
 //------------------------------------------------------------------------------
