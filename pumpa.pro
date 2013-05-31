@@ -28,14 +28,12 @@ QT += core gui network
 # Enable for gdb debug info
 CONFIG += debug
 
-INCLUDEPATH += /home/mats/sw/include/QtKOAuth
-LIBS += -L/home/mats/sw/lib64
-CONFIG += kqoauth
+#INCLUDEPATH += ./kQOAuth/src
 
 # Additions for Qt 4
 lessThan(QT_MAJOR_VERSION, 5) {
   message("Configuring for Qt 4")
-  LIBS += lqjson
+  LIBS += -lqjson
 }
 
 # Additions for Qt 5
@@ -48,6 +46,32 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 ######################################################################
 
 # Input
-HEADERS += pumpapp.h qactivitystreams.h collectionwidget.h json_wrapper.h
-SOURCES += main.cpp pumpapp.cpp qactivitystreams.cpp collectionwidget.cpp
+HEADERS += pumpapp.h qactivitystreams.h collectionwidget.h json.h
+SOURCES += main.cpp pumpapp.cpp qactivitystreams.cpp collectionwidget.cpp json.cpp
 
+# kQOAuth
+VPATH += ./kQOAuth/src
+PUBLIC_HEADERS += kqoauthmanager.h \
+                  kqoauthrequest.h \
+                  kqoauthrequest_1.h \
+                  kqoauthrequest_xauth.h \
+                  kqoauthglobals.h 
+
+PRIVATE_HEADERS +=  kqoauthrequest_p.h \
+                    kqoauthmanager_p.h \
+                    kqoauthauthreplyserver.h \
+                    kqoauthauthreplyserver_p.h \
+                    kqoauthutils.h \
+                    kqoauthrequest_xauth_p.h
+
+HEADERS += \
+    $$PUBLIC_HEADERS \
+    $$PRIVATE_HEADERS 
+
+SOURCES += \
+    kqoauthmanager.cpp \
+    kqoauthrequest.cpp \
+    kqoauthutils.cpp \
+    kqoauthauthreplyserver.cpp \
+    kqoauthrequest_1.cpp \
+    kqoauthrequest_xauth.cpp

@@ -21,8 +21,7 @@
 
 #include <QDebug>
 #include <QStringList>
-#include <QJsonArray>
-#include <QJsonDocument>
+#include <QVariantList>
 
 //------------------------------------------------------------------------------
 
@@ -49,17 +48,17 @@ QASActor::QASActor(QString id, QObject* parent) :
   QObject(parent),
   m_id(id) 
 {
-  qDebug() << "new QASActor" << m_id;
+  qDebug() << "new Actor" << m_id;
 }
 
 //------------------------------------------------------------------------------
 
-void QASActor::update(QJsonObject json) {
+void QASActor::update(QVariantMap json) {
   m_preferredUsername = json["preferredUsername"].toString();
   m_url = json["url"].toString();
   m_displayName = json["displayName"].toString();
 
-  Q_ASSERT_X(!m_id.isEmpty(), "QASActor", jsonDumpC(json));
+  Q_ASSERT_X(!m_id.isEmpty(), "QASActor", serializeJsonC(json));
 
         //   "links": {
       //     "self": {
@@ -124,9 +123,9 @@ void QASActor::update(QJsonObject json) {
 
 //------------------------------------------------------------------------------
 
-QASActor* QASActor::getActor(QJsonObject json, QObject* parent) {
+QASActor* QASActor::getActor(QVariantMap json, QObject* parent) {
   QString id = json["id"].toString();
-  Q_ASSERT_X(!id.isEmpty(), "getActor", jsonDumpC(json));
+  Q_ASSERT_X(!id.isEmpty(), "getActor", serializeJsonC(json));
 
   QASActor* act = s_actors.contains(id) ?  s_actors[id] :
     new QASActor(id, parent);
@@ -145,14 +144,14 @@ QASObject::QASObject(QString id, QObject* parent) :
   m_author(NULL),
   m_replies(NULL)
 {
-  qDebug() << "new QASObject" << m_id;
+  qDebug() << "new Object" << m_id;
 }
 
 //------------------------------------------------------------------------------
 
-void QASObject::update(QJsonObject json) {
+void QASObject::update(QVariantMap json) {
 
-  bool debug = false;
+  // bool debug = false;
 
   m_content = json["content"].toString();
   m_objectType = json["objectType"].toString();
@@ -162,26 +161,26 @@ void QASObject::update(QJsonObject json) {
   m_published = parseTime(json["published"].toString());
   m_updated = parseTime(json["updated"].toString());
 
-  Q_ASSERT_X(!m_id.isEmpty(), "QASObject", jsonDumpC(json));
+  Q_ASSERT_X(!m_id.isEmpty(), "QASObject", serializeJsonC(json));
 
-  m_replies = new QASObjectList(json["replies"].toObject());
+  m_replies = new QASObjectList(json["replies"].toMap());
 
   m_author = json.contains("author") ? 
-    QASActor::getActor(json["author"].toObject(), parent()) : NULL;
+    QASActor::getActor(json["author"].toMap(), parent()) : NULL;
 
-  if (debug) {
-    qDebug() << "QASObject [" << m_id << "]";
-    QStringList keys = json.keys();
-    for (int i=0; i<keys.size(); i++) {
-      const QString& key = keys[i];
-      QString value = "...";
-      if (json[key].isString())
-        value = json[key].toString();
-      if (value.length() > 79) 
-        value = value.left(75) + " ...";
-      qDebug() << "         " << key << ":" << value;
-    }
-  }
+  // if (debug) {
+  //   qDebug() << "QASObject [" << m_id << "]";
+  //   QStringList keys = json.keys();
+  //   for (int i=0; i<keys.size(); i++) {
+  //     const QString& key = keys[i];
+  //     QString value = "...";
+  //     if (json[key].typeName() == "QString")
+  //       value = json[key].toString();
+  //     if (value.length() > 79) 
+  //       value = value.left(75) + " ...";
+  //     qDebug() << "         " << key << ":" << value;
+  //   }
+  // }
 
   // if objectType == "comment"
   // "inReplyTo": {
@@ -216,9 +215,9 @@ void QASObject::update(QJsonObject json) {
 
 //------------------------------------------------------------------------------
 
-QASObject* QASObject::getObject(QJsonObject json, QObject* parent) {
+QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
   QString id = json["id"].toString();
-  Q_ASSERT_X(!id.isEmpty(), "getObject", jsonDumpC(json));
+  Q_ASSERT_X(!id.isEmpty(), "getObject", serializeJsonC(json));
 
   QASObject* obj = s_objects.contains(id) ?  s_objects[id] :
     new QASObject(id, parent);
@@ -242,26 +241,26 @@ QASActivity::QASActivity(QString id, QObject* parent) :
   m_object(NULL),
   m_actor(NULL)
 {
-  qDebug() << "new QASActivity" << m_id;
+  qDebug() << "new Activity" << m_id;
 }
 
 //------------------------------------------------------------------------------
 
-void QASActivity::update(QJsonObject json) {
+void QASActivity::update(QVariantMap json) {
   m_verb = json["verb"].toString();
   m_url = json["url"].toString();
   m_content = json["content"].toString();
   
-  Q_ASSERT_X(!m_id.isEmpty(), "QASActivity::update", jsonDumpC(json));
+  Q_ASSERT_X(!m_id.isEmpty(), "QASActivity::update", serializeJsonC(json));
 
-  m_object = QASObject::getObject(json["object"].toObject(), parent());
-  m_actor = QASActor::getActor(json["actor"].toObject(), parent());
+  m_object = QASObject::getObject(json["object"].toMap(), parent());
+  m_actor = QASActor::getActor(json["actor"].toMap(), parent());
 
   // m_object = json.contains("object") ?
-  //   new QASObject(json["object"].toObject(), parent) : NULL;
+  //   new QASObject(json["object"].toMap(), parent) : NULL;
 
   // m_actor = json.contains("actor") ?
-  //   new QASActor(json["actor"].toObject(), parent) : NULL;
+  //   new QASActor(json["actor"].toMap(), parent) : NULL;
 
   m_published = parseTime(json["published"].toString());
   m_updated = parseTime(json["updated"].toString());
@@ -333,9 +332,9 @@ void QASActivity::update(QJsonObject json) {
 
 //------------------------------------------------------------------------------
 
-QASActivity* QASActivity::getActivity(QJsonObject json, QObject* parent) {
+QASActivity* QASActivity::getActivity(QVariantMap json, QObject* parent) {
   QString id = json["id"].toString();
-  Q_ASSERT_X(!id.isEmpty(), "getActivity", jsonDumpC(json));
+  Q_ASSERT_X(!id.isEmpty(), "getActivity", serializeJsonC(json));
 
   QASActivity* act = s_activities.contains(id) ? s_activities[id] :
     new QASActivity(id, parent);
@@ -352,15 +351,15 @@ QASObjectList::QASObjectList(QObject* parent) : QObject(parent),
 
 //------------------------------------------------------------------------------
 
-QASObjectList::QASObjectList(QJsonObject json, QObject* parent) :
+QASObjectList::QASObjectList(QVariantMap json, QObject* parent) :
   QObject(parent) 
 {
   m_url = json["url"].toString();
   m_totalItems = (int)json["totalItems"].toDouble();
 
-  QJsonArray items_json = json["items"].toArray();
+  QVariantList items_json = json["items"].toList();
   for (int i=0; i<items_json.count(); i++) {
-    QASObject* act = QASObject::getObject(items_json.at(i).toObject(),
+    QASObject* act = QASObject::getObject(items_json.at(i).toMap(),
                                           parent);
     m_items.append(act);
   }
@@ -373,16 +372,16 @@ QASCollection::QASCollection(QObject* parent) : QObject(parent),
 
 //------------------------------------------------------------------------------
 
-QASCollection::QASCollection(QJsonObject json, QObject* parent) :
+QASCollection::QASCollection(QVariantMap json, QObject* parent) :
   QObject(parent) 
 {
   m_displayName = json["displayName"].toString();
   m_url = json["url"].toString();
   m_totalItems = (int)json["totalItems"].toDouble();
 
-  QJsonArray items_json = json["items"].toArray();
+  QVariantList items_json = json["items"].toList();
   for (int i=0; i<items_json.count(); i++) {
-    QASActivity* act = QASActivity::getActivity(items_json.at(i).toObject(),
+    QASActivity* act = QASActivity::getActivity(items_json.at(i).toMap(),
                                                 parent);
     m_items.append(act);
   }

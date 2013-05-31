@@ -21,8 +21,9 @@
 #define _QACTIVITYSTREAMS_H_
 
 #include <QObject>
-#include "json_wrapper.h"
 #include <QDateTime>
+
+#include "json.h"
 
 //------------------------------------------------------------------------------
 // Forward declarations
@@ -39,8 +40,8 @@ private:
   QASActor(QString id="", QObject* parent=0);
 
 public:
-  static QASActor* getActor(QJsonObject json, QObject* parent);
-  void update(QJsonObject json);
+  static QASActor* getActor(QVariantMap json, QObject* parent);
+  void update(QVariantMap json);
 
   QString displayName() const { return m_displayName; }
 
@@ -62,8 +63,8 @@ private:
   QASObject(QString id="", QObject* parent=0);
 
 public:
-  static QASObject* getObject(QJsonObject json, QObject* parent);
-  void update(QJsonObject json);
+  static QASObject* getObject(QVariantMap json, QObject* parent);
+  void update(QVariantMap json);
 
   QString content() const { return m_content; }
   QString url() const { return m_url; }
@@ -99,8 +100,8 @@ private:
   QASActivity(QString id="", QObject* parent=0);
 
 public:
-  static QASActivity* getActivity(QJsonObject json, QObject* parent);
-  void update(QJsonObject json);
+  static QASActivity* getActivity(QVariantMap json, QObject* parent);
+  void update(QVariantMap json);
 
   QASObject* object() const { return m_object; }
   QASActor* actor() const { return m_actor; }
@@ -132,7 +133,7 @@ class QASObjectList : public QObject {
   Q_OBJECT
 public:
   QASObjectList(QObject* parent=0);
-  QASObjectList(QJsonObject json, QObject* parent=0);
+  QASObjectList(QVariantMap json, QObject* parent=0);
 
   size_t size() const { return m_items.size(); }
 
@@ -155,7 +156,7 @@ class QASCollection : public QObject {
 
 public:
   QASCollection(QObject* parent=0);
-  QASCollection(QJsonObject json, QObject* parent=0);
+  QASCollection(QVariantMap json, QObject* parent=0);
 
   size_t size() const { return m_items.size(); }
 

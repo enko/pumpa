@@ -18,7 +18,7 @@
 */
 
 #include "pumpapp.h"
-#include "json_wrapper.h"
+#include "json.h"
 #include "qactivitystreams.h"
 
 #define OAR_USER_ACCESS       0
@@ -245,7 +245,7 @@ void PumpApp::onOAuthClientRegDone() {
   QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
   QByteArray data = reply->readAll();
 
-  QJsonObject json = convertJson(data); //QJsonDocument::fromJson(data).object();
+  QVariantMap json = parseJson(data);
   clientId = json["client_id"].toString();
   clientSecret = json["client_secret"].toString();
 
@@ -317,7 +317,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     qDebug() << "uhm, ok.";
   } else if (id == OAR_FETCH_INBOX) {
     // qDebug() << response;
-    QJsonObject obj = convertJson(response); // QJsonDocument::fromJson(response).object();
+    QVariantMap obj = parseJson(response);
   
     QASCollection coll(obj, this);
 
@@ -402,7 +402,7 @@ void PumpApp::request(QString endpoint,
   // qDebug() << "Sending" << ba;
 
     oaRequest->setContentType("application/json");
-    oaRequest->setRawData(toJson(data));
+    oaRequest->setRawData(serializeJson(data));
   }
 
   oaManager->executeAuthorizedRequest(oaRequest, OAR_FETCH_INBOX);
