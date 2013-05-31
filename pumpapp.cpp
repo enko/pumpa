@@ -20,9 +20,7 @@
 #include "pumpapp.h"
 #include "json.h"
 #include "qactivitystreams.h"
-
-#define OAR_USER_ACCESS       0
-#define OAR_FETCH_INBOX       1
+#include "messagewindow.h"
 
 //------------------------------------------------------------------------------
 
@@ -36,6 +34,8 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   oaManager = new KQOAuthManager(this);
   connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
           this, SLOT(onAuthorizedRequestReady(QByteArray, int)));
+  connect(oaManager, SIGNAL(authorizedRequestDone()),
+          this, SLOT(onAuthorizedRequestDone()));
 
   createActions();
   createMenu();
@@ -65,7 +65,7 @@ PumpApp::~PumpApp() {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::errorMessage(const QString& msg) {
+void PumpApp::errorMessage(QString msg) {
   qDebug() << "errorMessage:" << msg;
 }
 
@@ -169,6 +169,9 @@ void PumpApp::about() {
 //------------------------------------------------------------------------------
 
 void PumpApp::newNote() {
+  MessageWindow* w = new MessageWindow(this);
+  connect(w, SIGNAL(sendMessage(QString)), this, SLOT(postNote(QString)));
+  w->show();
 }
 
 //------------------------------------------------------------------------------
@@ -322,6 +325,9 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     QASCollection coll(obj, this);
 
     inboxWidget->addCollection(coll);
+  } else if (id == OAR_NEW_POST) {
+    // nice to refresh inbox after posting
+    fetchInbox();
   } else {
     qDebug() << "Unknown request id!";
   }
@@ -346,7 +352,7 @@ void PumpApp::fetchInbox() {
 
   endpoint += "/"+inbox;
 
-  request(endpoint);
+  request(endpoint, OAR_FETCH_INBOX);
 }
 
 //------------------------------------------------------------------------------
@@ -361,12 +367,12 @@ void PumpApp::postNote(QString note) {
   obj["objectType"] = "note";
   obj["content"] = note;
 
-  feed("post", obj);
+  feed("post", obj, OAR_NEW_POST);
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::feed(QString verb, QVariantMap object) {
+void PumpApp::feed(QString verb, QVariantMap object, int oar_id) {
   QString endpoint = "api/user/"+userName+"/feed";
 
   QVariantMap data;
@@ -375,12 +381,12 @@ void PumpApp::feed(QString verb, QVariantMap object) {
     data["object"] = object;
   }
 
-  request(endpoint, KQOAuthRequest::POST, data);
+  request(endpoint, oar_id, KQOAuthRequest::POST, data);
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::request(QString endpoint,
+void PumpApp::request(QString endpoint, int oar_id,
                       KQOAuthRequest::RequestHttpMethod method,
                       QVariantMap data) {
   if (endpoint[0] != '/')
@@ -405,13 +411,12 @@ void PumpApp::request(QString endpoint,
     oaRequest->setRawData(serializeJson(data));
   }
 
-  oaManager->executeAuthorizedRequest(oaRequest, OAR_FETCH_INBOX);
-    
-  // connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray)),
-  //         this, SLOT(onRequestReady(QByteArray)));
-  // connect(oaManager, SIGNAL(authorizedRequestDone()),
-  //         this, SLOT(onAuthorizedRequestDone()));
+  oaManager->executeAuthorizedRequest(oaRequest, oar_id);
 }
 
 //------------------------------------------------------------------------------
+
+void PumpApp::onAuthorizedRequestDone() {
+  qDebug() << "onAuthorizedRequestDone";
+}
 
