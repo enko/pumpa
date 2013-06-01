@@ -231,12 +231,18 @@ void PumpApp::registerOAuthClient() {
   QNetworkRequest req;
   req.setUrl(QUrl(siteUrl+"/api/client/register"));
   req.setHeader(QNetworkRequest::ContentTypeHeader, 
-                "application/x-www-form-urlencoded");
+                "application/json");
 
-  QString data = QString("client_name=") + CLIENT_FANCY_NAME +
-    "&type=client_associate&application_type=native";
-  QByteArray postData = QUrl::toPercentEncoding(data, "=&");
+  QVariantMap post;
+  post["type"] = "client_associate";
+  post["application_type"] = "native";
+  post["application_name"] = CLIENT_FANCY_NAME;
+  // logo_uri
+
+  QByteArray postData = serializeJson(post);
   
+  qDebug() << "data=" << postData;
+
   QNetworkReply *reply = netManager->post(req, postData);
 
   connect(reply, SIGNAL(finished()), this, SLOT(onOAuthClientRegDone()));
@@ -285,8 +291,6 @@ void PumpApp::onTemporaryTokenReceived(QString /*token*/,
   QUrl userAuthURL(siteUrl+"/oauth/authorize");
 
   if (oaManager->lastError() == KQOAuthManager::NoError) {
-    qDebug() << "Asking for user's permission to access protected resources."
-             << "Opening URL: " << userAuthURL;
     oaManager->getUserAuthorization(userAuthURL);
   }
 }
@@ -314,11 +318,9 @@ void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
 //------------------------------------------------------------------------------
 
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
-  qDebug() << "onRequestReady" << id;
+  // qDebug() << "onRequestReady" << id;
 
-  if (id == OAR_USER_ACCESS) {
-    qDebug() << "uhm, ok.";
-  } else if (id == OAR_FETCH_INBOX) {
+  if (id == OAR_FETCH_INBOX) {
     // qDebug() << response;
     QVariantMap obj = parseJson(response);
   
@@ -329,7 +331,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     // nice to refresh inbox after posting
     fetchInbox();
   } else {
-    qDebug() << "Unknown request id!";
+    qDebug() << "Unknown request id!" << id;
   }
 }
 
@@ -403,10 +405,6 @@ void PumpApp::request(QString endpoint, int oar_id,
   oaRequest->setHttpMethod(method); 
 
   if (method == KQOAuthRequest::POST) {
-  //   QByteArray ba();
-
-  // qDebug() << "Sending" << ba;
-
     oaRequest->setContentType("application/json");
     oaRequest->setRawData(serializeJson(data));
   }

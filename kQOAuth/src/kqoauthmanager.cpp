@@ -238,9 +238,11 @@ void KQOAuthManager::executeRequest(KQOAuthRequest *request) {
 
         networkRequest.setHeader(QNetworkRequest::ContentTypeHeader, request->contentType());
 
+        /*
         qDebug() << networkRequest.rawHeaderList();
         qDebug() << networkRequest.rawHeader("Authorization");
         qDebug() << networkRequest.rawHeader("Content-Type");
+        */
 
         QNetworkReply *reply;
         if (request->contentType() == "application/x-www-form-urlencoded") {
@@ -315,7 +317,7 @@ void KQOAuthManager::executeAuthorizedRequest(KQOAuthRequest *request, int id) {
     connect(d->networkManager, SIGNAL(finished(QNetworkReply *)),
             this, SLOT(onAuthorizedRequestReplyReceived(QNetworkReply*)), Qt::UniqueConnection);
 
-    QNetworkReply *reply;
+    QNetworkReply *reply = NULL;
     if (request->httpMethod() == KQOAuthRequest::GET) {
         // Get the requested additional params as a list of pairs we can give QUrl
         QList< QPair<QString, QString> > urlParams = d->createQueryParams(request->additionalParameters());
@@ -457,6 +459,10 @@ void KQOAuthManager::getUserAuthorization(QUrl authorizationEndpoint) {
     // Open the user's default browser to the resource authorization page provided
     // by the service.
     QDesktopServices::openUrl(openWebPageUrl);
+
+    qDebug() << "If the web page doesn't open automatically, please go to "
+      "this URL to authorise the client:";
+    qDebug() << openWebPageUrl.toString();
 }
 
 void KQOAuthManager::getUserAccessTokens(QUrl accessTokenEndpoint) {
