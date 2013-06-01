@@ -24,6 +24,10 @@
 ObjectWidget::ObjectWidget(QWidget* parent, Qt::WindowFlags f) :
   QLabel(parent, f)
 {
+  // useful for debugging layouts and margins
+  // setLineWidth(1);
+  // setFrameStyle(QFrame::Box);
+
   setWordWrap(true);
 
   setOpenExternalLinks(true);
@@ -34,10 +38,6 @@ ObjectWidget::ObjectWidget(QWidget* parent, Qt::WindowFlags f) :
   setLineWidth(2);
   setMargin(0);
   setFocusPolicy(Qt::NoFocus);
-
-  // QPalette pal;
-  // pal.setColor(QPalette::AlternateBase, Qt::white);
-  // setPalette(pal);
 }
 
 //------------------------------------------------------------------------------

@@ -22,11 +22,13 @@
 
 //------------------------------------------------------------------------------
 
-ActorWidget::ActorWidget(QASActor* a, QWidget* parent) :
+ActorWidget::ActorWidget(QASActor* a, QWidget* parent, bool small) :
   QLabel(parent), m_actor(a)
 {
+  int max_size = small ? 32 : 64;
+
   setScaledContents(true);
-  setMaximumSize(48,48);
+  setMaximumSize(max_size, max_size);
   setFocusPolicy(Qt::NoFocus);
 
   onImageChanged();

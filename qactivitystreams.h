@@ -75,7 +75,7 @@ public:
   bool hasReplies() const;
   const QASObjectList* replies() const { return m_replies; }
 
-  const QASActor* author() const { return m_author; }
+  QASActor* author() const { return m_author; }
 
 private:
   QString m_id;

@@ -77,9 +77,35 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
 
   m_rightLayout = new QVBoxLayout;
+  m_rightLayout->setContentsMargins(0, 0, 0, 0);
   m_rightLayout->addWidget(m_objectWidget);
   m_rightLayout->addLayout(m_buttonLayout);
-  m_rightLayout->setContentsMargins(0, 0, 0, 0);
+
+  const QASObject* noteObj = m_activity->object();
+
+  if (noteObj->hasReplies()) {
+    const QASObjectList* ol = noteObj->replies();
+    for (size_t j=0; j<ol->size(); j++) {
+      QASObject* replyObj = ol->at(ol->size()-j-1);
+      QASActor* author = replyObj->author();
+
+      ActorWidget* aw = new ActorWidget(author, this, true);
+      ObjectWidget* ow = new ObjectWidget(this);
+
+      ow->setText(QString("%1<br/>%2 at <a href=\"%4\">%3</a>").
+                  arg(replyObj->content()).
+                  arg(author->displayName()).
+                  arg(relativeFuzzyTime(replyObj->published())).
+                  arg(replyObj->url()));
+      
+      QHBoxLayout* replyLayout = new QHBoxLayout;
+      replyLayout->setContentsMargins(0, 0, 0, 0);
+      replyLayout->addWidget(aw, 0, Qt::AlignTop);
+      replyLayout->addWidget(ow, 0, Qt::AlignTop);
+
+      m_rightLayout->addLayout(replyLayout);
+    }
+  }
 
   // m_rightFrame = new QFrame(this);
   // m_rightFrame->setLayout(m_rightLayout);

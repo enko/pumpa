@@ -137,7 +137,7 @@ QString FileDownloader::urlToPath(const QString& url) {
       m_cacheDir = slashify(QDir::homePath())+".cache/";
     else
       m_cacheDir = slashify(m_cacheDir);
-    m_cacheDir += "yaics/";
+    m_cacheDir += "pumpa/";
   }
   QString path = m_cacheDir;
   QDir d;

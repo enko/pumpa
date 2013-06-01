@@ -31,7 +31,7 @@
 class ActorWidget : public QLabel {
   Q_OBJECT
 public:
-  ActorWidget(QASActor* a, QWidget* parent = 0);
+  ActorWidget(QASActor* a, QWidget* parent = 0, bool small=false);
 
 public slots:
   virtual void fileReady(const QString& fn);
