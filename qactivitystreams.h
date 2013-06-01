@@ -68,14 +68,18 @@ public:
   static QASObject* getObject(QVariantMap json, QObject* parent);
   void update(QVariantMap json);
 
+  QString id() const { return m_id; }
   QString content() const { return m_content; }
   QString url() const { return m_url; }
   QDateTime published() const { return m_published; }
   bool liked() const { return m_liked; }
   bool hasReplies() const;
-  const QASObjectList* replies() const { return m_replies; }
+  QASObjectList* replies() const { return m_replies; }
 
   QASActor* author() const { return m_author; }
+
+signals:
+  void changed();
 
 private:
   QString m_id;

@@ -42,29 +42,18 @@ public:
   ActivityWidget(QASActivity* a, QWidget* parent=0);
 
   QString getId() const { return m_activity->id(); }
-
-// protected:
-//   void mousePressEvent(QMouseEvent* e);
-
-//signals:
-  // void replySignal(const QString&, message_id_t=-1);
-
-  // void clickedStatus(message_id_t);
-  // void requestReload();
   
 public slots:
   void favourite();
   void repeat();
   void reply();
 
-  //private slots:
-  // void onStatusReady(StatusMessage*);
-  // void onMessageHasUpdated();
-  // void onUrlReady(const QString&, const QString&);
+  void onObjectChanged();
 
 private:
   void updateFavourButton(bool wait = false);
   void updateText();
+  void addObjectList(QASObjectList* ol);
 
   ObjectWidget* m_objectWidget;
   ActorWidget* m_actorWidget;
@@ -80,6 +69,8 @@ private:
   QFrame* m_rightFrame;
 
   QASActivity* m_activity;
+
+  QMap<QString, QASObject*> m_repliesMap;
 };
 
 #endif 

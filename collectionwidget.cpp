@@ -60,22 +60,5 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
     ActivityWidget* aw = new ActivityWidget(activity, this);
 
     m_itemLayout->insertWidget(li++, aw);
-
-    // if (noteObj->hasReplies()) {
-    //   const QASObjectList* ol = noteObj->replies();
-    //   for (size_t j=0; j<ol->size(); j++) {
-    //     QASObject* replyObj = ol->at(ol->size()-j-1);
-    //     const QASActor* author = replyObj->author();
-
-    //     ObjectWidget* ow = new ObjectWidget(this);
-    //     ow->setText(QString("<p style=\"margin-left: 40px\">%1<br/>"
-    //                         "%2 at <a href=\"%4\">%3</a></p>").
-    //                 arg(replyObj->content()).
-    //                 arg(author->displayName()).
-    //                 arg(relativeFuzzyTime(replyObj->published())).
-    //                 arg(replyObj->url()));
-    //     m_itemLayout->insertWidget(li++, ow);
-    //   }
-    // }
   }
 }

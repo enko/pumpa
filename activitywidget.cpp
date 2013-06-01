@@ -46,7 +46,6 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   QFrame(parent), m_activity(a)
 {
   m_objectWidget = new ObjectWidget(parent);
-  m_objectWidget->setBackgroundRole(QPalette::Base);
 
   m_actorWidget = new ActorWidget(m_activity->actor(), parent);
 
@@ -82,29 +81,11 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_rightLayout->addLayout(m_buttonLayout);
 
   const QASObject* noteObj = m_activity->object();
+  connect(noteObj, SIGNAL(changed()), this, SLOT(onObjectChanged()));
 
   if (noteObj->hasReplies()) {
-    const QASObjectList* ol = noteObj->replies();
-    for (size_t j=0; j<ol->size(); j++) {
-      QASObject* replyObj = ol->at(ol->size()-j-1);
-      QASActor* author = replyObj->author();
-
-      ActorWidget* aw = new ActorWidget(author, this, true);
-      ObjectWidget* ow = new ObjectWidget(this);
-
-      ow->setText(QString("%1<br/>%2 at <a href=\"%4\">%3</a>").
-                  arg(replyObj->content()).
-                  arg(author->displayName()).
-                  arg(relativeFuzzyTime(replyObj->published())).
-                  arg(replyObj->url()));
-      
-      QHBoxLayout* replyLayout = new QHBoxLayout;
-      replyLayout->setContentsMargins(0, 0, 0, 0);
-      replyLayout->addWidget(aw, 0, Qt::AlignTop);
-      replyLayout->addWidget(ow, 0, Qt::AlignTop);
-
-      m_rightLayout->addLayout(replyLayout);
-    }
+    QASObjectList* ol = noteObj->replies();
+    addObjectList(ol);
   }
 
   // m_rightFrame = new QFrame(this);
@@ -168,3 +149,67 @@ void ActivityWidget::reply() {
   // FIXME
 }
  
+//------------------------------------------------------------------------------
+
+void ActivityWidget::onObjectChanged() {
+  updateText();
+
+  const QASObject* noteObj = m_activity->object();
+  if (noteObj->hasReplies()) {
+    QASObjectList* ol = noteObj->replies();
+    addObjectList(ol);
+  }
+  // handle replies FIXME
+}
+
+//------------------------------------------------------------------------------
+
+void ActivityWidget::addObjectList(QASObjectList* ol) {
+  // int li = 0; // index into internal m_list
+
+  // for (size_t i=0; i<coll.size(); i++) {
+  //   QASActivity* activity = coll.at(i);
+  //   QString activity_id = activity->id();
+
+  //   if (m_activity_map.contains(activity_id))
+  //     continue; // do nothing, assume some signal will be emitted to
+  //               // keep widget updated
+
+  //   m_activity_map.insert(activity_id, activity);
+
+  //   ActivityWidget* aw = new ActivityWidget(activity, this);
+
+  //   m_itemLayout->insertWidget(li++, aw);
+  // }
+
+  int li = 1;
+  for (size_t j=0; j<ol->size(); j++) {
+    QASObject* replyObj = ol->at(ol->size()-j-1);
+    QString replyId = replyObj->id();
+
+    if (m_repliesMap.contains(replyId)) {
+      li++;
+      continue; // FIXME check that they get updated anyhoo?
+    }
+
+    m_repliesMap.insert(replyId, replyObj);
+
+    QASActor* author = replyObj->author();
+
+    ActorWidget* aw = new ActorWidget(author, this, true);
+    ObjectWidget* ow = new ObjectWidget(this);
+    
+    ow->setText(QString("%1<br/>%2 at <a href=\"%4\">%3</a>").
+                arg(replyObj->content()).
+                arg(author->displayName()).
+                arg(relativeFuzzyTime(replyObj->published())).
+                arg(replyObj->url()));
+      
+    QHBoxLayout* replyLayout = new QHBoxLayout;
+    replyLayout->setContentsMargins(0, 0, 0, 0);
+    replyLayout->addWidget(aw, 0, Qt::AlignTop);
+    replyLayout->addWidget(ow, 0, Qt::AlignTop);
+    
+    m_rightLayout->insertLayout(li++, replyLayout);
+  }
+}

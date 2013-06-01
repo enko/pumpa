@@ -67,61 +67,61 @@ void QASActor::update(QVariantMap json) {
 
         //   "links": {
       //     "self": {
-      //       "href": "https:\/\/microca.st\/api\/user\/encycl\/profile"
+      //       "href": "https://microca.st/api/user/encycl/profile"
       //     },
       //     "activity-inbox": {
-      //       "href": "https:\/\/microca.st\/api\/user\/encycl\/inbox"
+      //       "href": "https://microca.st/api/user/encycl/inbox"
       //     },
       //     "activity-outbox": {
-      //       "href": "https:\/\/microca.st\/api\/user\/encycl\/feed"
+      //       "href": "https://microca.st/api/user/encycl/feed"
       //     }
       //   },
       //   "objectType": "person",
       //   "followers": {
-      //     "url": "https:\/\/microca.st\/api\/user\/encycl\/followers",
+      //     "url": "https://microca.st/api/user/encycl/followers",
       //     "author": {
       //       "id": "acct:encycl@microca.st",
       //       "objectType": "person"
       //     },
       //     "links": {
       //       "self": {
-      //         "href": "https:\/\/microca.st\/api\/user\/encycl\/followers"
+      //         "href": "https://microca.st/api/user/encycl/followers"
       //       }
       //     },
       //     "displayName": "Followers",
       //     "members": {
-      //       "url": "https:\/\/microca.st\/api\/user\/encycl\/followers"
+      //       "url": "https://microca.st/api/user/encycl/followers"
       //     },
       //     "objectType": "collection",
-      //     "id": "https:\/\/microca.st\/api\/user\/encycl\/followers",
+      //     "id": "https://microca.st/api/user/encycl/followers",
       //     "pump_io": {
-      //       "proxyURL": "https:\/\/io.saz.im\/api\/proxy\/35H_pp91SW657XmH3m3tPw"
+      //       "proxyURL": "https://io.saz.im/api/proxy/35H_pp91SW657XmH3m3tPw"
       //     }
       //   },
       //   "following": {
-      //     "url": "https:\/\/microca.st\/api\/user\/encycl\/following",
+      //     "url": "https://microca.st/api/user/encycl/following",
       //     "pump_io": {
-      //       "proxyURL": "https:\/\/io.saz.im\/api\/proxy\/809G1WAHSzGe68K5Ls0T8g"
+      //       "proxyURL": "https://io.saz.im/api/proxy/809G1WAHSzGe68K5Ls0T8g"
       //     }
       //   },
       //   "favorites": {
-      //     "url": "https:\/\/microca.st\/api\/user\/encycl\/favorites"
+      //     "url": "https://microca.st/api/user/encycl/favorites"
       //   },
       //   "lists": {
-      //     "url": "https:\/\/microca.st\/api\/user\/encycl\/lists\/person",
+      //     "url": "https://microca.st/api/user/encycl/lists/person",
       //     "displayName": "Collections of persons for encycl",
       //     "objectTypes": [
       //       "collection"
       //     ],
       //     "links": {
       //       "first": {
-      //         "href": "https:\/\/microca.st\/api\/user\/encycl\/lists\/person"
+      //         "href": "https://microca.st/api/user/encycl/lists/person"
       //       },
       //       "self": {
-      //         "href": "https:\/\/microca.st\/api\/user\/encycl\/lists\/person"
+      //         "href": "https://microca.st/api/user/encycl/lists/person"
       //       },
       //       "prev": {
-      //         "href": "https:\/\/microca.st\/api\/user\/encycl\/lists\/person?since=https%3A%2F%2Fmicroca.st%2Fapi%2Fcollection%2FujrvzbkZTaWfqNkwMxy0hw"
+      //         "href": "https://microca.st/api/user/encycl/lists/person?since=https%3A%2F%2Fmicroca.st%2Fapi%2Fcollection%2FujrvzbkZTaWfqNkwMxy0hw"
       //       }
       //     },
 }
@@ -156,6 +156,9 @@ QASObject::QASObject(QString id, QObject* parent) :
 
 void QASObject::update(QVariantMap json) {
   bool debug = false;
+  bool old_liked = m_liked;
+  QDateTime old_updated = m_updated;
+  bool num_replies = m_replies ? m_replies->size() : 0;
 
   m_content = json["content"].toString();
   m_objectType = json["objectType"].toString();
@@ -176,21 +179,14 @@ void QASObject::update(QVariantMap json) {
     qDebug() << "QASObject [" << m_id << "]";
     qDebug() << serializeJson(json);
   }
-  //   QStringList keys = json.keys();
-  //   for (int i=0; i<keys.size(); i++) {
-  //     const QString& key = keys[i];
-  //     QString value = "...";
-  //     if (json[key].typeName() == "QString")
-  //       value = json[key].toString();
-  //     if (value.length() > 79) 
-  //       value = value.left(75) + " ...";
-  //     qDebug() << "         " << key << ":" << value;
-  //   }
-  // }
+
+  if (old_liked != m_liked || old_updated != m_updated ||
+      num_replies != m_replies->size())
+    emit changed();
 
   // if objectType == "comment"
   // "inReplyTo": {
-  //   "id": "https:\/\/io.saz.im\/api\/note\/8ohKMwBzTeGLI1SG6-jl9w",
+  //   "id": "https://io.saz.im/api/note/8ohKMwBzTeGLI1SG6-jl9w",
   //   "objectType": "note"
   // },
 
@@ -198,19 +194,19 @@ void QASObject::update(QVariantMap json) {
       //   "published": "2013-05-25T21:06:07Z",
       //   "links": {
       //     "self": {
-      //       "href": "http:\/\/frodo:8000\/api\/note\/jMgmxKHfSuaLM1eqsvFKaw"
+      //       "href": "http://frodo:8000/api/note/jMgmxKHfSuaLM1eqsvFKaw"
       //     }
       //   },
       //   "likes": {
-      //     "url": "http:\/\/frodo:8000\/api\/note\/jMgmxKHfSuaLM1eqsvFKaw\/likes",
+      //     "url": "http://frodo:8000/api/note/jMgmxKHfSuaLM1eqsvFKaw/likes",
       //     "totalItems": 0
       //   },
       //   "replies": {
-      //     "url": "http:\/\/frodo:8000\/api\/note\/jMgmxKHfSuaLM1eqsvFKaw\/replies",
+      //     "url": "http://frodo:8000/api/note/jMgmxKHfSuaLM1eqsvFKaw/replies",
       //     "totalItems": 0
       //   },
       //   "shares": {
-      //     "url": "http:\/\/frodo:8000\/api\/note\/jMgmxKHfSuaLM1eqsvFKaw\/shares",
+      //     "url": "http://frodo:8000/api/note/jMgmxKHfSuaLM1eqsvFKaw/shares",
       //     "totalItems": 0
       //   },
       //   "pump_io": {
@@ -275,63 +271,63 @@ void QASActivity::update(QVariantMap json) {
 
   // "generator": {
   //   "objectType": "application",
-  //   "id": "http:\/\/frodo:8000\/api\/application\/oGi8xnNvS1GXZHjiCn9CFQ",
+  //   "id": "http://frodo:8000/api/application/oGi8xnNvS1GXZHjiCn9CFQ",
   //   "updated": "2013-05-25T21:06:06Z",
   //   "published": "2013-05-25T21:06:06Z",
-  //   "links": { "self": {"href": "http:\/\/frodo:8000\/api\/application\/oGi8xnNvS1GXZHjiCn9CFQ"} },
-  //   "likes": { "url": "http:\/\/frodo:8000\/api\/application\/oGi8xnNvS1GXZHjiCn9CFQ\/likes"},
-  //   "replies": {"url": "http:\/\/frodo:8000\/api\/application\/oGi8xnNvS1GXZHjiCn9CFQ\/replies" },
-  //   "shares": { "url": "http:\/\/frodo:8000\/api\/application\/oGi8xnNvS1GXZHjiCn9CFQ\/shares" }
+  //   "links": { "self": {"href": "http://frodo:8000/api/application/oGi8xnNvS1GXZHjiCn9CFQ"} },
+  //   "likes": { "url": "http://frodo:8000/api/application/oGi8xnNvS1GXZHjiCn9CFQ/likes"},
+  //   "replies": {"url": "http://frodo:8000/api/application/oGi8xnNvS1GXZHjiCn9CFQ/replies" },
+  //   "shares": { "url": "http://frodo:8000/api/application/oGi8xnNvS1GXZHjiCn9CFQ/shares" }
   // },
   // "cc": [
   //   {
   //     "author": {
   //       "preferredUsername": "sazius",
-  //       "url": "http:\/\/frodo:8000\/sazius",
+  //       "url": "http://frodo:8000/sazius",
   //       "displayName": "sazius",
-  //       "id": "http:\/\/frodo:8000\/api\/user\/sazius\/profile",
+  //       "id": "http://frodo:8000/api/user/sazius/profile",
   //       "links": {
   //         "self": {
-  //           "href": "http:\/\/frodo:8000\/api\/user\/sazius\/profile"
+  //           "href": "http://frodo:8000/api/user/sazius/profile"
   //         },
   //         "activity-inbox": {
-  //           "href": "http:\/\/frodo:8000\/api\/user\/sazius\/inbox"
+  //           "href": "http://frodo:8000/api/user/sazius/inbox"
   //         },
   //         "activity-outbox": {
-  //           "href": "http:\/\/frodo:8000\/api\/user\/sazius\/feed"
+  //           "href": "http://frodo:8000/api/user/sazius/feed"
   //         }
   //       },
   //       "objectType": "person",
   //       "followers": {
-  //         "url": "http:\/\/frodo:8000\/api\/user\/sazius\/followers"
+  //         "url": "http://frodo:8000/api/user/sazius/followers"
   //       },
   //       "following": {
-  //         "url": "http:\/\/frodo:8000\/api\/user\/sazius\/following"
+  //         "url": "http://frodo:8000/api/user/sazius/following"
   //       },
   //       "favorites": {
-  //         "url": "http:\/\/frodo:8000\/api\/user\/sazius\/favorites"
+  //         "url": "http://frodo:8000/api/user/sazius/favorites"
   //       },
   //       "lists": {
-  //         "url": "http:\/\/frodo:8000\/api\/user\/sazius\/lists\/person"
+  //         "url": "http://frodo:8000/api/user/sazius/lists/person"
   //       }
   //     },
-  //     "id": "http:\/\/frodo:8000\/api\/user\/sazius\/followers",
+  //     "id": "http://frodo:8000/api/user/sazius/followers",
   //     "links": {
   //       "self": {
-  //         "href": "http:\/\/frodo:8000\/api\/user\/sazius\/followers"
+  //         "href": "http://frodo:8000/api/user/sazius/followers"
   //       }
   //     },
-  //     "url": "http:\/\/frodo:8000\/sazius\/followers",
+  //     "url": "http://frodo:8000/sazius/followers",
   //     "displayName": "Followers",
   //     "members": {
-  //       "url": "http:\/\/frodo:8000\/api\/user\/sazius\/followers"
+  //       "url": "http://frodo:8000/api/user/sazius/followers"
   //     },
   //     "objectType": "collection"
   //   }
   // ],
   // "links": {
   //   "self": {
-  //     "href": "http:\/\/frodo:8000\/api\/activity\/H1rhziiJRiSkihKckkHJ3A"
+  //     "href": "http://frodo:8000/api/activity/H1rhziiJRiSkihKckkHJ3A"
   //   }
   // },
 }
@@ -394,22 +390,22 @@ QASCollection::QASCollection(QVariantMap json, QObject* parent) :
 
   // Stuff not handled yet:
   //   "objectTypes": [ "activity"  ],
-  //   "links": { "first": {"href": ""}, "self": {"href": "http:\/\/"}, "prev": {"href": "" }  },
+  //   "links": { "first": {"href": ""}, "self": {"href": "http://"}, "prev": {"href": "" }  },
   //   "author": {
   //     "preferredUsername": "sazius",
-  //     "url": "http:\/\/frodo:8000\/sazius",
+  //     "url": "http://frodo:8000/sazius",
   //     "displayName": "sazius",
-  //     "id": "http:\/\/frodo:8000\/api\/user\/sazius\/profile",
+  //     "id": "http://frodo:8000/api/user/sazius/profile",
   //     "links": {
-  //       "self": { "href": "http:\/\/frodo:8000\/api\/user\/sazius\/profile"},
-  //       "activity-inbox": {"href": "http:\/\/frodo:8000\/api\/user\/sazius\/inbox"},
-  //       "activity-outbox": {"href": "http:\/\/frodo:8000\/api\/user\/sazius\/feed"}
+  //       "self": { "href": "http://frodo:8000/api/user/sazius/profile"},
+  //       "activity-inbox": {"href": "http://frodo:8000/api/user/sazius/inbox"},
+  //       "activity-outbox": {"href": "http://frodo:8000/api/user/sazius/feed"}
   //     },
   //     "objectType": "person",
-  //     "followers": {"url": "http:\/\/frodo:8000\/api\/user\/sazius\/followers"},
-  //     "following": { "url": "http:\/\/frodo:8000\/api\/user\/sazius\/following" },
-  //     "favorites": { "url": "http:\/\/frodo:8000\/api\/user\/sazius\/favorites" },
-  //     "lists": { "url": "http:\/\/frodo:8000\/api\/user\/sazius\/lists\/person" }
+  //     "followers": {"url": "http://frodo:8000/api/user/sazius/followers"},
+  //     "following": { "url": "http://frodo:8000/api/user/sazius/following" },
+  //     "favorites": { "url": "http://frodo:8000/api/user/sazius/favorites" },
+  //     "lists": { "url": "http://frodo:8000/api/user/sazius/lists/person" }
   //   },
 }
 

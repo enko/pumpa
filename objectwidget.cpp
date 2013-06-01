@@ -46,4 +46,3 @@ void ObjectWidget::mousePressEvent(QMouseEvent* e) {
   QLabel::mousePressEvent(e);
   e->ignore();
 }
-
