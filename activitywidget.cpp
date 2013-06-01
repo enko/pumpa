@@ -58,33 +58,37 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   updateFavourButton();
   connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
 
-  m_repeatButton = new QToolButton();
-  m_repeatButton->setText(QChar(0x267A));
-  m_repeatButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  m_repeatButton->setFocusPolicy(Qt::NoFocus);
-  connect(m_repeatButton, SIGNAL(clicked()), this, SLOT(repeat()));
+  m_shareButton = new QToolButton();
+  m_shareButton->setText(QChar(0x267A));
+  m_shareButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+  m_shareButton->setFocusPolicy(Qt::NoFocus);
+  connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
 
-  m_repeatButton = new QToolButton();
-  m_repeatButton->setText("comment");
-  m_repeatButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  m_repeatButton->setFocusPolicy(Qt::NoFocus);
-  connect(m_repeatButton, SIGNAL(clicked()), this, SLOT(reply()));
+  m_commentButton = new QToolButton();
+  m_commentButton->setText("comment");
+  m_commentButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+  m_commentButton->setFocusPolicy(Qt::NoFocus);
+  connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
 
   m_buttonLayout = new QHBoxLayout;
   m_buttonLayout->addStretch();
   m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
-  m_buttonLayout->addWidget(m_repeatButton, 0, Qt::AlignTop);
-  m_buttonLayout->addWidget(m_repeatButton, 0, Qt::AlignTop);
+  m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
+  m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
 
   m_rightLayout = new QVBoxLayout;
   m_rightLayout->addWidget(m_objectWidget);
   m_rightLayout->addLayout(m_buttonLayout);
   m_rightLayout->setContentsMargins(0, 0, 0, 0);
 
+  // m_rightFrame = new QFrame(this);
+  // m_rightFrame->setLayout(m_rightLayout);
+
   QHBoxLayout* m_acrossLayout = new QHBoxLayout;
   m_acrossLayout->setSpacing(10);
   m_acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignTop);
-  m_acrossLayout->addLayout(m_rightLayout, 0); //, Qt::AlignTop);
+  // m_acrossLayout->addWidget(m_rightFrame, 0, Qt::AlignTop);
+  m_acrossLayout->addLayout(m_rightLayout, 0); 
 
   setLayout(m_acrossLayout);
 

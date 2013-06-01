@@ -70,13 +70,15 @@ private:
   ActorWidget* m_actorWidget;
 
   QToolButton* m_favourButton;
-  QToolButton* m_repeatButton;
-  QToolButton* m_replyButton;
+  QToolButton* m_shareButton;
+  QToolButton* m_commentButton;
 
   QHBoxLayout* m_buttonLayout;
   QVBoxLayout* m_rightLayout;
   QHBoxLayout* m_acrossLayout;
   
+  QFrame* m_rightFrame;
+
   QASActivity* m_activity;
 };
 
