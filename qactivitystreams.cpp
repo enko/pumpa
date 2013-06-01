@@ -58,6 +58,11 @@ void QASActor::update(QVariantMap json) {
   m_url = json["url"].toString();
   m_displayName = json["displayName"].toString();
 
+  if (json.contains("image")) {
+    QVariantMap im = json["image"].toMap();
+    m_imageUrl = im["url"].toString();
+  }
+
   Q_ASSERT_X(!m_id.isEmpty(), "QASActor", serializeJsonC(json));
 
         //   "links": {

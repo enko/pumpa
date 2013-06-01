@@ -44,12 +44,14 @@ public:
   void update(QVariantMap json);
 
   QString displayName() const { return m_displayName; }
+  QString imageUrl() const { return m_imageUrl; }
 
 private:
+  QString m_id;
   QString m_preferredUsername;
   QString m_url;
   QString m_displayName;
-  QString m_id;
+  QString m_imageUrl;
 
   static QMap<QString, QASActor*> s_actors;
 };
@@ -69,7 +71,7 @@ public:
   QString content() const { return m_content; }
   QString url() const { return m_url; }
   QDateTime published() const { return m_published; }
-
+  bool liked() const { return m_liked; }
   bool hasReplies() const;
   const QASObjectList* replies() const { return m_replies; }
 

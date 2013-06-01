@@ -29,6 +29,7 @@
 
 #include "qactivitystreams.h"
 #include "objectwidget.h"
+#include "actorwidget.h"
 
 #define MAX_WORD_LENGTH       40
 
@@ -66,14 +67,15 @@ private:
   void updateText();
 
   ObjectWidget* m_objectWidget;
-  // ActorWidget* m_actorWidget;
+  ActorWidget* m_actorWidget;
 
-  QToolButton* favourButton;
-  QToolButton* repeatButton;
-  QToolButton* replyButton;
+  QToolButton* m_favourButton;
+  QToolButton* m_repeatButton;
+  QToolButton* m_replyButton;
 
-  QHBoxLayout* buttonLayout;
-  QVBoxLayout* statusLayout;
+  QHBoxLayout* m_buttonLayout;
+  QVBoxLayout* m_rightLayout;
+  QHBoxLayout* m_acrossLayout;
   
   QASActivity* m_activity;
 };

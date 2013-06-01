@@ -43,7 +43,7 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   inboxWidget = new CollectionWidget(this);
 
   setWindowTitle(CLIENT_FANCY_NAME);
-  setWindowIcon(QIcon(":/pumpa.png"));
+  setWindowIcon(QIcon(":/images/pumpa.png"));
   setCentralWidget(inboxWidget);
   show();
 

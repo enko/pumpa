@@ -48,38 +48,45 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_objectWidget = new ObjectWidget(parent);
   m_objectWidget->setBackgroundRole(QPalette::Base);
 
+  m_actorWidget = new ActorWidget(m_activity->actor(), parent);
+
   updateText();
 
-  favourButton = new QToolButton();
-  favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  favourButton->setFocusPolicy(Qt::NoFocus);
+  m_favourButton = new QToolButton();
+  m_favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+  m_favourButton->setFocusPolicy(Qt::NoFocus);
   updateFavourButton();
-  connect(favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
+  connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
 
-  repeatButton = new QToolButton();
-  repeatButton->setText(QChar(0x267A));
-  repeatButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  repeatButton->setFocusPolicy(Qt::NoFocus);
-  connect(repeatButton, SIGNAL(clicked()), this, SLOT(repeat()));
+  m_repeatButton = new QToolButton();
+  m_repeatButton->setText(QChar(0x267A));
+  m_repeatButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+  m_repeatButton->setFocusPolicy(Qt::NoFocus);
+  connect(m_repeatButton, SIGNAL(clicked()), this, SLOT(repeat()));
 
-  replyButton = new QToolButton();
-  replyButton->setText("comment");
-  replyButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  replyButton->setFocusPolicy(Qt::NoFocus);
-  connect(replyButton, SIGNAL(clicked()), this, SLOT(reply()));
-  buttonLayout = new QHBoxLayout;
+  m_repeatButton = new QToolButton();
+  m_repeatButton->setText("comment");
+  m_repeatButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+  m_repeatButton->setFocusPolicy(Qt::NoFocus);
+  connect(m_repeatButton, SIGNAL(clicked()), this, SLOT(reply()));
 
-  buttonLayout->addStretch();
-  buttonLayout->addWidget(favourButton, 0, Qt::AlignTop);
-  buttonLayout->addWidget(repeatButton, 0, Qt::AlignTop);
-  buttonLayout->addWidget(replyButton, 0, Qt::AlignTop);
+  m_buttonLayout = new QHBoxLayout;
+  m_buttonLayout->addStretch();
+  m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
+  m_buttonLayout->addWidget(m_repeatButton, 0, Qt::AlignTop);
+  m_buttonLayout->addWidget(m_repeatButton, 0, Qt::AlignTop);
 
-  statusLayout = new QVBoxLayout;
-  statusLayout->addWidget(m_objectWidget);
-  statusLayout->addLayout(buttonLayout);
+  m_rightLayout = new QVBoxLayout;
+  m_rightLayout->addWidget(m_objectWidget);
+  m_rightLayout->addLayout(m_buttonLayout);
+  m_rightLayout->setContentsMargins(0, 0, 0, 0);
 
-  statusLayout->setContentsMargins(0, 0, 0, 0);
-  setLayout(statusLayout);
+  QHBoxLayout* m_acrossLayout = new QHBoxLayout;
+  m_acrossLayout->setSpacing(10);
+  m_acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignTop);
+  m_acrossLayout->addLayout(m_rightLayout, 0); //, Qt::AlignTop);
+
+  setLayout(m_acrossLayout);
 
   // connect(msg, SIGNAL(hasUpdated()), this, SLOT(onMessageHasUpdated()));
 }
@@ -97,7 +104,7 @@ void ActivityWidget::updateFavourButton(bool wait) {
   QString text = false ? QChar(0x2605) : QChar(0x2606);
   if (wait)
     text = "...";
-  favourButton->setText(text);
+  m_favourButton->setText(text);
 }
 
 //------------------------------------------------------------------------------
