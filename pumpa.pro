@@ -47,15 +47,24 @@ greaterThan(QT_MAJOR_VERSION, 4) {
   DEFINES += QT5
 }
 
+# Optional spell checking support with libaspell
+exists( /usr/lib/libaspell* ) {
+  message("Using aspell")
+  LIBS += -laspell
+  DEFINES += USE_ASPELL
+}
+
 ######################################################################
 # Sources 
 ######################################################################
 
-HEADERS += pumpapp.h qactivitystreams.h collectionwidget.h json.h \
-	messagewindow.h messageedit.h fancyhighlighter.h qaspell.h
-SOURCES += main.cpp \
-	pumpapp.cpp qactivitystreams.cpp collectionwidget.cpp json.cpp \
-	messagewindow.cpp messageedit.cpp fancyhighlighter.cpp qaspell.cpp
+OBJECT_HEADERS = pumpapp.h qactivitystreams.h collectionwidget.h json.h \
+	messagewindow.h messageedit.h fancyhighlighter.h qaspell.h \
+	activitywidget.h objectwidget.h
+
+HEADERS += $$OBJECT_HEADERS
+SOURCES += main.cpp
+SOURCES += $$replace(OBJECT_HEADERS, \\.h, .cpp)
 
 # kQOAuth
 VPATH += ./kQOAuth/src
@@ -83,15 +92,4 @@ SOURCES += \
     kqoauthauthreplyserver.cpp \
     kqoauthrequest_1.cpp \
     kqoauthrequest_xauth.cpp
-
-######################################################################
-# Optional spell checking support with libaspell
-######################################################################
-
-# system(pkg-config --exists aspell) ?
-aspell {
-  message("Using aspell")
-  LIBS += -laspell
-  DEFINES += USE_ASPELL
-}
 

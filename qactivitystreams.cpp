@@ -150,8 +150,7 @@ QASObject::QASObject(QString id, QObject* parent) :
 //------------------------------------------------------------------------------
 
 void QASObject::update(QVariantMap json) {
-
-  // bool debug = false;
+  bool debug = false;
 
   m_content = json["content"].toString();
   m_objectType = json["objectType"].toString();
@@ -168,8 +167,10 @@ void QASObject::update(QVariantMap json) {
   m_author = json.contains("author") ? 
     QASActor::getActor(json["author"].toMap(), parent()) : NULL;
 
-  // if (debug) {
-  //   qDebug() << "QASObject [" << m_id << "]";
+  if (debug) {
+    qDebug() << "QASObject [" << m_id << "]";
+    qDebug() << serializeJson(json);
+  }
   //   QStringList keys = json.keys();
   //   for (int i=0; i<keys.size(); i++) {
   //     const QString& key = keys[i];

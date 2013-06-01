@@ -17,34 +17,23 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _COLLECTIONWIDGET_H_
-#define _COLLECTIONWIDGET_H_
+#ifndef _OBJECTWIDGET_H_
+#define _OBJECTWIDGET_H_
 
-#include <QScrollArea>
-#include <QScrollBar>
-#include <QVBoxLayout>
 #include <QWidget>
 #include <QLabel>
 #include <QMouseEvent>
 
 #include "qactivitystreams.h"
-#include "activitywidget.h"
 
 //------------------------------------------------------------------------------
 
-class CollectionWidget : public QScrollArea {
-  Q_OBJECT
-
+class ObjectWidget : public QLabel {
 public:
-  CollectionWidget(QWidget* parent=0);
+  ObjectWidget(QWidget* parent = 0, Qt::WindowFlags f = 0);
 
-  void addCollection(const QASCollection& coll);
-
-private:
-  QVBoxLayout* m_itemLayout;
-  QWidget* m_listContainer;
-  // QList<QASActivity*> m_list;
-  QMap<QString, QASActivity*> m_activity_map;
+protected:
+  void mousePressEvent(QMouseEvent* e);
 };
 
-#endif /* _COLLECTIONWIDGET_H_ */
+#endif /* _OBJECTWIDGET_H_ */

@@ -24,56 +24,6 @@
 
 //------------------------------------------------------------------------------
 
-QString relativeFuzzyTime(QDateTime sTime) {
-  QString dateStr = sTime.toString("ddd d MMMM yyyy");
-
-  int secs = sTime.secsTo(QDateTime::currentDateTime().toUTC());
-  if (secs < 0)
-    secs = 0;
-  int mins = qRound((float)secs/60);
-  int hours = qRound((float)secs/60/60);
-    
-  if (secs < 60) { 
-    dateStr = QString("a few seconds ago");
-  } else if (mins < 60) {
-    dateStr = QString("%1 minute%2 ago").arg(mins).arg(mins==1?"":"s");
-  } else if (hours < 24) {
-    dateStr = QString("%1 hour%2 ago").arg(hours).arg(hours==1?"":"s");
-  }
-  return dateStr;
-}
-
-//------------------------------------------------------------------------------
-
-ObjectWidget::ObjectWidget(QWidget* parent, Qt::WindowFlags f) :
-  QLabel(parent, f)
-{
-  setWordWrap(true);
-
-  setOpenExternalLinks(true);
-  setTextInteractionFlags(Qt::TextSelectableByMouse |
-                          Qt::LinksAccessibleByMouse);
-  setScaledContents(false);
-
-  setLineWidth(2);
-  setMargin(0);
-  setFocusPolicy(Qt::NoFocus);
-
-  // QPalette pal;
-  // pal.setColor(QPalette::AlternateBase, Qt::white);
-  // setPalette(pal);
-}
-
-//------------------------------------------------------------------------------
-
-void ObjectWidget::mousePressEvent(QMouseEvent* e) {
-  QLabel::mousePressEvent(e);
-  e->ignore();
-}
-
-
-//------------------------------------------------------------------------------
-
 CollectionWidget::CollectionWidget(QWidget* parent) :
   QScrollArea(parent)
 {
@@ -106,34 +56,26 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
                 // keep widget updated
 
     m_activity_map.insert(activity_id, activity);
-      
-    QASObject* noteObj = activity->object();
-    QASActor* actor = activity->actor();
 
-    ObjectWidget* ow = new ObjectWidget(this);
-    ow->setText(QString("<p>%1 at <a href=\"%3\">%2</a><br/>%4</p>").
-                arg(actor->displayName()).
-                arg(relativeFuzzyTime(activity->published())).
-                arg(noteObj->url()).
-                arg(noteObj->content()));
-    ow->setBackgroundRole(QPalette::Base);
-    m_itemLayout->insertWidget(li++, ow);
+    ActivityWidget* aw = new ActivityWidget(activity, this);
 
-    if (noteObj->hasReplies()) {
-      const QASObjectList* ol = noteObj->replies();
-      for (size_t j=0; j<ol->size(); j++) {
-        QASObject* replyObj = ol->at(ol->size()-j-1);
-        const QASActor* author = replyObj->author();
+    m_itemLayout->insertWidget(li++, aw);
 
-        ObjectWidget* ow = new ObjectWidget(this);
-        ow->setText(QString("<p style=\"margin-left: 40px\">%1<br/>"
-                            "%2 at <a href=\"%4\">%3</a></p>").
-                    arg(replyObj->content()).
-                    arg(author->displayName()).
-                    arg(relativeFuzzyTime(replyObj->published())).
-                    arg(replyObj->url()));
-        m_itemLayout->insertWidget(li++, ow);
-      }
-    }
+    // if (noteObj->hasReplies()) {
+    //   const QASObjectList* ol = noteObj->replies();
+    //   for (size_t j=0; j<ol->size(); j++) {
+    //     QASObject* replyObj = ol->at(ol->size()-j-1);
+    //     const QASActor* author = replyObj->author();
+
+    //     ObjectWidget* ow = new ObjectWidget(this);
+    //     ow->setText(QString("<p style=\"margin-left: 40px\">%1<br/>"
+    //                         "%2 at <a href=\"%4\">%3</a></p>").
+    //                 arg(replyObj->content()).
+    //                 arg(author->displayName()).
+    //                 arg(relativeFuzzyTime(replyObj->published())).
+    //                 arg(replyObj->url()));
+    //     m_itemLayout->insertWidget(li++, ow);
+    //   }
+    // }
   }
 }

@@ -17,34 +17,33 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _COLLECTIONWIDGET_H_
-#define _COLLECTIONWIDGET_H_
-
-#include <QScrollArea>
-#include <QScrollBar>
-#include <QVBoxLayout>
-#include <QWidget>
-#include <QLabel>
-#include <QMouseEvent>
-
-#include "qactivitystreams.h"
-#include "activitywidget.h"
+#include "objectwidget.h"
 
 //------------------------------------------------------------------------------
 
-class CollectionWidget : public QScrollArea {
-  Q_OBJECT
+ObjectWidget::ObjectWidget(QWidget* parent, Qt::WindowFlags f) :
+  QLabel(parent, f)
+{
+  setWordWrap(true);
 
-public:
-  CollectionWidget(QWidget* parent=0);
+  setOpenExternalLinks(true);
+  setTextInteractionFlags(Qt::TextSelectableByMouse |
+                          Qt::LinksAccessibleByMouse);
+  setScaledContents(false);
 
-  void addCollection(const QASCollection& coll);
+  setLineWidth(2);
+  setMargin(0);
+  setFocusPolicy(Qt::NoFocus);
 
-private:
-  QVBoxLayout* m_itemLayout;
-  QWidget* m_listContainer;
-  // QList<QASActivity*> m_list;
-  QMap<QString, QASActivity*> m_activity_map;
-};
+  // QPalette pal;
+  // pal.setColor(QPalette::AlternateBase, Qt::white);
+  // setPalette(pal);
+}
 
-#endif /* _COLLECTIONWIDGET_H_ */
+//------------------------------------------------------------------------------
+
+void ObjectWidget::mousePressEvent(QMouseEvent* e) {
+  QLabel::mousePressEvent(e);
+  e->ignore();
+}
+
