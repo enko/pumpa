@@ -47,7 +47,9 @@ QString relativeFuzzyTime(QDateTime sTime) {
 ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   QFrame(parent),  m_hasMoreButton(NULL), m_activity(a)
 {
-  m_objectWidget = new ObjectWidget(parent);
+  QASObject* noteObj = m_activity->object();
+
+  m_objectWidget = new ObjectWidget(noteObj, parent);
   m_actorWidget = new ActorWidget(m_activity->actor(), parent);
 
   updateText();
@@ -56,24 +58,27 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
   m_favourButton->setFocusPolicy(Qt::NoFocus);
   updateFavourButton();
+  m_favourButton->setEnabled(false);
   connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
 
   m_shareButton = new QToolButton();
   m_shareButton->setText(QChar(0x267A));
   m_shareButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
   m_shareButton->setFocusPolicy(Qt::NoFocus);
+  m_shareButton->setEnabled(false);
   connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
 
   m_commentButton = new QToolButton();
   m_commentButton->setText("comment");
   m_commentButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
   m_commentButton->setFocusPolicy(Qt::NoFocus);
+  m_commentButton->setEnabled(false);
   connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
 
   m_buttonLayout = new QHBoxLayout;
   m_buttonLayout->addStretch();
   m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
-  m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
+  // m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
   m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
 
   m_rightLayout = new QVBoxLayout;
@@ -81,7 +86,6 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_rightLayout->addWidget(m_objectWidget);
   m_rightLayout->addLayout(m_buttonLayout);
 
-  const QASObject* noteObj = m_activity->object();
   connect(noteObj, SIGNAL(changed()), this, SLOT(onObjectChanged()));
 
   QASObjectList* ol = noteObj->replies();
@@ -172,9 +176,9 @@ void ActivityWidget::onObjectChanged() {
 //------------------------------------------------------------------------------
 
 void ActivityWidget::addObjectList(QASObjectList* ol) {
-  int li = 1;
+  int li = 2; // index where to insert next widget in the layout
 
-  if (ol->hasMore()) {
+  if (ol->hasMore() && (qulonglong)m_repliesList.size() < ol->totalItems()) {
     addHasMoreButton(ol, li++);
     qDebug() << "hasMoar" << ol->url();
   } else if (m_hasMoreButton != NULL) {
@@ -183,21 +187,38 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
     m_hasMoreButton = NULL;
   }
 
+  /*
+    For now we sort by time, or more accurately by whatever number the
+    QASObject::sortInt() returns. Higher number is newer, goes further
+    down the list.
+  
+    Comments' lists returned by the pump API are with newest at the
+    top, so we start from the end, and can assume that the next one is
+    always newer.
+  */
+
+  int i = 0; // index into m_repliesList
   for (size_t j=0; j<ol->size(); j++) {
     QASObject* replyObj = ol->at(ol->size()-j-1);
     QString replyId = replyObj->id();
+    qint64 sortInt = replyObj->sortInt();
 
-    if (m_repliesMap.contains(replyId)) {
-      li++;
-      continue; // FIXME check that they get updated anyhoo?
-    }
+    // if (m_repliesSet.contains(replyId))
+    //   continue;
+    // m_repliesMap.insert(replyId, replyObj);
 
-    m_repliesMap.insert(replyId, replyObj);
+    while (i < m_repliesList.size() &&
+           m_repliesList[i]->id() != replyId &&
+           m_repliesList[i]->sortInt() < sortInt)
+      i++;
+
+    if (i < m_repliesList.size() && m_repliesList[i]->id() == replyId)
+      continue;
 
     QASActor* author = replyObj->author();
 
     ActorWidget* aw = new ActorWidget(author, this, true);
-    ObjectWidget* ow = new ObjectWidget(this);
+    ObjectWidget* ow = new ObjectWidget(replyObj, this);
     
     ow->setText(QString("%1<br/>%2 at <a href=\"%4\">%3</a>").
                 arg(replyObj->content()).
@@ -210,7 +231,8 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
     replyLayout->addWidget(aw, 0, Qt::AlignTop);
     replyLayout->addWidget(ow, 0, Qt::AlignTop);
     
-    m_rightLayout->insertLayout(li++, replyLayout);
+    m_rightLayout->insertLayout(li + i, replyLayout);
+    m_repliesList.insert(i, replyObj);
   }
 }
 
@@ -228,12 +250,6 @@ void ActivityWidget::addHasMoreButton(QASObjectList* ol, int li) {
   }
 
   m_hasMoreButton->setText(buttonText);
-
-
-  // loadButtons.insert(lastId, pb);
-  // itemLayout->insertWidget(lastPos+1, pb);
-  // loadSignalMapper->setMapping(pb, lastId);
-  // connect(pb, SIGNAL(clicked()), loadSignalMapper, SLOT(map()));
 }
 
 //------------------------------------------------------------------------------

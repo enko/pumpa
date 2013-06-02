@@ -34,6 +34,12 @@ QMap<QString, QASObjectList*> QASObjectList::s_objectLists;
 
 //------------------------------------------------------------------------------
 
+qint64 sortIntByDateTime(QDateTime dt) {
+  return dt.toMSecsSinceEpoch();
+}
+
+//------------------------------------------------------------------------------
+
 QDateTime parseTime(QString timeStr) {
   // 2013-05-28T16:43:06Z 
   // 55 minutes ago kl. 20:39 -> 19:44

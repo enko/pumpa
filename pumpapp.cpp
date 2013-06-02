@@ -325,6 +325,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   if (id == QAS_FETCH_INBOX) {
     QVariantMap obj = parseJson(response);
     QASCollection coll(obj, this);
+    qDebug() << "***** inbox length" << coll.size();
     inboxWidget->addCollection(coll);
   } else if (id == QAS_FETCH_REPLIES) {
     QVariantMap obj = parseJson(response);

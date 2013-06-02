@@ -40,6 +40,10 @@ class QASObjectList;
 
 //------------------------------------------------------------------------------
 
+qint64 sortIntByDateTime(QDateTime dt);
+
+//------------------------------------------------------------------------------
+
 class QASActor : public QObject {
   Q_OBJECT
 
@@ -74,6 +78,8 @@ private:
 public:
   static QASObject* getObject(QVariantMap json, QObject* parent);
   void update(QVariantMap json);
+
+  qint64 sortInt() const { return sortIntByDateTime(m_updated); }
 
   QString id() const { return m_id; }
   QString content() const { return m_content; }
@@ -116,6 +122,8 @@ public:
   void update(QVariantMap json);
 
   QString id() const { return m_id; }
+
+  qint64 sortInt() const { return sortIntByDateTime(m_updated); }
 
   QASObject* object() const { return m_object; }
   QASActor* actor() const { return m_actor; }

@@ -78,7 +78,9 @@ private:
 
   QASActivity* m_activity;
 
-  QMap<QString, QASObject*> m_repliesMap;
+  // QMap<QString, QASObject*> m_repliesMap;
+  // QSet<QString> m_repliesSet;
+  QList<QASObject*> m_repliesList;
 };
 
 #endif 

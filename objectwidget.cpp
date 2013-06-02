@@ -21,8 +21,8 @@
 
 //------------------------------------------------------------------------------
 
-ObjectWidget::ObjectWidget(QWidget* parent, Qt::WindowFlags f) :
-  QLabel(parent, f)
+ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
+  QLabel(parent), m_object(obj)
 {
   // useful for debugging layouts and margins
   // setLineWidth(1);

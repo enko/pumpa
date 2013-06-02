@@ -30,10 +30,15 @@
 
 class ObjectWidget : public QLabel {
 public:
-  ObjectWidget(QWidget* parent = 0, Qt::WindowFlags f = 0);
+  ObjectWidget(QASObject* obj, QWidget* parent = 0);
+
+  QASObject* object() const { return m_object; }
 
 protected:
   void mousePressEvent(QMouseEvent* e);
+
+private:
+  QASObject* m_object;
 };
 
 #endif /* _OBJECTWIDGET_H_ */
