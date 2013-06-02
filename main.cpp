@@ -27,6 +27,6 @@ int main(int argc, char** argv) {
   QApplication app(argc,argv);
 
   PumpApp papp;
-  
-  return app.exec();
+
+  return papp.fail ? -1 : app.exec();
 }

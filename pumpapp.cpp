@@ -27,6 +27,22 @@
 PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   settings = new QSettings(CLIENT_NAME, CLIENT_NAME, this);
   readSettings();
+  
+  fail = false;
+  if (siteUrl.isEmpty() || userName.isEmpty()) {
+    qDebug() << "ERROR: You need to fill in \"site_url\" and \"username\" in "
+      "the config file at:";
+    qDebug() << settings->fileName().toLatin1().constData();
+    qDebug();
+    qDebug() << "For example:";
+    qDebug() << "[Account]";
+    qDebug() << "site_url=https://microca.st/";
+    qDebug() << "username=someguy";
+    qDebug();
+    qDebug() << "You can leave the other fields empty.";
+    fail = true;
+    return;
+  } 
 
   netManager = new QNetworkAccessManager(this);
 

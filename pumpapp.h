@@ -51,7 +51,8 @@ class PumpApp : public QMainWindow {
 public:
   PumpApp(QWidget* parent=0);
   virtual ~PumpApp();                            
-
+  bool fail;
+                    
 private slots:
   void postNote(QString note);
   void errorMessage(QString msg);
