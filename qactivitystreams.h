@@ -33,6 +33,13 @@ class QASObjectList;
 
 //------------------------------------------------------------------------------
 
+#define QAS_RESPONSE_NULL     0
+#define QAS_FETCH_INBOX       1
+#define QAS_NEW_POST          2
+#define QAS_FETCH_REPLIES     3
+
+//------------------------------------------------------------------------------
+
 class QASActor : public QObject {
   Q_OBJECT
 
@@ -102,7 +109,6 @@ private:
 class QASActivity : public QObject {
   Q_OBJECT
 
-private:
   QASActivity(QString id="", QObject* parent=0);
 
 public:
@@ -134,16 +140,18 @@ private:
 
 //------------------------------------------------------------------------------
 
-// FIXME: probably QASObjectList and QASCollection should be merged
-// into one class... have QASAbstractObject as list item ?
-
 class QASObjectList : public QObject {
   Q_OBJECT
+  QASObjectList(QString url="", QObject* parent=0);
+
 public:
-  QASObjectList(QObject* parent=0);
-  QASObjectList(QVariantMap json, QObject* parent=0);
+  static QASObjectList* getObjectList(QVariantMap json, QObject* parent);
+  void update(QVariantMap json);
 
   size_t size() const { return m_items.size(); }
+  qulonglong totalItems() const { return m_totalItems; }
+  bool hasMore() const { return size() < m_totalItems; }
+  QString url() const { return m_url; }
 
   QASObject* at(size_t i) const {
     if (i >= size())
@@ -151,10 +159,15 @@ public:
     return m_items[i];
   }
 
+signals:
+  void changed();
+
 private:
   QString m_url;
-  size_t m_totalItems;
+  qulonglong m_totalItems;
   QList<QASObject*> m_items;
+  
+  static QMap<QString, QASObjectList*> s_objectLists;
 };
 
 //------------------------------------------------------------------------------

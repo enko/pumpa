@@ -19,6 +19,8 @@
 
 #include "activitywidget.h"
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 QString relativeFuzzyTime(QDateTime sTime) {
@@ -43,10 +45,9 @@ QString relativeFuzzyTime(QDateTime sTime) {
 //------------------------------------------------------------------------------
 
 ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
-  QFrame(parent), m_activity(a)
+  QFrame(parent),  m_hasMoreButton(NULL), m_activity(a)
 {
   m_objectWidget = new ObjectWidget(parent);
-
   m_actorWidget = new ActorWidget(m_activity->actor(), parent);
 
   updateText();
@@ -83,10 +84,12 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   const QASObject* noteObj = m_activity->object();
   connect(noteObj, SIGNAL(changed()), this, SLOT(onObjectChanged()));
 
-  if (noteObj->hasReplies()) {
-    QASObjectList* ol = noteObj->replies();
+  QASObjectList* ol = noteObj->replies();
+  Q_ASSERT(ol != NULL);
+  connect(ol, SIGNAL(changed()), this, SLOT(onObjectChanged()));
+    
+  if (noteObj->hasReplies())
     addObjectList(ol);
-  }
 
   // m_rightFrame = new QFrame(this);
   // m_rightFrame->setLayout(m_rightLayout);
@@ -123,9 +126,14 @@ void ActivityWidget::updateFavourButton(bool wait) {
 void ActivityWidget::updateText() {
   const QASObject* noteObj = m_activity->object();
   const QASActor* actor = m_activity->actor();
+  const QASActor* author = noteObj->author();
+  
+  if (author == NULL)
+    author = actor;
+
   m_objectWidget->setText(QString("<p>%1 at <a href=\"%3\">%2</a><br/>%4</p>").
-                          arg(actor->displayName()).
-                          arg(relativeFuzzyTime(m_activity->published())).
+                          arg(author->displayName()).
+                          arg(relativeFuzzyTime(noteObj->published())).
                           arg(noteObj->url()).
                           arg(noteObj->content()));
 }
@@ -159,30 +167,22 @@ void ActivityWidget::onObjectChanged() {
     QASObjectList* ol = noteObj->replies();
     addObjectList(ol);
   }
-  // handle replies FIXME
 }
 
 //------------------------------------------------------------------------------
 
 void ActivityWidget::addObjectList(QASObjectList* ol) {
-  // int li = 0; // index into internal m_list
-
-  // for (size_t i=0; i<coll.size(); i++) {
-  //   QASActivity* activity = coll.at(i);
-  //   QString activity_id = activity->id();
-
-  //   if (m_activity_map.contains(activity_id))
-  //     continue; // do nothing, assume some signal will be emitted to
-  //               // keep widget updated
-
-  //   m_activity_map.insert(activity_id, activity);
-
-  //   ActivityWidget* aw = new ActivityWidget(activity, this);
-
-  //   m_itemLayout->insertWidget(li++, aw);
-  // }
-
   int li = 1;
+
+  if (ol->hasMore()) {
+    addHasMoreButton(ol, li++);
+    qDebug() << "hasMoar" << ol->url();
+  } else if (m_hasMoreButton != NULL) {
+    m_rightLayout->removeWidget(m_hasMoreButton);
+    delete m_hasMoreButton;
+    m_hasMoreButton = NULL;
+  }
+
   for (size_t j=0; j<ol->size(); j++) {
     QASObject* replyObj = ol->at(ol->size()-j-1);
     QString replyId = replyObj->id();
@@ -212,4 +212,32 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
     
     m_rightLayout->insertLayout(li++, replyLayout);
   }
+}
+
+//------------------------------------------------------------------------------
+
+void ActivityWidget::addHasMoreButton(QASObjectList* ol, int li) {
+  QString buttonText = QString("Show all %1 replies").
+    arg(ol->totalItems());
+  if (m_hasMoreButton == NULL) {
+    m_hasMoreButton = new QPushButton(this);
+    m_hasMoreButton->setFocusPolicy(Qt::NoFocus);
+    m_rightLayout->insertWidget(li, m_hasMoreButton);
+    connect(m_hasMoreButton, SIGNAL(clicked()), 
+            this, SLOT(onHasMoreClicked()));
+  }
+
+  m_hasMoreButton->setText(buttonText);
+
+
+  // loadButtons.insert(lastId, pb);
+  // itemLayout->insertWidget(lastPos+1, pb);
+  // loadSignalMapper->setMapping(pb, lastId);
+  // connect(pb, SIGNAL(clicked()), loadSignalMapper, SLOT(map()));
+}
+
+//------------------------------------------------------------------------------
+
+void ActivityWidget::onHasMoreClicked() {
+  emit request(m_activity->object()->replies()->url(), QAS_FETCH_REPLIES);
 }

@@ -40,6 +40,9 @@ public:
 
   void addCollection(const QASCollection& coll);
 
+signals:
+  void request(QString, int);
+
 private:
   QVBoxLayout* m_itemLayout;
   QWidget* m_listContainer;

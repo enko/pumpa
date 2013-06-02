@@ -26,6 +26,7 @@
 #include <QFrame>
 #include <QWidget>
 #include <QMouseEvent>
+#include <QPushButton>
 
 #include "qactivitystreams.h"
 #include "objectwidget.h"
@@ -49,8 +50,13 @@ public slots:
   void reply();
 
   void onObjectChanged();
+  void onHasMoreClicked();
+
+signals:
+  void request(QString, int);
 
 private:
+  void addHasMoreButton(QASObjectList* ol, int li);
   void updateFavourButton(bool wait = false);
   void updateText();
   void addObjectList(QASObjectList* ol);
@@ -67,6 +73,8 @@ private:
   QHBoxLayout* m_acrossLayout;
   
   QFrame* m_rightFrame;
+
+  QPushButton* m_hasMoreButton;
 
   QASActivity* m_activity;
 

@@ -43,10 +43,6 @@
 #define CLIENT_FANCY_NAME     "Pumpa"
 #define CLIENT_VERSION        "0.01"
 
-#define OAR_USER_ACCESS       0
-#define OAR_FETCH_INBOX       1
-#define OAR_NEW_POST          2
-
 //------------------------------------------------------------------------------
 
 class PumpApp : public QMainWindow {
@@ -68,6 +64,10 @@ private slots:
   void onOAuthClientRegDone();
 
   void onAuthorizedRequestReady(QByteArray response, int id);
+  
+  void request(QString endpoint, int response_id,
+               KQOAuthRequest::RequestHttpMethod method = KQOAuthRequest::GET,
+               QVariantMap data=QVariantMap());
 
   void exit();
   void about();
@@ -82,10 +82,7 @@ private:
 
   void fetchAll();
   void fetchInbox();
-  void feed(QString verb, QVariantMap object, int oar_id);
-  void request(QString endpoint, int oar_id,
-               KQOAuthRequest::RequestHttpMethod method = KQOAuthRequest::GET,
-               QVariantMap data=QVariantMap());
+  void feed(QString verb, QVariantMap object, int response_id);
   
   void writeSettings();
   void readSettings();

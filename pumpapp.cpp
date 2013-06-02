@@ -41,6 +41,8 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   createMenu();
 
   inboxWidget = new CollectionWidget(this);
+  connect(inboxWidget, SIGNAL(request(QString, int)),
+          this, SLOT(request(QString, int)));
 
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(":/images/pumpa.png"));
@@ -320,14 +322,14 @@ void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   // qDebug() << "onRequestReady" << id;
 
-  if (id == OAR_FETCH_INBOX) {
-    // qDebug() << response;
+  if (id == QAS_FETCH_INBOX) {
     QVariantMap obj = parseJson(response);
-  
     QASCollection coll(obj, this);
-
     inboxWidget->addCollection(coll);
-  } else if (id == OAR_NEW_POST) {
+  } else if (id == QAS_FETCH_REPLIES) {
+    QVariantMap obj = parseJson(response);
+    QASObjectList::getObjectList(obj, this);
+  } else if (id == QAS_NEW_POST) {
     // nice to refresh inbox after posting
     fetchInbox();
   } else {
@@ -354,7 +356,7 @@ void PumpApp::fetchInbox() {
 
   endpoint += "/"+inbox;
 
-  request(endpoint, OAR_FETCH_INBOX);
+  request(endpoint, QAS_FETCH_INBOX);
 }
 
 //------------------------------------------------------------------------------
@@ -369,12 +371,12 @@ void PumpApp::postNote(QString note) {
   obj["objectType"] = "note";
   obj["content"] = note;
 
-  feed("post", obj, OAR_NEW_POST);
+  feed("post", obj, QAS_NEW_POST);
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::feed(QString verb, QVariantMap object, int oar_id) {
+void PumpApp::feed(QString verb, QVariantMap object, int response_id) {
   QString endpoint = "api/user/"+userName+"/feed";
 
   QVariantMap data;
@@ -383,19 +385,21 @@ void PumpApp::feed(QString verb, QVariantMap object, int oar_id) {
     data["object"] = object;
   }
 
-  request(endpoint, oar_id, KQOAuthRequest::POST, data);
+  request(endpoint, response_id, KQOAuthRequest::POST, data);
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::request(QString endpoint, int oar_id,
+void PumpApp::request(QString endpoint, int response_id,
                       KQOAuthRequest::RequestHttpMethod method,
                       QVariantMap data) {
-  if (endpoint[0] != '/')
-    endpoint = '/'+endpoint;
+  if (!endpoint.startsWith("http")) {
+    if (endpoint[0] != '/')
+      endpoint = '/' + endpoint;
+    endpoint = siteUrl + endpoint;
+  }
 
-  oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, 
-                         QUrl(siteUrl+endpoint));
+  oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, QUrl(endpoint));
   oaRequest->setConsumerKey(clientId);
   oaRequest->setConsumerSecretKey(clientSecret);
 
@@ -409,12 +413,12 @@ void PumpApp::request(QString endpoint, int oar_id,
     oaRequest->setRawData(serializeJson(data));
   }
 
-  oaManager->executeAuthorizedRequest(oaRequest, oar_id);
+  oaManager->executeAuthorizedRequest(oaRequest, response_id);
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::onAuthorizedRequestDone() {
-  qDebug() << "onAuthorizedRequestDone";
+  //  qDebug() << "onAuthorizedRequestDone";
 }
 

@@ -52,13 +52,12 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
     QString activity_id = activity->id();
 
     if (m_activity_map.contains(activity_id))
-      continue; // do nothing, assume some signal will be emitted to
-                // keep widget updated
-
+      continue;
     m_activity_map.insert(activity_id, activity);
 
     ActivityWidget* aw = new ActivityWidget(activity, this);
-
+    connect(aw, SIGNAL(request(QString, int)),
+            this, SIGNAL(request(QString, int)));
     m_itemLayout->insertWidget(li++, aw);
   }
 }
