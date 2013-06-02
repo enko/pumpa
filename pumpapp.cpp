@@ -80,6 +80,7 @@ void PumpApp::createActions() {
 
   openPrefsAction = new QAction(tr("Preferences"), this);
   // prefsAct->setShortcut(tr("Ctrl+P"));
+  openPrefsAction->setEnabled(false);
   connect(openPrefsAction, SIGNAL(triggered()), this, SLOT(preferences()));
 
   reloadAction = new QAction(tr("&Reload timeline"), this);
@@ -108,6 +109,7 @@ void PumpApp::createActions() {
 
   newPictureAction = new QAction(tr("New &Picture"), this);
   newPictureAction->setShortcut(tr("Ctrl+P"));
+  newPictureAction->setEnabled(false);
   connect(newPictureAction, SIGNAL(triggered()), this, SLOT(newPicture()));
 }
 
@@ -218,7 +220,7 @@ void PumpApp::readSettings() {
   s.endGroup();
 
   s.beginGroup("Account");
-  siteUrl = s.value("site_url", "http://frodo:8000").toString();
+  siteUrl = s.value("site_url", "").toString();
   userName = s.value("username", "").toString();
   clientId = s.value("oauth_client_id", "").toString();
   clientSecret = s.value("oauth_client_secret", "").toString();
