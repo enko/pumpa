@@ -21,8 +21,12 @@
 
 //------------------------------------------------------------------------------
 
-MessageWindow::MessageWindow(QWidget* parent) : QDialog(parent) {
+MessageWindow::MessageWindow(QASObject* obj, QWidget* parent) :
+  QDialog(parent), m_obj(obj)
+{
   infoLabel = new QLabel(this);
+  infoLabel->setText(QString("Post a ") + (obj == NULL ? "note" : "reply"));
+
   infoLayout = new QHBoxLayout;
   infoLayout->addWidget(infoLabel);
 
@@ -65,8 +69,11 @@ void MessageWindow::showEvent(QShowEvent*) {
 
 void MessageWindow::accept() {
   QString msg = textEdit->toPlainText();
-  
-  emit sendMessage(msg);
+
+  if (m_obj == NULL)
+    emit sendMessage(msg);
+  else
+    emit sendReply(m_obj, msg);
 
   QDialog::accept();
 }

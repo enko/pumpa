@@ -72,7 +72,7 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_commentButton->setText("comment");
   m_commentButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
   m_commentButton->setFocusPolicy(Qt::NoFocus);
-  m_commentButton->setEnabled(false);
+  // m_commentButton->setEnabled(false);
   connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
 
   m_buttonLayout = new QHBoxLayout;
@@ -158,7 +158,7 @@ void ActivityWidget::repeat() {
 //------------------------------------------------------------------------------
 
 void ActivityWidget::reply() {
-  // FIXME
+  emit newReply(m_activity->object());
 }
  
 //------------------------------------------------------------------------------

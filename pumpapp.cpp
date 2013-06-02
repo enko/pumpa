@@ -59,6 +59,8 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   inboxWidget = new CollectionWidget(this);
   connect(inboxWidget, SIGNAL(request(QString, int)),
           this, SLOT(request(QString, int)));
+  connect(inboxWidget, SIGNAL(newReply(QASObject*)),
+          this, SLOT(newNote(QASObject*)));
 
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(":/images/pumpa.png"));
@@ -188,9 +190,12 @@ void PumpApp::about() {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::newNote() {
-  MessageWindow* w = new MessageWindow(this);
-  connect(w, SIGNAL(sendMessage(QString)), this, SLOT(postNote(QString)));
+void PumpApp::newNote(QASObject* obj) {
+  MessageWindow* w = new MessageWindow(obj, this);
+  connect(w, SIGNAL(sendMessage(QString)),
+          this, SLOT(postNote(QString)));
+  connect(w, SIGNAL(sendReply(QASObject*, QString)),
+          this, SLOT(postReply(QASObject*, QString)));
   w->show();
 }
 
@@ -338,7 +343,11 @@ void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
 //------------------------------------------------------------------------------
 
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
-  // qDebug() << "onRequestReady" << id;
+  if (oaManager->lastError()) {
+    qDebug() << "OAuth or network error [" << id << "]:"
+             << oaManager->lastError();
+    return;
+  }
 
   if (id == QAS_FETCH_INBOX) {
     QVariantMap obj = parseJson(response);
@@ -380,14 +389,27 @@ void PumpApp::fetchInbox() {
 //------------------------------------------------------------------------------
 
 void PumpApp::postNote(QString note) {
-  if (userName.isEmpty() || note.isEmpty()) {
-    qDebug() << "You need to set userName and have non-empty note.";
+  if (note.isEmpty())
     return;
-  }
 
   QVariantMap obj;
   obj["objectType"] = "note";
   obj["content"] = note;
+
+  feed("post", obj, QAS_NEW_POST);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::postReply(QASObject* replyToObj, QString content) {
+  QVariantMap obj;
+  obj["objectType"] = "comment";
+  obj["content"] = content;
+
+  QVariantMap noteObj;
+  noteObj["id"] = replyToObj->id();
+  noteObj["objectType"] = replyToObj->type();
+  obj["inReplyTo"] = noteObj;
 
   feed("post", obj, QAS_NEW_POST);
 }
@@ -429,6 +451,8 @@ void PumpApp::request(QString endpoint, int response_id,
   if (method == KQOAuthRequest::POST) {
     oaRequest->setContentType("application/json");
     oaRequest->setRawData(serializeJson(data));
+
+    // qDebug() << "POSTing:" << serializeJson(data);
   }
 
   oaManager->executeAuthorizedRequest(oaRequest, response_id);

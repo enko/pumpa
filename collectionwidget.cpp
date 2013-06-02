@@ -56,8 +56,12 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
     m_activity_map.insert(activity_id, activity);
 
     ActivityWidget* aw = new ActivityWidget(activity, this);
+
     connect(aw, SIGNAL(request(QString, int)),
             this, SIGNAL(request(QString, int)));
+    connect(aw, SIGNAL(newReply(QASObject*)),
+            this, SIGNAL(newReply(QASObject*)));
+
     m_itemLayout->insertWidget(li++, aw);
   }
 }

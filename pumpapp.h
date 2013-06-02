@@ -55,6 +55,7 @@ public:
                     
 private slots:
   void postNote(QString note);
+  void postReply(QASObject* replyToObj, QString content);
   void errorMessage(QString msg);
 
   void onTemporaryTokenReceived(QString temporaryToken,
@@ -73,7 +74,7 @@ private slots:
   void exit();
   void about();
   void preferences();
-  void newNote();
+  void newNote(QASObject* obj = NULL);
   void newPicture();
   void reload();
 

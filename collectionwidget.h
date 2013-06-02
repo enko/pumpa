@@ -42,6 +42,7 @@ public:
 
 signals:
   void request(QString, int);
+  void newReply(QASObject*);
 
 private:
   QVBoxLayout* m_itemLayout;

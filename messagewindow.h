@@ -28,6 +28,7 @@
 #include <QPushButton>
 
 #include "messageedit.h"
+#include "qactivitystreams.h"
 
 //------------------------------------------------------------------------------
 
@@ -35,7 +36,7 @@ class MessageWindow : public QDialog {
   Q_OBJECT
 
 public:
-  MessageWindow(QWidget* parent=0);
+  MessageWindow(QASObject* obj=NULL, QWidget* parent=0);
 
   virtual void accept();
 
@@ -44,8 +45,9 @@ protected:
 
 signals:
   void sendMessage(QString);
+  void sendReply(QASObject*, QString);
 
-protected:
+private:
   QVBoxLayout* layout;
 
   QLabel* infoLabel;
@@ -56,6 +58,8 @@ protected:
 
   QPushButton* cancelButton;
   QPushButton* sendButton;
+
+  QASObject* m_obj;
 };
 
 #endif
