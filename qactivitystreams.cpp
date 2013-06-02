@@ -23,7 +23,7 @@
 #include <QStringList>
 #include <QVariantList>
 
-#define DEBUG 1
+#define DEBUG 0
 
 //------------------------------------------------------------------------------
 
@@ -186,6 +186,10 @@ void QASObject::update(QVariantMap json) {
   m_url = json["url"].toString();
   m_liked = json["liked"].toBool();
 
+  if (m_objectType == "image") {
+    m_imageUrl = json["image"].toMap()["url"].toString();
+  }
+
   m_published = parseTime(json["published"].toString());
   m_updated = parseTime(json["updated"].toString());
 
@@ -195,7 +199,6 @@ void QASObject::update(QVariantMap json) {
 
   m_author = json.contains("author") ? 
     QASActor::getActor(json["author"].toMap(), parent()) : NULL;
-  qDebug() << "  Object" << m_id << "has author!";
 
   if (debug) {
     qDebug() << "QASObject [" << m_id << "]";
@@ -395,7 +398,7 @@ void QASObjectList::update(QVariantMap json) {
 #if DEBUG >= 1
   qDebug() << "updating ObjectList" << m_url;
 #endif
-#if DEBUG >= 2
+#if DEBUG >= 3
   qDebug() << debugDumpJson(json, "QASObjectList");
 #endif
   

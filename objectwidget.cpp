@@ -22,27 +22,83 @@
 //------------------------------------------------------------------------------
 
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
-  QLabel(parent), m_object(obj)
+  QFrame(parent), m_object(obj)
 {
   // useful for debugging layouts and margins
   // setLineWidth(1);
   // setFrameStyle(QFrame::Box);
 
-  setWordWrap(true);
+  layout = new QVBoxLayout;
+  textLabel = new QLabel;
 
-  setOpenExternalLinks(true);
-  setTextInteractionFlags(Qt::TextSelectableByMouse |
+  textLabel->setWordWrap(true);
+
+  textLabel->setOpenExternalLinks(true);
+  textLabel->setTextInteractionFlags(Qt::TextSelectableByMouse |
                           Qt::LinksAccessibleByMouse);
-  setScaledContents(false);
+  textLabel->setScaledContents(false);
 
-  setLineWidth(2);
-  setMargin(0);
-  setFocusPolicy(Qt::NoFocus);
+  textLabel->setLineWidth(2);
+  textLabel->setMargin(0);
+  textLabel->setFocusPolicy(Qt::NoFocus);
+
+  if (obj->type() == "image") {
+    imageLabel = new QLabel;
+    imageLabel->setMaximumSize(320, 320);
+    imageLabel->setFocusPolicy(Qt::NoFocus);
+    m_imageUrl = obj->imageUrl();
+    updateImage();
+
+    layout->addWidget(imageLabel);
+  }
+  
+  layout->addWidget(textLabel);
+
+  setLayout(layout);
 }
 
 //------------------------------------------------------------------------------
 
-void ObjectWidget::mousePressEvent(QMouseEvent* e) {
-  QLabel::mousePressEvent(e);
-  e->ignore();
+void ObjectWidget::setText(QString text) {
+  textLabel->setText(text);
 }
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::fileReady(const QString& fn) {
+  updateImage(fn);
+}
+
+//------------------------------------------------------------------------------
+
+// FIXME this is duplicated in ActorWidget -> should be made more
+// general and reused.
+void ObjectWidget::updateImage(const QString& fileName) {
+  static QString defaultImage = ":/images/default.png";
+  QString fn = fileName;
+
+  if (fn.isEmpty()) {
+    FileDownloader* fd = FileDownloader::get(m_imageUrl);
+
+    if (fd->ready()) {
+      fn = fd->fileName();
+      fd->deleteLater();
+    } else {
+      connect(fd, SIGNAL(fileReady(const QString&)),
+              this, SLOT(fileReady(const QString&)));
+      fd->download();
+    }
+  }
+
+  if (fn.isEmpty())
+    fn = defaultImage;
+  if (fn != m_localFile) {
+    m_localFile = fn;
+    QPixmap pix(m_localFile);
+    if (pix.isNull()) {
+      m_localFile = defaultImage;
+      pix.load(m_localFile);
+    }
+    imageLabel->setPixmap(pix);
+  }
+}    

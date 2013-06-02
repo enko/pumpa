@@ -180,7 +180,6 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
 
   if (ol->hasMore() && (qulonglong)m_repliesList.size() < ol->totalItems()) {
     addHasMoreButton(ol, li++);
-    qDebug() << "hasMoar" << ol->url();
   } else if (m_hasMoreButton != NULL) {
     m_rightLayout->removeWidget(m_hasMoreButton);
     delete m_hasMoreButton;

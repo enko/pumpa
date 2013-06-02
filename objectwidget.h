@@ -20,24 +20,38 @@
 #ifndef _OBJECTWIDGET_H_
 #define _OBJECTWIDGET_H_
 
+#include <QFrame>
 #include <QWidget>
 #include <QLabel>
-#include <QMouseEvent>
+#include <QVBoxLayout>
 
 #include "qactivitystreams.h"
+#include "filedownloader.h"
 
 //------------------------------------------------------------------------------
 
-class ObjectWidget : public QLabel {
+class ObjectWidget : public QFrame {
+  Q_OBJECT
+
 public:
   ObjectWidget(QASObject* obj, QWidget* parent = 0);
 
   QASObject* object() const { return m_object; }
 
-protected:
-  void mousePressEvent(QMouseEvent* e);
+  void setText(QString text);
+
+private slots:
+  virtual void fileReady(const QString& fn);
 
 private:
+  void updateImage(const QString& fileName="");
+  QString m_imageUrl;
+  QString m_localFile;
+
+  QLabel* textLabel;
+  QLabel* imageLabel;
+  QVBoxLayout* layout;
+
   QASObject* m_object;
 };
 

@@ -80,10 +80,13 @@ public:
   void update(QVariantMap json);
 
   qint64 sortInt() const { return sortIntByDateTime(m_updated); }
-
+  
   QString id() const { return m_id; }
   QString content() const { return m_content; }
+  QString type() const { return m_objectType; }
   QString url() const { return m_url; }
+  QString imageUrl() const { return m_imageUrl; }
+
   QDateTime published() const { return m_published; }
   bool liked() const { return m_liked; }
   bool hasReplies() const;
@@ -100,6 +103,7 @@ private:
   bool m_liked;
   QString m_objectType;
   QString m_url;
+  QString m_imageUrl;
 
   QDateTime m_published;
   QDateTime m_updated;
