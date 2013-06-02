@@ -29,6 +29,8 @@
 #include <qjson/serializer.h>
 #endif
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 QVariantMap parseJson(QByteArray data) {
@@ -63,3 +65,60 @@ QByteArray serializeJson(QVariantMap json) {
 const char* serializeJsonC(QVariantMap json) {
   return QString(serializeJson(json)).toLatin1().data();
 }
+
+//------------------------------------------------------------------------------
+
+QString debugDumpJson(QVariantMap json, QString name, QString indent) {
+  QString ret = "{";
+
+  QVariantMap::const_iterator it = json.constBegin();
+  for (; it != json.constEnd(); ++it) {
+    ret += "\n" + indent + "  " + it.key() + ": ";
+    ret += debugDumpJson(it.value(), it.key(), indent);
+  }
+
+  ret += "\n" + indent + "}";
+  if (!name.isEmpty())
+    ret += " // end of " + name;
+  return ret;
+}
+
+//------------------------------------------------------------------------------
+
+QString debugDumpJson(QVariantList json, QString name, QString indent) {
+  QString ret = "[";
+
+  QVariantList::const_iterator it = json.constBegin();
+  for (; it != json.constEnd(); ++it) 
+    ret += debugDumpJson(*it, "", indent);
+
+  ret += "\n" + indent + "]";
+  if (!name.isEmpty())
+    ret += " // end of " + name;
+  return ret;
+}
+
+//------------------------------------------------------------------------------
+
+QString debugDumpJson(QVariant json, QString name, QString indent) {
+  int str_max_length = 70-indent.length();
+  QString ret;
+
+  QVariant::Type type = json.type();
+  if (type == QVariant::Map) {
+    ret += debugDumpJson(json.toMap(), name, indent + "  ");
+  } else if (json.canConvert<QString>()) {
+    int ml = str_max_length - name.length();
+    json.convert(QVariant::String);
+    QString s = json.toString();
+    if (s.length() > ml)
+      s = s.left(ml-5) + " ... ";
+    ret += s;
+  } else if (type == QVariant::List) {
+    ret +=  debugDumpJson(json.toList(), name, indent + "  ");
+  } else 
+    ret += "[" + QString(json.typeName()) + "]";
+
+  return ret;
+}
+

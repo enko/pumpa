@@ -30,4 +30,13 @@ QByteArray serializeJson(QVariantMap json);
 
 const char* serializeJsonC(QVariantMap json);
 
+QString debugDumpJson(QVariantMap json, QString name = "",
+                      QString indent = "");
+
+QString debugDumpJson(QVariantList json, QString name = "",
+                      QString indent = "");
+
+QString debugDumpJson(QVariant json, QString name = "",
+                      QString indent = "");
+
 #endif /* _JSON_H_ */
