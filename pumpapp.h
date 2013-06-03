@@ -76,7 +76,12 @@ private slots:
   void newPicture();
   void reload();
 
+protected:
+  void timerEvent(QTimerEvent*);
+
 private:
+  void resetTimer();
+
   void getOAuthAccess();
   void registerOAuthClient();
   void syncOAuthInfo();
@@ -116,12 +121,16 @@ private:
   QString token;
   QString tokenSecret;
 
+  int m_reloadTime;
+
   KQOAuthManager *oaManager;
   KQOAuthRequest *oaRequest;
 
   QNetworkAccessManager *netManager;
 
   CollectionWidget* inboxWidget;
+
+  int timerId;
 };
 
 #endif /* _PUMPAPP_H_ */

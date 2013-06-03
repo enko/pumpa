@@ -41,6 +41,7 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
     qDebug();
     qDebug() << "You can leave the other fields empty.";
     fail = true;
+    writeSettings();
     return;
   } 
 
@@ -70,18 +71,38 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   // oaRequest->setEnableDebugOutput(true);
   syncOAuthInfo();
 
+  timerId = -1;
+
   if (clientId.isEmpty())
     registerOAuthClient();
   else if (token.isEmpty())
     getOAuthAccess();
   else
     fetchAll();
+
+  resetTimer();
 }
 
 //------------------------------------------------------------------------------
 
 PumpApp::~PumpApp() {
   writeSettings();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::timerEvent(QTimerEvent* event) {
+  if (event->timerId() != timerId)
+    return;
+  fetchAll();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::resetTimer() {
+  if (timerId != -1)
+    killTimer(timerId);
+  timerId = startTimer(m_reloadTime*60*1000);
 }
 
 //------------------------------------------------------------------------------
@@ -237,6 +258,12 @@ void PumpApp::reload() {
 void PumpApp::writeSettings() {
   QSettings& s = *settings;
 
+  QFile::setPermissions(s.fileName(), QFile::ReadOwner | QFile::WriteOwner);
+
+  s.beginGroup("General");
+  s.setValue("reload_time", m_reloadTime);
+  s.endGroup();
+
   s.beginGroup("MainWindow");
   s.setValue("size", size());
   s.setValue("pos", pos());
@@ -256,6 +283,12 @@ void PumpApp::writeSettings() {
 
 void PumpApp::readSettings() {
   QSettings& s = *settings;
+
+  s.beginGroup("General");
+  m_reloadTime = s.value("reload_time", 5).toInt();
+  if (m_reloadTime < 1)
+    m_reloadTime = 1;
+  s.endGroup();
 
   s.beginGroup("MainWindow");
   resize(s.value("size", QSize(550, 500)).toSize());
