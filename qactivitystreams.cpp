@@ -187,7 +187,13 @@ void QASObject::update(QVariantMap json) {
   m_liked = json["liked"].toBool();
 
   if (m_objectType == "image") {
-    m_imageUrl = json["image"].toMap()["url"].toString();
+    QVariantMap imageObj = json["image"].toMap();
+    if (imageObj.contains("pump_io")) 
+      m_imageUrl = imageObj["pump_io"].toMap()["proxyURL"].toString();
+    else
+      m_imageUrl = imageObj["url"].toString();
+    // qDebug() << "*** IMAGEOBJECT ***" << debugDumpJson(json["image"].toMap());
+    // qDebug() << m_imageUrl;
   }
 
   m_published = parseTime(json["published"].toString());
