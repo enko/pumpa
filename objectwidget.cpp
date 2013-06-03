@@ -24,9 +24,8 @@
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
   QFrame(parent), m_object(obj)
 {
-  // useful for debugging layouts and margins
-  // setLineWidth(1);
-  // setFrameStyle(QFrame::Box);
+  setLineWidth(1);
+  setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
 
   layout = new QVBoxLayout(this);
   textLabel = new RichTextLabel(this);
