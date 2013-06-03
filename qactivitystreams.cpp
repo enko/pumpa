@@ -224,7 +224,7 @@ void QASObject::update(QVariantMap json) {
   }
 
   if (old_liked != m_liked || old_updated != m_updated ||
-      num_replies != m_replies->size())
+      num_replies != numReplies())
     emit changed();
 
   // if objectType == "comment"
@@ -274,8 +274,8 @@ QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
 
 //------------------------------------------------------------------------------
 
-bool QASObject::hasReplies() const { 
-  return m_replies && m_replies->size(); 
+size_t QASObject::numReplies() const {
+  return m_replies ? m_replies->size() : 0;
 }
 
 //------------------------------------------------------------------------------
@@ -449,7 +449,11 @@ void QASObjectList::update(QVariantMap json) {
 
 QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent) {
   QString url = json["url"].toString();
-  Q_ASSERT_X(!url.isEmpty(), "getObjectList", serializeJsonC(json));
+  if (url.isEmpty()) {
+    qDebug() << "Curious object list" << debugDumpJson(json);
+    return NULL;
+  }
+  // Q_ASSERT_X(!url.isEmpty(), "getObjectList", serializeJsonC(json));
 
   QASObjectList* ol = s_objectLists.contains(url) ? s_objectLists[url] :
     new QASObjectList(url, parent);

@@ -27,7 +27,6 @@ QSet<QString> s_allowedTags;
 //------------------------------------------------------------------------------
 
 QString splitLongWords(QString text) {
-  qDebug() << text;
   QRegExp rx("(^|\\s)([^\\s<>\"]{40,})(\\s|$)");
   int pos = 0;
   while ((pos = rx.indexIn(text, pos)) != -1) {
@@ -175,11 +174,12 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   connect(noteObj, SIGNAL(changed()), this, SLOT(onObjectChanged()));
 
   QASObjectList* ol = noteObj->replies();
-  Q_ASSERT(ol != NULL);
-  connect(ol, SIGNAL(changed()), this, SLOT(onObjectChanged()));
+  if (ol) {
+    connect(ol, SIGNAL(changed()), this, SLOT(onObjectChanged()));
     
-  if (noteObj->hasReplies())
-    addObjectList(ol);
+    if (noteObj->numReplies() > 0)
+      addObjectList(ol);
+  }
 
   // m_rightFrame = new QFrame(this);
   // m_rightFrame->setLayout(m_rightLayout);
@@ -254,7 +254,7 @@ void ActivityWidget::onObjectChanged() {
   updateText();
 
   const QASObject* noteObj = m_activity->object();
-  if (noteObj->hasReplies()) {
+  if (noteObj->numReplies() > 0) {
     QASObjectList* ol = noteObj->replies();
     addObjectList(ol);
   }

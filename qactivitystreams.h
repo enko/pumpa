@@ -89,7 +89,7 @@ public:
 
   QDateTime published() const { return m_published; }
   bool liked() const { return m_liked; }
-  bool hasReplies() const;
+  size_t numReplies() const;
   QASObjectList* replies() const { return m_replies; }
 
   QASActor* author() const { return m_author; }
