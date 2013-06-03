@@ -59,6 +59,8 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
           this, SLOT(request(QString, int)));
   connect(inboxWidget, SIGNAL(newReply(QASObject*)),
           this, SLOT(newNote(QASObject*)));
+  connect(inboxWidget, SIGNAL(linkHovered(const QString&)),
+          this,  SLOT(statusMessage(const QString&)));
 
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(":/images/pumpa.png"));
@@ -91,15 +93,21 @@ void PumpApp::syncOAuthInfo() {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::statusMessage(QString msg) {
+void PumpApp::statusMessage(const QString& msg) {
   statusBar()->showMessage(msg);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::notifyMessage(QString msg) {
+  statusMessage(msg);
   qDebug() << "[STATUS]:" << msg;
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::errorMessage(QString msg) {
-  statusBar()->showMessage("Error: " + msg);
+  statusMessage("Error: " + msg);
   qDebug() << "[ERROR]:" << msg;
 }
 
@@ -267,7 +275,7 @@ void PumpApp::readSettings() {
 //------------------------------------------------------------------------------
 
 void PumpApp::registerOAuthClient() {
-  statusMessage("Registering client ...");
+  notifyMessage("Registering client ...");
 
   QNetworkRequest req;
   req.setUrl(QUrl(siteUrl+"/api/client/register"));
@@ -301,7 +309,7 @@ void PumpApp::onOAuthClientRegDone() {
 
   writeSettings();
 
-  statusMessage("Registered client to [" + siteUrl + "] successfully.");
+  notifyMessage("Registered client to [" + siteUrl + "] successfully.");
 
   getOAuthAccess();
 }
@@ -309,7 +317,7 @@ void PumpApp::onOAuthClientRegDone() {
 //------------------------------------------------------------------------------
 
 void PumpApp::getOAuthAccess() {
-  statusMessage("Authorising user ...");
+  notifyMessage("Authorising user ...");
 
   connect(oaManager, SIGNAL(temporaryTokenReceived(QString, QString)),
           this, SLOT(onTemporaryTokenReceived(QString, QString)));
@@ -354,7 +362,7 @@ void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
 
     writeSettings();
 
-    statusMessage("User authorised for [" + siteUrl + "]");
+    notifyMessage("User authorised for [" + siteUrl + "]");
 
     syncOAuthInfo();
     fetchAll();
@@ -385,13 +393,13 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   } else {
     qDebug() << "[WARNING] Unknown request id!" << id;
   }
-  statusMessage("Ready!");
+  notifyMessage("Ready!");
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::fetchAll() {
-  statusMessage("Loading ...");
+  notifyMessage("Loading ...");
   fetchInbox("major");
 }
 

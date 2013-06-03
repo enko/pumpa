@@ -53,6 +53,8 @@ private slots:
   void postNote(QString note);
   void postReply(QASObject* replyToObj, QString content);
   void errorMessage(QString msg);
+  void notifyMessage(QString msg);
+  void statusMessage(const QString& msg);
 
   void onTemporaryTokenReceived(QString temporaryToken,
                                 QString temporaryTokenSecret);
@@ -75,7 +77,6 @@ private slots:
   void reload();
 
 private:
-  void statusMessage(QString msg);
   void getOAuthAccess();
   void registerOAuthClient();
   void syncOAuthInfo();

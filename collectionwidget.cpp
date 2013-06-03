@@ -61,6 +61,8 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
             this, SIGNAL(request(QString, int)));
     connect(aw, SIGNAL(newReply(QASObject*)),
             this, SIGNAL(newReply(QASObject*)));
+    connect(aw, SIGNAL(linkHovered(const QString&)),
+            this,  SIGNAL(linkHovered(const QString&)));
 
     m_itemLayout->insertWidget(li++, aw);
   }

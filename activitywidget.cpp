@@ -136,6 +136,11 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_objectWidget = new ObjectWidget(noteObj, this);
   m_actorWidget = new ActorWidget(m_activity->actor(), this);
 
+  connect(m_infoLabel, SIGNAL(linkHovered(const QString&)),
+          this,  SIGNAL(linkHovered(const QString&)));
+  connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
+          this,  SIGNAL(linkHovered(const QString&)));
+
   updateText();
 
   m_favourButton = new QToolButton();

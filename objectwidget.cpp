@@ -30,7 +30,9 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
 
   layout = new QVBoxLayout(this);
   textLabel = new RichTextLabel(this);
-
+  connect(textLabel, SIGNAL(linkHovered(const QString&)),
+          this,  SIGNAL(linkHovered(const QString&)));
+  
   if (obj->type() == "image") {
     imageLabel = new QLabel;
     imageLabel->setMaximumSize(320, 320);

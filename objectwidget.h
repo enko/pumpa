@@ -41,6 +41,9 @@ public:
 
   void setText(QString text);
 
+signals:
+  void linkHovered(const QString&);
+
 private slots:
   virtual void fileReady(const QString& fn);
 

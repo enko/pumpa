@@ -56,6 +56,7 @@ public slots:
 signals:
   void request(QString, int);
   void newReply(QASObject*);
+  void linkHovered(const QString&);
 
 private:
   void addHasMoreButton(QASObjectList* ol, int li);

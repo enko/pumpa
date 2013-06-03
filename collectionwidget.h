@@ -43,6 +43,7 @@ public:
 signals:
   void request(QString, int);
   void newReply(QASObject*);
+  void linkHovered(const QString&);
 
 private:
   QVBoxLayout* m_itemLayout;
