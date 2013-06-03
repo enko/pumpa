@@ -125,7 +125,7 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
 
   m_infoLabel = new RichTextLabel(this);
   m_objectWidget = new ObjectWidget(noteObj, this);
-  m_actorWidget = new ActorWidget(m_activity->actor(), this);
+  m_actorWidget = new ActorWidget(effectiveAuthor(), this);
 
   connect(m_infoLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
@@ -193,6 +193,13 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
 
 //------------------------------------------------------------------------------
 
+QASActor* ActivityWidget::effectiveAuthor() {
+  QASActor* author = m_activity->object()->author();
+  return author ? author : m_activity->actor();
+}
+
+//------------------------------------------------------------------------------
+
 // void ActivityWidget::mousePressEvent(QMouseEvent* e) {
 //   emit clickedStatus(msg->getId());
 //   QFrame::mousePressEvent(e);
@@ -211,16 +218,16 @@ void ActivityWidget::updateFavourButton(bool wait) {
 
 void ActivityWidget::updateText() {
   const QASObject* noteObj = m_activity->object();
-  const QASActor* actor = m_activity->actor();
-  const QASActor* author = noteObj->author();
-  
-  if (author == NULL)
-    author = actor;
+  const QASActor* author = effectiveAuthor();
 
-  m_infoLabel->setText(QString("%1 at <a href=\"%3\">%2</a>").
-                       arg(author->displayName()).
-                       arg(relativeFuzzyTime(noteObj->published())).
-                       arg(noteObj->url()));
+  QString text = QString("%1 at <a href=\"%3\">%2</a>").
+    arg(author->displayName()).
+    arg(relativeFuzzyTime(noteObj->published())).
+    arg(noteObj->url());
+  if (m_activity->verb() == "share")
+    text += " (shared by " + m_activity->actor()->displayName() + ")";
+
+  m_infoLabel->setText(text);
 
   m_objectWidget->setText(processText(noteObj->content()));
 }
@@ -297,6 +304,9 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
 
     ActorWidget* aw = new ActorWidget(author, this, true);
     ObjectWidget* ow = new ObjectWidget(replyObj, this);
+
+    ow->setLineWidth(1);
+    ow->setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
     
     QString content = processText(replyObj->content());
 

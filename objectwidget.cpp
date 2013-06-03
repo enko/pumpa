@@ -24,9 +24,6 @@
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
   QFrame(parent), m_object(obj)
 {
-  setLineWidth(1);
-  setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
-
   layout = new QVBoxLayout(this);
   textLabel = new RichTextLabel(this);
   connect(textLabel, SIGNAL(linkHovered(const QString&)),

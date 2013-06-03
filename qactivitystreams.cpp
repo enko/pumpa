@@ -40,6 +40,12 @@ qint64 sortIntByDateTime(QDateTime dt) {
 
 //------------------------------------------------------------------------------
 
+bool timeNewer(QDateTime thisT, QDateTime thatT) {
+  return sortIntByDateTime(thisT) > sortIntByDateTime(thatT);
+}
+
+//------------------------------------------------------------------------------
+
 QDateTime parseTime(QString timeStr) {
   // 2013-05-28T16:43:06Z 
   // 55 minutes ago kl. 20:39 -> 19:44
@@ -191,7 +197,6 @@ void QASObject::update(QVariantMap json) {
   qDebug() << "updating Object" << m_id;
 #endif
 
-  bool debug = false;
   bool old_liked = m_liked;
   QDateTime old_updated = m_updated;
   bool num_replies = m_replies ? m_replies->size() : 0;
@@ -204,8 +209,6 @@ void QASObject::update(QVariantMap json) {
   if (m_objectType == "image") {
     QVariantMap imageObj = json["image"].toMap();
     m_imageUrl = getUrlOrProxy(imageObj);
-    // qDebug() << "*** IMAGEOBJECT ***" << debugDumpJson(json["image"].toMap());
-    // qDebug() << m_imageUrl;
   }
 
   m_published = parseTime(json["published"].toString());
@@ -213,28 +216,15 @@ void QASObject::update(QVariantMap json) {
 
   Q_ASSERT_X(!m_id.isEmpty(), "QASObject", serializeJsonC(json));
 
-  m_replies = QASObjectList::getObjectList(json["replies"].toMap(), this);
+  m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
 
-  m_author = json.contains("author") ? 
-    QASActor::getActor(json["author"].toMap(), parent()) : NULL;
-
-  if (debug) {
-    qDebug() << "QASObject [" << m_id << "]";
-    qDebug() << serializeJson(json);
-  }
+  if (json.contains("author"))
+    m_author = QASActor::getActor(json["author"].toMap(), parent());
 
   if (old_liked != m_liked || old_updated != m_updated ||
       num_replies != numReplies())
     emit changed();
 
-  // if objectType == "comment"
-  // "inReplyTo": {
-  //   "id": "https://io.saz.im/api/note/8ohKMwBzTeGLI1SG6-jl9w",
-  //   "objectType": "note"
-  // },
-
-      //   "updated": "2013-05-25T21:06:07Z",
-      //   "published": "2013-05-25T21:06:07Z",
       //   "links": {
       //     "self": {
       //       "href": "http://frodo:8000/api/note/jMgmxKHfSuaLM1eqsvFKaw"
@@ -309,12 +299,6 @@ void QASActivity::update(QVariantMap json) {
 
   m_object = QASObject::getObject(json["object"].toMap(), parent());
   m_actor = QASActor::getActor(json["actor"].toMap(), parent());
-
-  // m_object = json.contains("object") ?
-  //   new QASObject(json["object"].toMap(), parent) : NULL;
-
-  // m_actor = json.contains("actor") ?
-  //   new QASActor(json["actor"].toMap(), parent) : NULL;
 
   m_published = parseTime(json["published"].toString());
   m_updated = parseTime(json["updated"].toString());

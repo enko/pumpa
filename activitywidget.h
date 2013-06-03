@@ -59,6 +59,8 @@ signals:
   void linkHovered(const QString&);
 
 private:
+  QASActor* effectiveAuthor();
+
   void addHasMoreButton(QASObjectList* ol, int li);
   void updateFavourButton(bool wait = false);
   void updateText();

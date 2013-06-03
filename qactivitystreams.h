@@ -48,7 +48,7 @@ class QASActor : public QObject {
   Q_OBJECT
 
 private:
-  QASActor(QString id="", QObject* parent=0);
+  QASActor(QString id, QObject* parent);
 
 public:
   static QASActor* getActor(QVariantMap json, QObject* parent);
@@ -73,7 +73,7 @@ class QASObject : public QObject {
   Q_OBJECT
 
 private:
-  QASObject(QString id="", QObject* parent=0);
+  QASObject(QString id, QObject* parent);
 
 public:
   static QASObject* getObject(QVariantMap json, QObject* parent);
@@ -119,13 +119,14 @@ private:
 class QASActivity : public QObject {
   Q_OBJECT
 
-  QASActivity(QString id="", QObject* parent=0);
+  QASActivity(QString id, QObject* parent);
 
 public:
   static QASActivity* getActivity(QVariantMap json, QObject* parent);
   void update(QVariantMap json);
 
   QString id() const { return m_id; }
+  QString verb() const { return m_verb; }
 
   qint64 sortInt() const { return sortIntByDateTime(m_updated); }
 
@@ -154,7 +155,7 @@ private:
 
 class QASObjectList : public QObject {
   Q_OBJECT
-  QASObjectList(QString url="", QObject* parent=0);
+  QASObjectList(QString url, QObject* parent);
 
 public:
   static QASObjectList* getObjectList(QVariantMap json, QObject* parent);
@@ -193,8 +194,8 @@ class QASCollection : public QObject {
   Q_OBJECT
 
 public:
-  QASCollection(QObject* parent=0);
-  QASCollection(QVariantMap json, QObject* parent=0);
+  QASCollection(QObject* parent);
+  QASCollection(QVariantMap json, QObject* parent);
 
   size_t size() const { return m_items.size(); }
 
