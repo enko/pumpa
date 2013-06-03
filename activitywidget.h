@@ -62,7 +62,6 @@ private:
   void updateFavourButton(bool wait = false);
   void updateText();
   void addObjectList(QASObjectList* ol);
-  QString processText(QString text);
 
   RichTextLabel* m_infoLabel;
   ObjectWidget* m_objectWidget;
@@ -83,7 +82,6 @@ private:
   QASActivity* m_activity;
 
   QList<QASObject*> m_repliesList;
-  static QSet<QString> s_allowedTags;
 };
 
 #endif 

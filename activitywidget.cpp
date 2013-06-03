@@ -22,7 +22,88 @@
 #include <QDebug>
 #include <QRegExp>
 
-QSet<QString> ActivityWidget::s_allowedTags;
+QSet<QString> s_allowedTags;
+
+//------------------------------------------------------------------------------
+
+QString splitLongWords(QString text) {
+  qDebug() << text;
+  QRegExp rx("(^|\\s)([^\\s<>\"]{40,})(\\s|$)");
+  int pos = 0;
+  while ((pos = rx.indexIn(text, pos)) != -1) {
+    int len = rx.matchedLength();
+    QString word = rx.cap(2);
+    QString newText = rx.cap(1);
+
+    int wpos = 0;
+    while (true) {
+      newText += word.mid(wpos, 5);
+      wpos += 5;
+      if (wpos >= word.length())
+        break;
+      else
+        newText += "&shy;";
+    }
+    qDebug() << "REPLACED:" << word << "=>" << newText;
+
+    text.replace(pos, len, newText);
+    pos += newText.count();
+  }
+  return text;
+}
+
+//------------------------------------------------------------------------------
+
+QString processText(QString text) {
+  if (s_allowedTags.isEmpty()) {
+    s_allowedTags << "br";
+    s_allowedTags << "p";
+    s_allowedTags << "b";
+    s_allowedTags << "i";
+    s_allowedTags << "blockquote";
+    s_allowedTags << "div";
+    s_allowedTags << "pre";
+    s_allowedTags << "code";
+    s_allowedTags << "h1";
+    s_allowedTags << "h2";
+    s_allowedTags << "h3";
+    s_allowedTags << "h4";
+    s_allowedTags << "h5";
+    s_allowedTags << "a";
+    s_allowedTags << "em";
+    // s_allowedTags << "";
+    // s_allowedTags << "";
+  }
+  
+  // QRegExp rx("(^|\\s)([^\\s<>\"]{40,})(\\s|$)");
+  QString old_text = text;
+  QRegExp rx("<\\/?([a-zA-Z0-9]+)[^>]*>");
+  int pos = 0;
+  while ((pos = rx.indexIn(text, pos)) != -1) {
+    int len = rx.matchedLength();
+    QString tag = rx.cap(1);
+
+    if (tag == "img") {
+      QString imagePlaceholder = "[image]";
+      text.replace(pos, len, imagePlaceholder);
+      pos += imagePlaceholder.length();
+      qDebug() << "processText: removing image";
+    } else if (s_allowedTags.contains(tag)) {
+      pos += len;
+    } else {
+      qDebug() << "processText: dropping unsupported tag" << tag;
+      text.remove(pos, len);
+    }
+  }
+
+  // remove trailing <br>:s
+  while (text.endsWith("<br>"))
+    text.chop(4);
+
+  // qDebug() << "processText:" << old_text;
+  // qDebug() << "          ->" << text;
+  return splitLongWords(text);
+}
 
 //------------------------------------------------------------------------------
 
@@ -150,59 +231,6 @@ void ActivityWidget::updateText() {
 
 //------------------------------------------------------------------------------
 
-QString ActivityWidget::processText(QString text) {
-  if (s_allowedTags.isEmpty()) {
-    s_allowedTags << "br";
-    s_allowedTags << "p";
-    s_allowedTags << "b";
-    s_allowedTags << "i";
-    s_allowedTags << "blockquote";
-    s_allowedTags << "div";
-    s_allowedTags << "pre";
-    s_allowedTags << "code";
-    s_allowedTags << "h1";
-    s_allowedTags << "h2";
-    s_allowedTags << "h3";
-    s_allowedTags << "h4";
-    s_allowedTags << "h5";
-    s_allowedTags << "a";
-    s_allowedTags << "em";
-    // s_allowedTags << "";
-    // s_allowedTags << "";
-  }
-  
-  // QRegExp rx("(^|\\s)([^\\s<>\"]{40,})(\\s|$)");
-  QString old_text = text;
-  QRegExp rx("<\\/?([a-zA-Z0-9]+)[^>]*>");
-  int pos = 0;
-  while ((pos = rx.indexIn(text, pos)) != -1) {
-    int len = rx.matchedLength();
-    QString tag = rx.cap(1);
-
-    if (tag == "img") {
-      QString imagePlaceholder = "[image]";
-      text.replace(pos, len, imagePlaceholder);
-      pos += imagePlaceholder.length();
-      qDebug() << "processText: removing image";
-    } else if (s_allowedTags.contains(tag)) {
-      pos += len;
-    } else {
-      qDebug() << "processText: dropping unsupported tag" << tag;
-      text.remove(pos, len);
-    }
-  }
-
-  // remove trailing <br>:s
-  while (text.endsWith("<br>"))
-    text.chop(4);
-
-  // qDebug() << "processText:" << old_text;
-  // qDebug() << "          ->" << text;
-  return text;
-}
-
-//------------------------------------------------------------------------------
-
 void ActivityWidget::favourite() {
   updateFavourButton(true);
   // FIXME make favouritisin' request here
@@ -235,7 +263,7 @@ void ActivityWidget::onObjectChanged() {
 //------------------------------------------------------------------------------
 
 void ActivityWidget::addObjectList(QASObjectList* ol) {
-  int li = 2; // index where to insert next widget in the layout
+  int li = 3; // index where to insert next widget in the layout
 
   if (ol->hasMore() && (qulonglong)m_repliesList.size() < ol->totalItems()) {
     addHasMoreButton(ol, li++);
@@ -261,10 +289,6 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
     QString replyId = replyObj->id();
     qint64 sortInt = replyObj->sortInt();
 
-    // if (m_repliesSet.contains(replyId))
-    //   continue;
-    // m_repliesMap.insert(replyId, replyObj);
-
     while (i < m_repliesList.size() &&
            m_repliesList[i]->id() != replyId &&
            m_repliesList[i]->sortInt() < sortInt)
@@ -278,8 +302,10 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
     ActorWidget* aw = new ActorWidget(author, this, true);
     ObjectWidget* ow = new ObjectWidget(replyObj, this);
     
+    QString content = processText(replyObj->content());
+
     ow->setText(QString("%1<br/>%2 at <a href=\"%4\">%3</a>").
-                arg(replyObj->content()).
+                arg(content).
                 arg(author->displayName()).
                 arg(relativeFuzzyTime(replyObj->published())).
                 arg(replyObj->url()));
@@ -313,5 +339,7 @@ void ActivityWidget::addHasMoreButton(QASObjectList* ol, int li) {
 //------------------------------------------------------------------------------
 
 void ActivityWidget::onHasMoreClicked() {
-  emit request(m_activity->object()->replies()->url(), QAS_FETCH_REPLIES);
+  m_hasMoreButton->setText("...");
+  emit request(m_activity->object()->replies()->urlOrProxy(),
+               QAS_FETCH_REPLIES);
 }
