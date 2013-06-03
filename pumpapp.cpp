@@ -50,8 +50,8 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   oaManager = new KQOAuthManager(this);
   connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
           this, SLOT(onAuthorizedRequestReady(QByteArray, int)));
-  connect(oaManager, SIGNAL(authorizedRequestDone()),
-          this, SLOT(onAuthorizedRequestDone()));
+  // connect(oaManager, SIGNAL(authorizedRequestDone()),
+  //         this, SLOT(onAuthorizedRequestDone()));
 
   createActions();
   createMenu();
@@ -68,6 +68,7 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   show();
 
   // oaRequest->setEnableDebugOutput(true);
+  syncOAuthInfo();
 
   if (clientId.isEmpty())
     registerOAuthClient();
@@ -81,6 +82,13 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
 
 PumpApp::~PumpApp() {
   writeSettings();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::syncOAuthInfo() {
+  FileDownloader::setOAuthInfo(clientId, clientSecret,
+                               token, tokenSecret);
 }
 
 //------------------------------------------------------------------------------
@@ -337,6 +345,7 @@ void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
 
     qDebug() << "User authorised for [" << siteUrl << "]";
 
+    syncOAuthInfo();
     fetchAll();
 }
 
@@ -460,7 +469,7 @@ void PumpApp::request(QString endpoint, int response_id,
 
 //------------------------------------------------------------------------------
 
-void PumpApp::onAuthorizedRequestDone() {
-  //  qDebug() << "onAuthorizedRequestDone";
-}
+// void PumpApp::onAuthorizedRequestDone() {
+//   //  qDebug() << "onAuthorizedRequestDone";
+// }
 

@@ -23,10 +23,15 @@
 #include <QtCore>
 #include <QtNetwork>
 
+#include "QtKOAuth"
+
 class FileDownloader : public QObject {
   Q_OBJECT
 
 public:
+  static void setOAuthInfo(QString clientId, QString clientSecret,
+                           QString token, QString tokenSecret);
+
   static FileDownloader* get(const QString& url);
 
   void download();
@@ -45,14 +50,15 @@ signals:
   void fileReady(const QString&);
 
 private slots:
-  void onSslErrors(QNetworkReply* reply, const QList<QSslError>& errors);
-  void replyFinished(QNetworkReply* nr);
+  void onAuthorizedRequestReady(QByteArray response, int id);
 
 private:
   FileDownloader();
   FileDownloader(const QString&);
 
-  QNetworkAccessManager* m_nam;
+  KQOAuthManager *oaManager;
+  KQOAuthRequest *oaRequest;
+
   QString m_downloadingUrl;
   QString m_cachedFile;
 
@@ -60,6 +66,11 @@ private:
 
   static QString m_cacheDir;
   static QMap<QString, FileDownloader*> m_downloading;
+
+  static QString s_clientId;
+  static QString s_clientSecret;
+  static QString s_token;
+  static QString s_tokenSecret;
 };
 
 #endif

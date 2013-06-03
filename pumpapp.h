@@ -31,11 +31,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 
-#include "kqoauthrequest.h"
-#include "kqoauthrequest_1.h"
-#include "kqoauthrequest_xauth.h"
-#include "kqoauthmanager.h"
-#include "kqoauthglobals.h"
+#include "QtKOAuth"
 
 #include "collectionwidget.h"
 
@@ -62,7 +58,7 @@ private slots:
                                 QString temporaryTokenSecret);
   void onAuthorizationReceived(QString token, QString verifier);
   void onAccessTokenReceived(QString token, QString tokenSecret);
-  void onAuthorizedRequestDone();
+  // void onAuthorizedRequestDone();
   void onOAuthClientRegDone();
 
   void onAuthorizedRequestReady(QByteArray response, int id);
@@ -81,6 +77,7 @@ private slots:
 private:
   void getOAuthAccess();
   void registerOAuthClient();
+  void syncOAuthInfo();
 
   void fetchAll();
   void fetchInbox();
@@ -107,7 +104,6 @@ private:
 
   // QSystemTrayIcon* trayIcon;
   // QMenu* trayIconMenu;
-
   
   QString siteUrl;
   QString userName;
