@@ -74,7 +74,7 @@ void ObjectWidget::fileReady(const QString& fn) {
 // FIXME this is duplicated in ActorWidget -> should be made more
 // general and reused.
 void ObjectWidget::updateImage(const QString& fileName) {
-  static QString defaultImage = ":/images/default.png";
+  static QString defaultImage = ":/images/broken_image.png";
   QString fn = fileName;
 
   if (fn.isEmpty()) {
