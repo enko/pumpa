@@ -75,12 +75,13 @@ private slots:
   void reload();
 
 private:
+  void statusMessage(QString msg);
   void getOAuthAccess();
   void registerOAuthClient();
   void syncOAuthInfo();
 
   void fetchAll();
-  void fetchInbox();
+  void fetchInbox(QString inbox, bool direct=false);
   void feed(QString verb, QVariantMap object, int response_id);
   
   void writeSettings();

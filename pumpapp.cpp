@@ -50,8 +50,6 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   oaManager = new KQOAuthManager(this);
   connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
           this, SLOT(onAuthorizedRequestReady(QByteArray, int)));
-  // connect(oaManager, SIGNAL(authorizedRequestDone()),
-  //         this, SLOT(onAuthorizedRequestDone()));
 
   createActions();
   createMenu();
@@ -93,8 +91,16 @@ void PumpApp::syncOAuthInfo() {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::statusMessage(QString msg) {
+  statusBar()->showMessage(msg);
+  qDebug() << "[STATUS]:" << msg;
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::errorMessage(QString msg) {
-  qDebug() << "errorMessage:" << msg;
+  statusMessage("Error: "+msg);
+  qDebug() << "[ERROR]:" << msg;
 }
 
 //------------------------------------------------------------------------------
@@ -261,6 +267,8 @@ void PumpApp::readSettings() {
 //------------------------------------------------------------------------------
 
 void PumpApp::registerOAuthClient() {
+  statusMessage("Registering client ...");
+
   QNetworkRequest req;
   req.setUrl(QUrl(siteUrl+"/api/client/register"));
   req.setHeader(QNetworkRequest::ContentTypeHeader, 
@@ -274,7 +282,7 @@ void PumpApp::registerOAuthClient() {
 
   QByteArray postData = serializeJson(post);
   
-  qDebug() << "data=" << postData;
+  // qDebug() << "data=" << postData;
 
   QNetworkReply *reply = netManager->post(req, postData);
 
@@ -291,8 +299,9 @@ void PumpApp::onOAuthClientRegDone() {
   clientId = json["client_id"].toString();
   clientSecret = json["client_secret"].toString();
 
-  qDebug() << "Registered client to [" << siteUrl << "] successfully.";
   writeSettings();
+
+  statusMessage("Registered client to [" + siteUrl + "] successfully.");
 
   getOAuthAccess();
 }
@@ -300,6 +309,8 @@ void PumpApp::onOAuthClientRegDone() {
 //------------------------------------------------------------------------------
 
 void PumpApp::getOAuthAccess() {
+  statusMessage("Authorising user ...");
+
   connect(oaManager, SIGNAL(temporaryTokenReceived(QString, QString)),
           this, SLOT(onTemporaryTokenReceived(QString, QString)));
   connect(oaManager, SIGNAL(authorizationReceived(QString,QString)),
@@ -343,7 +354,7 @@ void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
 
     writeSettings();
 
-    qDebug() << "User authorised for [" << siteUrl << "]";
+    statusMessage("User authorised for [" + siteUrl + "]");
 
     syncOAuthInfo();
     fetchAll();
@@ -353,10 +364,13 @@ void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
 
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   if (oaManager->lastError()) {
-    qDebug() << "OAuth or network error [" << id << "]:"
-             << oaManager->lastError();
+    errorMessage(QString("Network or authorisation error [id=%1].").
+                 arg(oaManager->lastError()));
     return;
   }
+
+  // qDebug() << "onAuthorizedRequestReady" << id;
+  // qDebug() << response;
 
   if (id == QAS_FETCH_INBOX) {
     QVariantMap obj = parseJson(response);
@@ -367,29 +381,25 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     QASObjectList::getObjectList(obj, this);
   } else if (id == QAS_NEW_POST) {
     // nice to refresh inbox after posting
-    fetchInbox();
+    fetchAll();
   } else {
-    qDebug() << "Unknown request id!" << id;
+    qDebug() << "[WARNING] Unknown request id!" << id;
   }
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::fetchAll() {
-  fetchInbox();
+  fetchInbox("major");
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::fetchInbox() {
-  QString inbox = "major"; 
-    // "minor";
-
+void PumpApp::fetchInbox(QString inbox, bool direct) {
   QString endpoint = "api/user/"+userName+"/inbox";
 
-  // if (direct)
-  //   endpoint += "/direct";
-
+  if (direct)
+    endpoint += "/direct";
   endpoint += "/"+inbox;
 
   request(endpoint, QAS_FETCH_INBOX);
@@ -448,6 +458,8 @@ void PumpApp::request(QString endpoint, int response_id,
     endpoint = siteUrl + endpoint;
   }
 
+  qDebug() << "[REQUEST] (" << response_id << "):" << endpoint;
+
   oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, QUrl(endpoint));
   oaRequest->setConsumerKey(clientId);
   oaRequest->setConsumerSecretKey(clientSecret);
@@ -460,16 +472,7 @@ void PumpApp::request(QString endpoint, int response_id,
   if (method == KQOAuthRequest::POST) {
     oaRequest->setContentType("application/json");
     oaRequest->setRawData(serializeJson(data));
-
-    // qDebug() << "POSTing:" << serializeJson(data);
   }
 
   oaManager->executeAuthorizedRequest(oaRequest, response_id);
 }
-
-//------------------------------------------------------------------------------
-
-// void PumpApp::onAuthorizedRequestDone() {
-//   //  qDebug() << "onAuthorizedRequestDone";
-// }
-
