@@ -162,8 +162,11 @@ public:
 
   size_t size() const { return m_items.size(); }
   qulonglong totalItems() const { return m_totalItems; }
-  bool hasMore() const { return size() < m_totalItems; }
+  bool hasMore() const { return m_hasMore; }
   QString url() const { return m_url; }
+  QString urlOrProxy() const {
+    return m_proxyUrl.isEmpty() ? m_url : m_proxyUrl; 
+  }
 
   QASObject* at(size_t i) const {
     if (i >= size())
@@ -176,8 +179,10 @@ signals:
 
 private:
   QString m_url;
+  QString m_proxyUrl;
   qulonglong m_totalItems;
   QList<QASObject*> m_items;
+  bool m_hasMore;
   
   static QMap<QString, QASObjectList*> s_objectLists;
 };

@@ -53,6 +53,21 @@ QDateTime parseTime(QString timeStr) {
 
 //------------------------------------------------------------------------------
 
+QString getProxyUrl(QVariantMap obj) {
+  if (obj.contains("pump_io")) 
+    return obj["pump_io"].toMap()["proxyURL"].toString();
+  return "";
+}
+
+//------------------------------------------------------------------------------
+
+QString getUrlOrProxy(QVariantMap obj) {
+  QString proxyUrl = getProxyUrl(obj);
+  return proxyUrl.isEmpty() ? obj["url"].toString() : proxyUrl;
+}
+
+//------------------------------------------------------------------------------
+
 QASActor::QASActor(QString id, QObject* parent) :
   QObject(parent),
   m_id(id) 
@@ -75,7 +90,7 @@ void QASActor::update(QVariantMap json) {
 
   if (json.contains("image")) {
     QVariantMap im = json["image"].toMap();
-    m_imageUrl = im["url"].toString();
+    m_imageUrl = getUrlOrProxy(im);
   }
 
   Q_ASSERT_X(!m_id.isEmpty(), "QASActor", serializeJsonC(json));
@@ -188,10 +203,7 @@ void QASObject::update(QVariantMap json) {
 
   if (m_objectType == "image") {
     QVariantMap imageObj = json["image"].toMap();
-    if (imageObj.contains("pump_io")) 
-      m_imageUrl = imageObj["pump_io"].toMap()["proxyURL"].toString();
-    else
-      m_imageUrl = imageObj["url"].toString();
+    m_imageUrl = getUrlOrProxy(imageObj);
     // qDebug() << "*** IMAGEOBJECT ***" << debugDumpJson(json["image"].toMap());
     // qDebug() << m_imageUrl;
   }
@@ -391,7 +403,8 @@ QASActivity* QASActivity::getActivity(QVariantMap json, QObject* parent) {
 QASObjectList::QASObjectList(QString url, QObject* parent) :
   QObject(parent),
   m_url(url),
-  m_totalItems(0) 
+  m_totalItems(0),
+  m_hasMore(false)
 {
 #if DEBUG >= 1
   qDebug() << "new ObjectList" << m_url;
@@ -412,6 +425,7 @@ void QASObjectList::update(QVariantMap json) {
   int old_item_count = m_items.size();
 
   m_url = json["url"].toString();
+  m_proxyUrl = getProxyUrl(json);
   m_totalItems = json["totalItems"].toULongLong();
 
   m_items.clear();
@@ -421,6 +435,11 @@ void QASObjectList::update(QVariantMap json) {
                                           parent());
     m_items.append(act);
   }
+
+  // set to false if number of items < total, and if we have already
+  // fetched it - that seems to have a displayName element
+  // ^^ FFFUUUGLY HACK !!!
+  m_hasMore = !json.contains("displayName") && size() < m_totalItems;
 
   if (old_totalItems != m_totalItems || old_item_count != m_items.size())
     emit changed();
