@@ -20,6 +20,9 @@
 #include "activitywidget.h"
 
 #include <QDebug>
+#include <QRegExp>
+
+QSet<QString> ActivityWidget::s_allowedTags;
 
 //------------------------------------------------------------------------------
 
@@ -49,8 +52,9 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
 {
   QASObject* noteObj = m_activity->object();
 
-  m_objectWidget = new ObjectWidget(noteObj, parent);
-  m_actorWidget = new ActorWidget(m_activity->actor(), parent);
+  m_infoLabel = new RichTextLabel(this);
+  m_objectWidget = new ObjectWidget(noteObj, this);
+  m_actorWidget = new ActorWidget(m_activity->actor(), this);
 
   updateText();
 
@@ -76,13 +80,14 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
 
   m_buttonLayout = new QHBoxLayout;
-  m_buttonLayout->addStretch();
   m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
   // m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
   m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
+  m_buttonLayout->addStretch();
 
   m_rightLayout = new QVBoxLayout;
   m_rightLayout->setContentsMargins(0, 0, 0, 0);
+  m_rightLayout->addWidget(m_infoLabel);
   m_rightLayout->addWidget(m_objectWidget);
   m_rightLayout->addLayout(m_buttonLayout);
 
@@ -135,11 +140,65 @@ void ActivityWidget::updateText() {
   if (author == NULL)
     author = actor;
 
-  m_objectWidget->setText(QString("<p>%1 at <a href=\"%3\">%2</a><br/>%4</p>").
-                          arg(author->displayName()).
-                          arg(relativeFuzzyTime(noteObj->published())).
-                          arg(noteObj->url()).
-                          arg(noteObj->content()));
+  m_infoLabel->setText(QString("%1 at <a href=\"%3\">%2</a>").
+                       arg(author->displayName()).
+                       arg(relativeFuzzyTime(noteObj->published())).
+                       arg(noteObj->url()));
+
+  m_objectWidget->setText(processText(noteObj->content()));
+}
+
+//------------------------------------------------------------------------------
+
+QString ActivityWidget::processText(QString text) {
+  if (s_allowedTags.isEmpty()) {
+    s_allowedTags << "br";
+    s_allowedTags << "p";
+    s_allowedTags << "b";
+    s_allowedTags << "i";
+    s_allowedTags << "blockquote";
+    s_allowedTags << "div";
+    s_allowedTags << "pre";
+    s_allowedTags << "code";
+    s_allowedTags << "h1";
+    s_allowedTags << "h2";
+    s_allowedTags << "h3";
+    s_allowedTags << "h4";
+    s_allowedTags << "h5";
+    s_allowedTags << "a";
+    s_allowedTags << "em";
+    // s_allowedTags << "";
+    // s_allowedTags << "";
+  }
+  
+  // QRegExp rx("(^|\\s)([^\\s<>\"]{40,})(\\s|$)");
+  QString old_text = text;
+  QRegExp rx("<\\/?([a-zA-Z0-9]+)[^>]*>");
+  int pos = 0;
+  while ((pos = rx.indexIn(text, pos)) != -1) {
+    int len = rx.matchedLength();
+    QString tag = rx.cap(1);
+
+    if (tag == "img") {
+      QString imagePlaceholder = "[image]";
+      text.replace(pos, len, imagePlaceholder);
+      pos += imagePlaceholder.length();
+      qDebug() << "processText: removing image";
+    } else if (s_allowedTags.contains(tag)) {
+      pos += len;
+    } else {
+      qDebug() << "processText: dropping unsupported tag" << tag;
+      text.remove(pos, len);
+    }
+  }
+
+  // remove trailing <br>:s
+  while (text.endsWith("<br>"))
+    text.chop(4);
+
+  // qDebug() << "processText:" << old_text;
+  // qDebug() << "          ->" << text;
+  return text;
 }
 
 //------------------------------------------------------------------------------

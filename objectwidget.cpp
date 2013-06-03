@@ -28,19 +28,8 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
   // setLineWidth(1);
   // setFrameStyle(QFrame::Box);
 
-  layout = new QVBoxLayout;
-  textLabel = new QLabel;
-
-  textLabel->setWordWrap(true);
-
-  textLabel->setOpenExternalLinks(true);
-  textLabel->setTextInteractionFlags(Qt::TextSelectableByMouse |
-                          Qt::LinksAccessibleByMouse);
-  textLabel->setScaledContents(false);
-
-  textLabel->setLineWidth(2);
-  textLabel->setMargin(0);
-  textLabel->setFocusPolicy(Qt::NoFocus);
+  layout = new QVBoxLayout(this);
+  textLabel = new RichTextLabel(this);
 
   if (obj->type() == "image") {
     imageLabel = new QLabel;

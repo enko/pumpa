@@ -17,43 +17,25 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _OBJECTWIDGET_H_
-#define _OBJECTWIDGET_H_
-
-#include <QFrame>
-#include <QWidget>
-#include <QLabel>
-#include <QVBoxLayout>
-
-#include "qactivitystreams.h"
-#include "filedownloader.h"
 #include "richtextlabel.h"
 
 //------------------------------------------------------------------------------
 
-class ObjectWidget : public QFrame {
-  Q_OBJECT
+RichTextLabel::RichTextLabel(QWidget* parent) : QLabel(parent) {
+  // useful for debugging layouts and margins
+  // setLineWidth(1);
+  // setFrameStyle(QFrame::Box);
 
-public:
-  ObjectWidget(QASObject* obj, QWidget* parent = 0);
+  setWordWrap(true);
 
-  QASObject* object() const { return m_object; }
+  setOpenExternalLinks(true);
+  setTextInteractionFlags(Qt::TextSelectableByMouse |
+               Qt::LinksAccessibleByMouse);
+  setScaledContents(false);
+  setTextFormat(Qt::RichText);
 
-  void setText(QString text);
+  setLineWidth(2);
+  setMargin(0);
+  setFocusPolicy(Qt::NoFocus);
 
-private slots:
-  virtual void fileReady(const QString& fn);
-
-private:
-  void updateImage(const QString& fileName="");
-  QString m_imageUrl;
-  QString m_localFile;
-
-  RichTextLabel* textLabel;
-  QLabel* imageLabel;
-  QVBoxLayout* layout;
-
-  QASObject* m_object;
-};
-
-#endif /* _OBJECTWIDGET_H_ */
+}

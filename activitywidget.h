@@ -31,6 +31,7 @@
 #include "qactivitystreams.h"
 #include "objectwidget.h"
 #include "actorwidget.h"
+#include "richtextlabel.h"
 
 #define MAX_WORD_LENGTH       40
 
@@ -61,7 +62,9 @@ private:
   void updateFavourButton(bool wait = false);
   void updateText();
   void addObjectList(QASObjectList* ol);
+  QString processText(QString text);
 
+  RichTextLabel* m_infoLabel;
   ObjectWidget* m_objectWidget;
   ActorWidget* m_actorWidget;
 
@@ -79,9 +82,8 @@ private:
 
   QASActivity* m_activity;
 
-  // QMap<QString, QASObject*> m_repliesMap;
-  // QSet<QString> m_repliesSet;
   QList<QASObject*> m_repliesList;
+  static QSet<QString> s_allowedTags;
 };
 
 #endif 

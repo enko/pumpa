@@ -60,7 +60,8 @@ exists( /usr/lib/libaspell* ) {
 
 OBJECT_HEADERS = pumpapp.h qactivitystreams.h collectionwidget.h json.h \
 	messagewindow.h messageedit.h fancyhighlighter.h qaspell.h \
-	activitywidget.h objectwidget.h actorwidget.h filedownloader.h
+	activitywidget.h objectwidget.h actorwidget.h filedownloader.h \
+	richtextlabel.h
 
 HEADERS += $$OBJECT_HEADERS
 SOURCES += main.cpp
