@@ -55,23 +55,10 @@ QString splitLongWords(QString text) {
 
 QString processText(QString text) {
   if (s_allowedTags.isEmpty()) {
-    s_allowedTags << "br";
-    s_allowedTags << "p";
-    s_allowedTags << "b";
-    s_allowedTags << "i";
-    s_allowedTags << "blockquote";
-    s_allowedTags << "div";
-    s_allowedTags << "pre";
-    s_allowedTags << "code";
-    s_allowedTags << "h1";
-    s_allowedTags << "h2";
-    s_allowedTags << "h3";
-    s_allowedTags << "h4";
-    s_allowedTags << "h5";
-    s_allowedTags << "a";
-    s_allowedTags << "em";
-    // s_allowedTags << "";
-    // s_allowedTags << "";
+    s_allowedTags 
+      << "br" << "p" << "b" << "i" << "blockquote" << "div"
+      << "pre" << "code" << "h1" << "h2" << "h3" << "h4" << "h5"
+      << "a" << "em" << "ol" << "li" << "strong";
   }
   
   // QRegExp rx("(^|\\s)([^\\s<>\"]{40,})(\\s|$)");
