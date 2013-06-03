@@ -99,7 +99,7 @@ void PumpApp::statusMessage(QString msg) {
 //------------------------------------------------------------------------------
 
 void PumpApp::errorMessage(QString msg) {
-  statusMessage("Error: "+msg);
+  statusBar()->showMessage("Error: " + msg);
   qDebug() << "[ERROR]:" << msg;
 }
 
@@ -385,11 +385,13 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   } else {
     qDebug() << "[WARNING] Unknown request id!" << id;
   }
+  statusMessage("Ready!");
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::fetchAll() {
+  statusMessage("Loading ...");
   fetchInbox("major");
 }
 
