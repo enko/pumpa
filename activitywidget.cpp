@@ -57,23 +57,27 @@ QString processText(QString text) {
   if (s_allowedTags.isEmpty()) {
     s_allowedTags 
       << "br" << "p" << "b" << "i" << "blockquote" << "div"
-      << "pre" << "code" << "h1" << "h2" << "h3" << "h4" << "h5"
+      /*<< "pre" */<< "code" << "h1" << "h2" << "h3" << "h4" << "h5"
       << "a" << "em" << "ol" << "li" << "strong";
   }
   
-  // QRegExp rx("(^|\\s)([^\\s<>\"]{40,})(\\s|$)");
   QString old_text = text;
-  QRegExp rx("<\\/?([a-zA-Z0-9]+)[^>]*>");
+  QRegExp rx("<(\\/?)([a-zA-Z0-9]+)[^>]*>");
   int pos = 0;
   while ((pos = rx.indexIn(text, pos)) != -1) {
     int len = rx.matchedLength();
-    QString tag = rx.cap(1);
+    QString tag = rx.cap(2);
+    QString slash = rx.cap(1);
 
     if (tag == "img") {
       QString imagePlaceholder = "[image]";
       text.replace(pos, len, imagePlaceholder);
       pos += imagePlaceholder.length();
       qDebug() << "processText: removing image";
+    } else if (tag == "pre") {
+      QString newTag = QString("<%1p><%1code>").arg(slash);
+      text.replace(pos, len, newTag);
+      pos += newTag.length();
     } else if (s_allowedTags.contains(tag)) {
       pos += len;
     } else {
