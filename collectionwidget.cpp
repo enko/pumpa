@@ -67,3 +67,17 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
     m_itemLayout->insertWidget(li++, aw);
   }
 }
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::keyPressEvent(QKeyEvent* event) {
+  int key = event->key();
+
+  if (key == Qt::Key_Home || key == Qt::Key_End) {
+    bool home = key==Qt::Key_Home;
+    QScrollBar* sb = verticalScrollBar();
+    sb->setValue(home ? sb->minimum() : sb->maximum());
+  } else {
+    QScrollArea::keyPressEvent(event);
+  }
+}

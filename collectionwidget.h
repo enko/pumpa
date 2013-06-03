@@ -45,6 +45,9 @@ signals:
   void newReply(QASObject*);
   void linkHovered(const QString&);
 
+protected:
+  void keyPressEvent(QKeyEvent* event);
+
 private:
   QVBoxLayout* m_itemLayout;
   QWidget* m_listContainer;
