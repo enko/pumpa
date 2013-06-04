@@ -297,6 +297,8 @@ void PumpApp::readSettings() {
 
   s.beginGroup("Account");
   siteUrl = s.value("site_url", "").toString();
+  if (siteUrl.endsWith('/'))
+    siteUrl.chop(1);
   userName = s.value("username", "").toString();
   clientId = s.value("oauth_client_id", "").toString();
   clientSecret = s.value("oauth_client_secret", "").toString();
