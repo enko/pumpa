@@ -415,26 +415,26 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     QASCollection c(obj, this);
     inboxWidget->addCollection(c);
   } else if (id == QAS_INBOX_MINOR) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    for (size_t i=0; i<3 && i<c.size(); i++) {
-      QASActivity* act = c.at(i);
-      qDebug() << "MINOR" << act->content();
-    }
+  //   QVariantMap obj = parseJson(response);
+  //   QASCollection c(obj, this);
+  //   for (size_t i=0; i<3 && i<c.size(); i++) {
+  //     QASActivity* act = c.at(i);
+  //     qDebug() << "MINOR" << act->content();
+  //   }
   } else if (id == (QAS_INBOX_DIRECT_MAJOR)) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    for (size_t i=0; i<3 && i<c.size(); i++) {
-      QASActivity* act = c.at(i);
-      qDebug() << "MAJOR DIRECT" << act->content();
-    }
+  //   QVariantMap obj = parseJson(response);
+  //   QASCollection c(obj, this);
+  //   for (size_t i=0; i<3 && i<c.size(); i++) {
+  //     QASActivity* act = c.at(i);
+  //     qDebug() << "MAJOR DIRECT" << act->content();
+  //   }
   } else if (id == (QAS_INBOX_DIRECT_MINOR)) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    for (size_t i=0; i<3 && i<c.size(); i++) {
-      QASActivity* act = c.at(i);
-      qDebug() << "MINOR DIRECT" << act->content();
-    }
+  //   QVariantMap obj = parseJson(response);
+  //   QASCollection c(obj, this);
+  //   for (size_t i=0; i<3 && i<c.size(); i++) {
+  //     QASActivity* act = c.at(i);
+  //     qDebug() << "MINOR DIRECT" << act->content();
+  //   }
   } else if (id == QAS_REPLIES) {
     QVariantMap obj = parseJson(response);
     QASObjectList::getObjectList(obj, this);
