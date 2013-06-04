@@ -1,4 +1,19 @@
-* Dependencies
+# Pumpa v0.1
+
+Greetings, fellow pumpkins!
+
+Pumpa is a simple (and yet very unfinished) pump.io client written in
+C++ and Qt.  Some parts have been cherry picked from my old StatusNet
+client, yaics (<http://gitorious.org/yaics>).
+
+Pumpa is licensed under the GPLv3.  Please send bug reports and
+feature suggestions to me via e-mail <mats@sjoberg.fi> or to my
+pump.io account [sazius@io.saz.im](https://io.saz.im/sazius).
+
+Oh, and "pumpa" just means pumpkin in Swedish :-)
+
+
+## Build dependencies
   
 Pumpa should build with Qt 4.8 or Qt 5.0 or newer. If you are using Qt
 4, you will also need the QJson library.
@@ -12,11 +27,78 @@ If you want spell checking install the aspell library as well:
 
     aptitude install libaspell-dev
 
-* Building
+
+## Building
 
 To download and build, type the following:
 
-    git clone /path/to/repo/pumpa
+    git clone git://gitorious.org/pumpa/pumpa.git
     cd pumpa
-    qmake
+    qmake-qt4     # or just "qmake" on some systems
     make
+
+
+## Running
+
+Currently Pumpa doesn't have a preferences dialog so you'll have to
+edit the configuration file manually.  An empty template will be
+generated when you start pumpa for the first time by running:
+
+    ./pumpa
+    
+You need to fill in "site_url" and "username" in the config file which
+typically resides at `~/.config/pumpa/pumpa.conf`, for example:
+
+    [Account] 
+    site_url=https://microca.st/ 
+    username=someguy 
+
+You can leave the other fields empty for now.  Now Pumpa should start
+and hopefully do the OAuth authentication successfully ...  :-)
+
+
+## Missing features
+
+There are a lot of missing features still.  This list contains some of
+them, that I almost certainly intend to implement once I get around to
+it (not necessarily in order of importance):
+
+* Notification system for new replies!
+* Viewing of minor feed
+* Add a GUI preferences dialog
+* Add minimise to tray icon
+* Show To: and Cc: fields of notes
+* Show name of source/client app of notes
+* Ability to favourite posts and comments
+* Add ability to see older notes/activities
+* Sharing of notes
+* Ability to post images
+* Images posted as image notes work fine, but images included in
+  `<img>` tags in regular notes do not work yet... not sure what to do
+  about that...
+
+Feel free to suggest other features, however my intention is to keep
+Pumpa as simple as possible, so I might not be interested in
+implementing everything. 
+
+
+## License
+
+Copyright 2013 Mats Sjöberg <mats@sjoberg.fi>.
+
+All of the source code of Pumpa is licensed under the GPLv3.
+
+*GPLv3*
+
+Pumpa is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+Pumpa is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License
+along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
