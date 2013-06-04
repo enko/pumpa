@@ -6,11 +6,20 @@ Pumpa is a simple (and yet very unfinished) pump.io client written in
 C++ and Qt.  Some parts have been cherry picked from my old StatusNet
 client, yaics (<http://gitorious.org/yaics>).
 
-Pumpa is licensed under the GPLv3.  Please send bug reports and
-feature suggestions to me via e-mail <mats@sjoberg.fi> or to my
-pump.io account [sazius@io.saz.im](https://io.saz.im/sazius).
+Pumpa is licensed under the GNU GPL 3.0 (or later).  Please send bug
+reports and feature suggestions to me via e-mail <mats@sjoberg.fi> or
+to my pump.io account [sazius@io.saz.im](https://io.saz.im/sazius).
+
+The current (temporary?) Pumpa logo is from the
+["Fruit and Veggie Inventory"][1] entry to the
+[Liberated Pixel Cup][2] by Joshua Taylor.  The logo is copyrighted by
+the artist and is dual licensed under the CC-BY-SA 3.0 license and the
+GNU GPL 3.0.
 
 Oh, and "pumpa" just means pumpkin in Swedish :-)
+
+[1]: http://opengameart.org/content/fruit-and-veggie-inventory
+[2]: http://lpc.opengameart.org/
 
 
 ## Build dependencies
@@ -73,6 +82,7 @@ it (not necessarily in order of importance):
 * Add ability to see older notes/activities
 * Sharing of notes
 * Ability to post images
+* Ability to post rich text (HTML) notes
 * Images posted as image notes work fine, but images included in
   `<img>` tags in regular notes do not work yet... not sure what to do
   about that...
@@ -102,3 +112,4 @@ for more details.
 
 You should have received a copy of the GNU General Public License
 along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
+
