@@ -437,7 +437,7 @@ void QASObjectList::update(QVariantMap json) {
 QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent) {
   QString url = json["url"].toString();
   if (url.isEmpty()) {
-    qDebug() << "Curious object list" << debugDumpJson(json);
+    // qDebug() << "Curious object list" << debugDumpJson(json);
     return NULL;
   }
   // Q_ASSERT_X(!url.isEmpty(), "getObjectList", serializeJsonC(json));

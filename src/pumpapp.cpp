@@ -410,33 +410,30 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     return;
   }
 
-  // qDebug() << "onAuthorizedRequestReady" << id;
-  // qDebug() << response;
-
   if (id == QAS_INBOX_MAJOR) {
     QVariantMap obj = parseJson(response);
-    QASCollection c(obj, true, this);
+    QASCollection c(obj, this);
     inboxWidget->addCollection(c);
   } else if (id == QAS_INBOX_MINOR) {
     QVariantMap obj = parseJson(response);
-    QASCollection c(obj, false, this);
-    for (size_t i=0; i<5 && i<c.size(); i++) {
+    QASCollection c(obj, this);
+    for (size_t i=0; i<3 && i<c.size(); i++) {
       QASActivity* act = c.at(i);
-      qDebug() << "MINOR" << act->object()->content();
+      qDebug() << "MINOR" << act->content();
     }
-  } else if (id == (QAS_INBOX_MAJOR | QAS_DIRECT)) {
+  } else if (id == (QAS_INBOX_DIRECT_MAJOR)) {
     QVariantMap obj = parseJson(response);
-    QASCollection c(obj, false, this);
-    for (size_t i=0; i<5 && i<c.size(); i++) {
+    QASCollection c(obj, this);
+    for (size_t i=0; i<3 && i<c.size(); i++) {
       QASActivity* act = c.at(i);
-      qDebug() << "MAJOR DIRECT" << act->object()->content();
+      qDebug() << "MAJOR DIRECT" << act->content();
     }
-  } else if (id == (QAS_INBOX_MINOR | QAS_DIRECT)) {
+  } else if (id == (QAS_INBOX_DIRECT_MINOR)) {
     QVariantMap obj = parseJson(response);
-    QASCollection c(obj, false, this);
-    for (size_t i=0; i<5 && i<c.size(); i++) {
+    QASCollection c(obj, this);
+    for (size_t i=0; i<3 && i<c.size(); i++) {
       QASActivity* act = c.at(i);
-      qDebug() << "MAJOR MINOR" << act->object()->content();
+      qDebug() << "MINOR DIRECT" << act->content();
     }
   } else if (id == QAS_REPLIES) {
     QVariantMap obj = parseJson(response);
@@ -456,8 +453,8 @@ void PumpApp::fetchAll() {
   notifyMessage("Loading ...");
   fetchInbox(QAS_INBOX_MAJOR);
   fetchInbox(QAS_INBOX_MINOR);
-  fetchInbox(QAS_INBOX_MAJOR | QAS_DIRECT);
-  fetchInbox(QAS_INBOX_MINOR | QAS_DIRECT);
+  fetchInbox(QAS_INBOX_DIRECT_MAJOR);
+  fetchInbox(QAS_INBOX_DIRECT_MINOR);
 }
 
 //------------------------------------------------------------------------------
@@ -465,17 +462,17 @@ void PumpApp::fetchAll() {
 void PumpApp::fetchInbox(int reqType) {
   QString endpoint = "api/user/"+userName+"/inbox";
 
-  if (reqType & QAS_DIRECT)
+  if (reqType == QAS_INBOX_DIRECT_MAJOR || reqType == QAS_INBOX_DIRECT_MINOR)
     endpoint += "/direct";
 
-  int rt = reqType & ~QAS_DIRECT;
-  
-  if (rt == QAS_INBOX_MAJOR)
+  if (reqType == QAS_INBOX_MAJOR || reqType == QAS_INBOX_DIRECT_MAJOR)
     endpoint += "/major";
-  else if (rt == QAS_INBOX_MINOR) 
+  else if (reqType == QAS_INBOX_MINOR || reqType == QAS_INBOX_DIRECT_MINOR) 
     endpoint += "/minor";
-  else
+  else {
     qDebug() << "fetchInbox: unsupported request type:" << reqType;
+    return;
+  }
 
   request(endpoint, reqType);
 }

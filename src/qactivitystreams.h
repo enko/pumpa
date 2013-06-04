@@ -36,10 +36,11 @@ class QASObjectList;
 #define QAS_RESPONSE_NULL      0
 #define QAS_INBOX_MAJOR        1
 #define QAS_INBOX_MINOR        2
-#define QAS_NEW_POST           3
-#define QAS_REPLIES            4
+#define QAS_INBOX_DIRECT_MAJOR 3
+#define QAS_INBOX_DIRECT_MINOR 4
+#define QAS_NEW_POST           5
+#define QAS_REPLIES            6
 
-#define QAS_DIRECT             1 << 2
 
 //------------------------------------------------------------------------------
 
@@ -107,7 +108,7 @@ private:
   QString m_objectType;
   QString m_url;
   QString m_imageUrl;
-
+  QString m_inReplyToId;
   QDateTime m_published;
   QDateTime m_updated;
 
@@ -130,6 +131,7 @@ public:
 
   QString id() const { return m_id; }
   QString verb() const { return m_verb; }
+  QString content() const { return m_content; }
 
   qint64 sortInt() const { return sortIntByDateTime(m_updated); }
 
