@@ -218,6 +218,9 @@ void QASObject::update(QVariantMap json) {
 
   m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
 
+  if (json.contains("inReplyTo"))
+    m_inReplyToId = json["inReplyTo"].toMap()["id"].toString();
+
   if (json.contains("author"))
     m_author = QASActor::getActor(json["author"].toMap(), parent());
 

@@ -413,11 +413,32 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   // qDebug() << "onAuthorizedRequestReady" << id;
   // qDebug() << response;
 
-  if (id == QAS_FETCH_INBOX) {
+  if (id == QAS_INBOX_MAJOR) {
     QVariantMap obj = parseJson(response);
-    QASCollection coll(obj, this);
-    inboxWidget->addCollection(coll);
-  } else if (id == QAS_FETCH_REPLIES) {
+    QASCollection c(obj, true, this);
+    inboxWidget->addCollection(c);
+  } else if (id == QAS_INBOX_MINOR) {
+    QVariantMap obj = parseJson(response);
+    QASCollection c(obj, false, this);
+    for (size_t i=0; i<5 && i<c.size(); i++) {
+      QASActivity* act = c.at(i);
+      qDebug() << "MINOR" << act->object()->content();
+    }
+  } else if (id == (QAS_INBOX_MAJOR | QAS_DIRECT)) {
+    QVariantMap obj = parseJson(response);
+    QASCollection c(obj, false, this);
+    for (size_t i=0; i<5 && i<c.size(); i++) {
+      QASActivity* act = c.at(i);
+      qDebug() << "MAJOR DIRECT" << act->object()->content();
+    }
+  } else if (id == (QAS_INBOX_MINOR | QAS_DIRECT)) {
+    QVariantMap obj = parseJson(response);
+    QASCollection c(obj, false, this);
+    for (size_t i=0; i<5 && i<c.size(); i++) {
+      QASActivity* act = c.at(i);
+      qDebug() << "MAJOR MINOR" << act->object()->content();
+    }
+  } else if (id == QAS_REPLIES) {
     QVariantMap obj = parseJson(response);
     QASObjectList::getObjectList(obj, this);
   } else if (id == QAS_NEW_POST) {
@@ -433,19 +454,30 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
 
 void PumpApp::fetchAll() {
   notifyMessage("Loading ...");
-  fetchInbox("major");
+  fetchInbox(QAS_INBOX_MAJOR);
+  fetchInbox(QAS_INBOX_MINOR);
+  fetchInbox(QAS_INBOX_MAJOR | QAS_DIRECT);
+  fetchInbox(QAS_INBOX_MINOR | QAS_DIRECT);
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::fetchInbox(QString inbox, bool direct) {
+void PumpApp::fetchInbox(int reqType) {
   QString endpoint = "api/user/"+userName+"/inbox";
 
-  if (direct)
+  if (reqType & QAS_DIRECT)
     endpoint += "/direct";
-  endpoint += "/"+inbox;
 
-  request(endpoint, QAS_FETCH_INBOX);
+  int rt = reqType & ~QAS_DIRECT;
+  
+  if (rt == QAS_INBOX_MAJOR)
+    endpoint += "/major";
+  else if (rt == QAS_INBOX_MINOR) 
+    endpoint += "/minor";
+  else
+    qDebug() << "fetchInbox: unsupported request type:" << reqType;
+
+  request(endpoint, reqType);
 }
 
 //------------------------------------------------------------------------------

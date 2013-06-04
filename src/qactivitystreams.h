@@ -33,10 +33,13 @@ class QASObjectList;
 
 //------------------------------------------------------------------------------
 
-#define QAS_RESPONSE_NULL     0
-#define QAS_FETCH_INBOX       1
-#define QAS_NEW_POST          2
-#define QAS_FETCH_REPLIES     3
+#define QAS_RESPONSE_NULL      0
+#define QAS_INBOX_MAJOR        1
+#define QAS_INBOX_MINOR        2
+#define QAS_NEW_POST           3
+#define QAS_REPLIES            4
+
+#define QAS_DIRECT             1 << 2
 
 //------------------------------------------------------------------------------
 

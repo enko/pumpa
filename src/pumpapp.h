@@ -87,7 +87,7 @@ private:
   void syncOAuthInfo();
 
   void fetchAll();
-  void fetchInbox(QString inbox, bool direct=false);
+  void fetchInbox(int reqType);
   void feed(QString verb, QVariantMap object, int response_id);
   
   void writeSettings();
