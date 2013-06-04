@@ -42,7 +42,7 @@ QVariantMap parseJson(QByteArray data) {
 
   QVariantMap json = parser.parse(data, &ok).toMap();
   if (!ok)
-    qWarning("Unable to parse JSON! " + data);
+    qDebug() << "WARNING: Unable to parse JSON!" << data;
   return json;
 #endif
 }
