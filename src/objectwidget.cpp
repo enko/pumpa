@@ -22,32 +22,50 @@
 //------------------------------------------------------------------------------
 
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
-  QFrame(parent), m_object(obj)
+  QFrame(parent), m_infoLabel(NULL), m_object(obj)
 {
-  layout = new QVBoxLayout(this);
-  textLabel = new RichTextLabel(this);
-  connect(textLabel, SIGNAL(linkHovered(const QString&)),
+  m_layout = new QVBoxLayout(this);
+  m_textLabel = new RichTextLabel(this);
+  connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
   
   if (obj->type() == "image") {
-    imageLabel = new QLabel;
-    imageLabel->setMaximumSize(320, 320);
-    imageLabel->setFocusPolicy(Qt::NoFocus);
+    m_imageLabel = new QLabel(this);
+    m_imageLabel->setMaximumSize(320, 320);
+    m_imageLabel->setFocusPolicy(Qt::NoFocus);
     m_imageUrl = obj->imageUrl();
     updateImage();
 
-    layout->addWidget(imageLabel);
+    m_layout->addWidget(m_imageLabel);
+  }
+
+  m_layout->addWidget(m_textLabel);
+
+  if (obj->type() == "comment") {
+    m_infoLabel = new RichTextLabel(this);
+    connect(m_infoLabel, SIGNAL(linkHovered(const QString&)),
+            this, SIGNAL(linkHovered(const QString&)));
+
+    m_layout->addWidget(m_infoLabel);
   }
   
-  layout->addWidget(textLabel);
-
-  setLayout(layout);
+  setLayout(m_layout);
 }
 
 //------------------------------------------------------------------------------
 
 void ObjectWidget::setText(QString text) {
-  textLabel->setText(text);
+  m_textLabel->setText(text);
+}
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::setInfo(QString text) {
+  if (m_infoLabel == NULL) {
+    qDebug() << "[WARNING] Trying to set info text to a non-comment object.";
+    return;
+  }
+  m_infoLabel->setText(text);
 }
 
 //------------------------------------------------------------------------------
@@ -86,6 +104,6 @@ void ObjectWidget::updateImage(const QString& fileName) {
       m_localFile = defaultImage;
       pix.load(m_localFile);
     }
-    imageLabel->setPixmap(pix);
+    m_imageLabel->setPixmap(pix);
   }
 }    

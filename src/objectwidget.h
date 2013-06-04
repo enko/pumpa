@@ -40,6 +40,7 @@ public:
   QASObject* object() const { return m_object; }
 
   void setText(QString text);
+  void setInfo(QString text);
 
 signals:
   void linkHovered(const QString&);
@@ -52,9 +53,10 @@ private:
   QString m_imageUrl;
   QString m_localFile;
 
-  RichTextLabel* textLabel;
-  QLabel* imageLabel;
-  QVBoxLayout* layout;
+  RichTextLabel* m_textLabel;
+  QLabel* m_imageLabel;
+  QVBoxLayout* m_layout;
+  RichTextLabel* m_infoLabel;
 
   QASObject* m_object;
 };

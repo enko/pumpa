@@ -43,7 +43,7 @@ QString splitLongWords(QString text) {
       else
         newText += "&shy;";
     }
-    qDebug() << "REPLACED:" << word << "=>" << newText;
+    qDebug() << "[DEBUG] splitLongWords:" << word << "=>" << newText;
 
     text.replace(pos, len, newText);
     pos += newText.count();
@@ -53,7 +53,7 @@ QString splitLongWords(QString text) {
 
 //------------------------------------------------------------------------------
 
-QString processText(QString text) {
+QString processText(QString old_text) {
   if (s_allowedTags.isEmpty()) {
     s_allowedTags 
       << "br" << "p" << "b" << "i" << "blockquote" << "div"
@@ -61,7 +61,8 @@ QString processText(QString text) {
       << "a" << "em" << "ol" << "li" << "strong";
   }
   
-  QString old_text = text;
+  QString text = old_text.trimmed();
+
   QRegExp rx("<(\\/?)([a-zA-Z0-9]+)[^>]*>");
   int pos = 0;
   while ((pos = rx.indexIn(text, pos)) != -1) {
@@ -73,7 +74,7 @@ QString processText(QString text) {
       QString imagePlaceholder = "[image]";
       text.replace(pos, len, imagePlaceholder);
       pos += imagePlaceholder.length();
-      qDebug() << "processText: removing image";
+      qDebug() << "[DEBUG] processText: removing image";
     } else if (tag == "pre") {
       QString newTag = QString("<%1p><%1code>").arg(slash);
       text.replace(pos, len, newTag);
@@ -81,7 +82,7 @@ QString processText(QString text) {
     } else if (s_allowedTags.contains(tag)) {
       pos += len;
     } else {
-      qDebug() << "processText: dropping unsupported tag" << tag;
+      qDebug() << "[DEBUG] processText: dropping unsupported tag" << tag;
       text.remove(pos, len);
     }
   }
@@ -142,7 +143,7 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
 
   m_shareButton = new QToolButton();
-  m_shareButton->setText(QChar(0x267A));
+  m_shareButton->setText("share"); //QChar(0x267A));
   m_shareButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
   m_shareButton->setFocusPolicy(Qt::NoFocus);
   m_shareButton->setEnabled(false);
@@ -157,7 +158,7 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
 
   m_buttonLayout = new QHBoxLayout;
   m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
-  // m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
+  m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
   m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
   m_buttonLayout->addStretch();
 
@@ -220,8 +221,9 @@ void ActivityWidget::updateText() {
   const QASObject* noteObj = m_activity->object();
   const QASActor* author = effectiveAuthor();
 
-  QString text = QString("%1 at <a href=\"%3\">%2</a>").
+  QString text = QString("<a href=\"%2\">%1</a> at <a href=\"%4\">%3</a>").
     arg(author->displayName()).
+    arg(author->url()).
     arg(relativeFuzzyTime(noteObj->published())).
     arg(noteObj->url());
   if (m_activity->verb() == "share")
@@ -310,11 +312,14 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
     
     QString content = processText(replyObj->content());
 
-    ow->setText(QString("%1<br/>%2 at <a href=\"%4\">%3</a>").
-                arg(content).
+    ow->setText(content);
+    ow->setInfo(QString("<a href=\"%2\">%1</a> at <a href=\"%4\">%3</a>").
                 arg(author->displayName()).
+                arg(author->url()).
                 arg(relativeFuzzyTime(replyObj->published())).
                 arg(replyObj->url()));
+    connect(ow, SIGNAL(linkHovered(const QString&)),
+            this,  SIGNAL(linkHovered(const QString&)));
       
     QHBoxLayout* replyLayout = new QHBoxLayout;
     replyLayout->setContentsMargins(0, 0, 0, 0);
