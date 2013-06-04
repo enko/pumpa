@@ -53,6 +53,8 @@ private:
   QWidget* m_listContainer;
   // QList<QASActivity*> m_list;
   QMap<QString, QASActivity*> m_activity_map;
+  
+  QString m_nextUrl;
 };
 
 #endif /* _COLLECTIONWIDGET_H_ */

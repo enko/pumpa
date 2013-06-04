@@ -47,6 +47,8 @@ CollectionWidget::CollectionWidget(QWidget* parent) :
 void CollectionWidget::addCollection(const QASCollection& coll) {
   int li = 0; // index into internal m_list
 
+  m_nextUrl = coll.nextUrl();
+
   for (size_t i=0; i<coll.size(); i++) {
     QASActivity* activity = coll.at(i);
     QString activity_id = activity->id();

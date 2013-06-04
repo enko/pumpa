@@ -462,7 +462,9 @@ QASCollection::QASCollection(QVariantMap json, QObject* parent) :
 {
   m_displayName = json["displayName"].toString();
   m_url = json["url"].toString();
-  m_totalItems = (int)json["totalItems"].toDouble();
+  m_totalItems = json["totalItems"].toULongLong();
+
+  m_nextUrl = json["links"].toMap()["next"].toMap()["href"].toString();
 
   QVariantList items_json = json["items"].toList();
   for (int i=0; i<items_json.count(); i++) {

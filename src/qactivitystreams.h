@@ -58,6 +58,7 @@ public:
   static QASActor* getActor(QVariantMap json, QObject* parent);
   void update(QVariantMap json);
 
+  QString url() const { return m_url; }
   QString displayName() const { return m_displayName; }
   QString imageUrl() const { return m_imageUrl; }
 
@@ -203,6 +204,7 @@ public:
   QASCollection(QVariantMap json, QObject* parent);
 
   size_t size() const { return m_items.size(); }
+  QString nextUrl() const { return m_nextUrl; }
 
   QASActivity* at(size_t i) const {
     if (i >= size())
@@ -213,8 +215,10 @@ public:
 private:
   QString m_displayName;
   QString m_url;
-  size_t m_totalItems;
+  qulonglong m_totalItems;
   QList<QASActivity*> m_items;
+
+  QString m_nextUrl;
 };
 
 #endif /* _QACTIVITYSTREAMS_H_ */
