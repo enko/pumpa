@@ -29,7 +29,8 @@ class FileDownloader : public QObject {
   Q_OBJECT
 
 public:
-  static void setOAuthInfo(QString clientId, QString clientSecret,
+  static void setOAuthInfo(QString siteUrl,
+                           QString clientId, QString clientSecret,
                            QString token, QString tokenSecret);
 
   static FileDownloader* get(const QString& url);
@@ -51,6 +52,8 @@ signals:
 
 private slots:
   void onAuthorizedRequestReady(QByteArray response, int id);
+  void onSslErrors(QNetworkReply* reply, const QList<QSslError>&);
+  void replyFinished(QNetworkReply* nr);
 
 private:
   FileDownloader();
@@ -58,6 +61,7 @@ private:
 
   KQOAuthManager *oaManager;
   KQOAuthRequest *oaRequest;
+  QNetworkAccessManager* m_nam;
 
   QString m_downloadingUrl;
   QString m_cachedFile;
@@ -67,6 +71,7 @@ private:
   static QString m_cacheDir;
   static QMap<QString, FileDownloader*> m_downloading;
 
+  static QString s_siteUrl;
   static QString s_clientId;
   static QString s_clientSecret;
   static QString s_token;

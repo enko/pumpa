@@ -31,6 +31,8 @@
 
 QString FileDownloader::m_cacheDir;
 QMap<QString, FileDownloader*> FileDownloader::m_downloading;
+
+QString FileDownloader::s_siteUrl;
 QString FileDownloader::s_clientId;
 QString FileDownloader::s_clientSecret;
 QString FileDownloader::s_token;
@@ -47,10 +49,12 @@ QString slashify(const QString& url) {
 
 //------------------------------------------------------------------------------
 
-void FileDownloader::setOAuthInfo(QString clientId,
+void FileDownloader::setOAuthInfo(QString siteUrl,
+                                  QString clientId,
                                   QString clientSecret,
                                   QString token,
                                   QString tokenSecret) {
+  s_siteUrl = siteUrl;
   s_clientId = clientId;
   s_clientSecret = clientSecret;
   s_token = token;
@@ -74,6 +78,12 @@ FileDownloader::FileDownloader(const QString& url) :
     oaManager = new KQOAuthManager(this);
     connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
             this, SLOT(onAuthorizedRequestReady(QByteArray, int)));
+
+    m_nam = new QNetworkAccessManager(this);
+    connect(m_nam, SIGNAL(finished(QNetworkReply*)),
+            this, SLOT(replyFinished(QNetworkReply*)));
+    connect(m_nam, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)),
+            this, SLOT(onSslErrors(QNetworkReply*, const QList<QSslError>&)));
   }
 }
 
@@ -92,17 +102,22 @@ void FileDownloader::download() {
   if (m_downloadStarted)
     return;
 
-  oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest,
-                         QUrl(m_downloadingUrl));
-  oaRequest->setConsumerKey(s_clientId);
-  oaRequest->setConsumerSecretKey(s_clientSecret);
+  if (m_downloadingUrl.startsWith(s_siteUrl)) {
+    oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest,
+                           QUrl(m_downloadingUrl));
 
-  oaRequest->setToken(s_token);
-  oaRequest->setTokenSecret(s_tokenSecret);
+    oaRequest->setConsumerKey(s_clientId);
+    oaRequest->setConsumerSecretKey(s_clientSecret);
 
-  oaRequest->setHttpMethod(KQOAuthRequest::GET); 
+    oaRequest->setToken(s_token);
+    oaRequest->setTokenSecret(s_tokenSecret);
 
-  oaManager->executeAuthorizedRequest(oaRequest, 0);
+    oaRequest->setHttpMethod(KQOAuthRequest::GET); 
+
+    oaManager->executeAuthorizedRequest(oaRequest, 0);
+  } else {
+    m_nam->get(QNetworkRequest(QUrl(m_downloadingUrl)));
+  }
   
   m_downloadStarted = true;
 }
@@ -115,12 +130,31 @@ QString FileDownloader::fileName() const {
 
 //------------------------------------------------------------------------------
 
+void FileDownloader::onSslErrors(QNetworkReply* reply,
+                                 const QList<QSslError>&) {
+  reply->ignoreSslErrors();
+}
+
+//------------------------------------------------------------------------------
+
+void FileDownloader::replyFinished(QNetworkReply* nr) {
+  if (nr->error()) {
+    emit networkError("Network error: "+nr->errorString());
+    return;
+  }
+  onAuthorizedRequestReady(nr->readAll(), 0);
+  nr->deleteLater();
+}
+
+//------------------------------------------------------------------------------
+
 void FileDownloader::onAuthorizedRequestReady(QByteArray response, int) {
   m_downloading.remove(m_downloadingUrl);
 
   if (oaManager->lastError()) {
-    qDebug() << "OAuth or network error #" << oaManager->lastError()
-             << "while trying to download URL" << m_downloadingUrl;
+    emit networkError(QString("Unable to download %1 (Error #%1).")
+                      .arg(m_downloadingUrl)
+                      .arg(oaManager->lastError()));
     return;
   }
 
@@ -131,7 +165,6 @@ void FileDownloader::onAuthorizedRequestReady(QByteArray response, int) {
                               fp->errorString()));
     return;
   }
-  // fp->write(nr->readAll());
   fp->write(response);
   fp->close();
   

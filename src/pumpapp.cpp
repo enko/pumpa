@@ -108,7 +108,7 @@ void PumpApp::resetTimer() {
 //------------------------------------------------------------------------------
 
 void PumpApp::syncOAuthInfo() {
-  FileDownloader::setOAuthInfo(clientId, clientSecret,
+  FileDownloader::setOAuthInfo(siteUrl, clientId, clientSecret,
                                token, tokenSecret);
 }
 
