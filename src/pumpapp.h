@@ -37,7 +37,7 @@
 
 #define CLIENT_NAME           "pumpa"
 #define CLIENT_FANCY_NAME     "Pumpa"
-#define CLIENT_VERSION        "0.01"
+#define CLIENT_VERSION        "0.1"
 
 //------------------------------------------------------------------------------
 
