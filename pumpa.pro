@@ -20,7 +20,6 @@
 
 TEMPLATE = app
 TARGET = pumpa
-INCLUDEPATH += .
 RESOURCES += pumpa.qrc
 OBJECTS_DIR = obj
 
@@ -31,8 +30,6 @@ CONFIG += debug
 
 # Use aspell
 CONFIG += aspell
-
-INCLUDEPATH += ./kQOAuth/src
 
 # Additions for Qt 4
 lessThan(QT_MAJOR_VERSION, 5) {
@@ -55,8 +52,11 @@ exists( /usr/lib/libaspell* ) {
 }
 
 ######################################################################
-# Sources 
+# Main sources 
 ######################################################################
+
+INCLUDEPATH += src
+VPATH       += src
 
 OBJECT_HEADERS = pumpapp.h qactivitystreams.h collectionwidget.h json.h \
 	messagewindow.h messageedit.h fancyhighlighter.h qaspell.h \
@@ -67,8 +67,14 @@ HEADERS += $$OBJECT_HEADERS
 SOURCES += main.cpp
 SOURCES += $$replace(OBJECT_HEADERS, \\.h, .cpp)
 
-# kQOAuth
-VPATH += ./kQOAuth/src
+
+######################################################################
+# kQOAuth sources
+######################################################################
+
+INCLUDEPATH += src/kQOAuth
+VPATH       += src/kQOAuth
+
 PUBLIC_HEADERS += kqoauthmanager.h \
                   kqoauthrequest.h \
                   kqoauthrequest_1.h \
