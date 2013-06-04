@@ -78,6 +78,8 @@ FileDownloader::FileDownloader(const QString& url) :
     oaManager = new KQOAuthManager(this);
     connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
             this, SLOT(onAuthorizedRequestReady(QByteArray, int)));
+    connect(oaManager, SIGNAL(errorMessage(QString)),
+            this, SIGNAL(networkError(QString)));
 
     m_nam = new QNetworkAccessManager(this);
     connect(m_nam, SIGNAL(finished(QNetworkReply*)),
@@ -152,7 +154,7 @@ void FileDownloader::onAuthorizedRequestReady(QByteArray response, int) {
   m_downloading.remove(m_downloadingUrl);
 
   if (oaManager->lastError()) {
-    emit networkError(QString("Unable to download %1 (Error #%1).")
+    emit networkError(QString("Unable to download %1 (Error #%2).")
                       .arg(m_downloadingUrl)
                       .arg(oaManager->lastError()));
     return;

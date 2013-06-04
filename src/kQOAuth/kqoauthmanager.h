@@ -171,6 +171,8 @@ Q_SIGNALS:
     // This ends the kQOAuth interactions.
     void authorizedRequestDone();
 
+    void errorMessage(QString);
+
 private Q_SLOTS:
     void onRequestReplyReceived( QNetworkReply *reply );
     void onAuthorizedRequestReplyReceived( QNetworkReply *reply );

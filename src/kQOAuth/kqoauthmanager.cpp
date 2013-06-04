@@ -661,7 +661,7 @@ void KQOAuthManager::onAuthorizedRequestReplyReceived( QNetworkReply *reply ) {
 
     // We need to emit the signal even if we got an error.
     if (d->error != KQOAuthManager::NoError) {
-        qWarning() << "Network reply error";
+        emit errorMessage("Unable to retrieve "+reply->url().toString());
         return;
     }
 
