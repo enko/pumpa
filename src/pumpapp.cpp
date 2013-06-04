@@ -73,9 +73,9 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
 
   timerId = -1;
 
-  if (clientId.isEmpty())
+  if (clientId.isEmpty() || clientSecret.isEmpty())
     registerOAuthClient();
-  else if (token.isEmpty())
+  else if (token.isEmpty() || tokenSecret.isEmpty())
     getOAuthAccess();
   else
     fetchAll();
