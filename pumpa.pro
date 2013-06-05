@@ -28,9 +28,6 @@ QT += core gui network
 # Enable for gdb debug info
 CONFIG += debug
 
-# Use aspell
-CONFIG += aspell
-
 # Additions for Qt 4
 lessThan(QT_MAJOR_VERSION, 5) {
   message("Configuring for Qt 4")
