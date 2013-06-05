@@ -48,6 +48,8 @@ public:
   PumpApp(QWidget* parent=0);
   virtual ~PumpApp();                            
   bool fail;
+
+  static QString siteUrlFixer(QString url);
                     
 private slots:
   void postNote(QString note);
@@ -55,6 +57,9 @@ private slots:
   void errorMessage(QString msg);
   void notifyMessage(QString msg);
   void statusMessage(const QString& msg);
+
+  void onFirstPageCommitted(QString, QString);
+  void onSecondPageCommitted(QString, QString);
 
   void onTemporaryTokenReceived(QString temporaryToken,
                                 QString temporaryTokenSecret);
@@ -112,8 +117,8 @@ private:
   // QSystemTrayIcon* trayIcon;
   // QMenu* trayIconMenu;
   
-  QString siteUrl;
-  QString userName;
+  QString m_siteUrl;
+  QString m_userName;
 
   QString clientId;
   QString clientSecret;
