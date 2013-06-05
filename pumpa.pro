@@ -100,3 +100,18 @@ SOURCES += \
     kqoauthrequest_1.cpp \
     kqoauthrequest_xauth.cpp
 
+
+######################################################################
+# Generate documentation
+######################################################################
+
+doc.depends        = README
+doc.commands	   = markdown README > pumpa.html; cp README ~/dev/web/_includes/README.pumpa
+QMAKE_EXTRA_TARGETS += doc
+
+
+######################################################################
+# Extra stuff to clean up
+######################################################################
+
+QMAKE_CLEAN += $DOC_TARGETS

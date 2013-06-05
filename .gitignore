@@ -5,3 +5,4 @@ moc_*.cpp
 /Makefile
 /pumpa
 /qrc_pumpa.cpp
+/pumpa.html
