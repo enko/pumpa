@@ -28,5 +28,5 @@ int main(int argc, char** argv) {
 
   PumpApp papp;
 
-  return papp.fail ? -1 : app.exec();
+  return app.exec();
 }

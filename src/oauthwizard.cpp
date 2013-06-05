@@ -26,8 +26,10 @@
 
 //------------------------------------------------------------------------------
 
-OAuthFirstPage::OAuthFirstPage(QWidget* parent) : QWizardPage(parent) {
-   setTitle("Enter username and server");
+OAuthFirstPage::OAuthFirstPage(QWidget* parent) :
+  QWizardPage(parent), status(0) 
+{
+  setTitle("Enter username and server");
 
   QVBoxLayout* layout = new QVBoxLayout(this);
 
@@ -50,6 +52,7 @@ OAuthFirstPage::OAuthFirstPage(QWidget* parent) : QWizardPage(parent) {
   registerField("userName*", userNameEdit);
   registerField("serverUrl*", serverEdit);
 
+  setButtonText(QWizard::CommitButton, "Next");
   setCommitPage(true);
   setLayout(layout);
 }
@@ -57,11 +60,24 @@ OAuthFirstPage::OAuthFirstPage(QWidget* parent) : QWizardPage(parent) {
 //------------------------------------------------------------------------------
 
 bool OAuthFirstPage::validatePage() {
+  if (status == 1)
+    return false;
+
+  if (status == 2)
+    return true;
+
+  status = 1;
   QString userName = field("userName").toString();
   QString serverUrl = field("serverUrl").toString();
 
-  emit firstPageCommitted(userName, serverUrl);
+  emit committed(userName, serverUrl);
   return false;
+}
+
+//------------------------------------------------------------------------------
+
+bool OAuthFirstPage::isComplete() const {
+  return (status != 1) && QWizardPage::isComplete();
 }
 
 //------------------------------------------------------------------------------
@@ -95,15 +111,29 @@ OAuthSecondPage::OAuthSecondPage(QWidget* parent) : QWizardPage(parent) {
 
 //------------------------------------------------------------------------------
 
-void OAuthSecondPage::initializePage(int id) {
-  qDebug() << "initializePage" << id;
+OAuthWizard::OAuthWizard(QWidget* parent) : QWizard(parent) {
+  setWindowTitle("foo");
+  p1 = new OAuthFirstPage(this);
+  p2 = new OAuthSecondPage(this);
+
+  connect(p1, SIGNAL(committed(QString, QString)),
+          this, SIGNAL(firstPageCommitted(QString, QString)));
+  connect(p2, SIGNAL(committed(QString, QString)),
+          this, SIGNAL(secondPageCommitted(QString, QString)));
+
+  addPage(p1);
+  addPage(p2);
+
+  setField("userName", "sazius");
+  setField("serverUrl", "io.saz.im");
 }
 
 //------------------------------------------------------------------------------
 
-OAuthWizard::OAuthWizard(QWidget* parent) : QWizard(parent) {
-  setWindowTitle("foo");
-
-  addPage(new OAuthFirstPage(this));
-  addPage(new OAuthSecondPage(this));
+void OAuthWizard::gotoSecondPage() {
+  p1->userLoopDone();
+  next();
 }
+
+//------------------------------------------------------------------------------
+

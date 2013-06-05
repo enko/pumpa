@@ -34,6 +34,7 @@
 #include "QtKOAuth"
 
 #include "collectionwidget.h"
+#include "oauthwizard.h"
 
 #define CLIENT_NAME           "pumpa"
 #define CLIENT_FANCY_NAME     "Pumpa"
@@ -47,9 +48,11 @@ class PumpApp : public QMainWindow {
 public:
   PumpApp(QWidget* parent=0);
   virtual ~PumpApp();                            
-  bool fail;
 
   static QString siteUrlFixer(QString url);
+
+signals:
+  void userAuthorizationStarted();
                     
 private slots:
   void postNote(QString note);
@@ -59,7 +62,7 @@ private slots:
   void statusMessage(const QString& msg);
 
   void onFirstPageCommitted(QString, QString);
-  void onSecondPageCommitted(QString, QString);
+  void wizardDone();
 
   void onTemporaryTokenReceived(QString temporaryToken,
                                 QString temporaryTokenSecret);
@@ -85,6 +88,9 @@ protected:
   void timerEvent(QTimerEvent*);
 
 private:
+  void startPumping();
+  bool haveOAuth();
+
   void resetTimer();
 
   void getOAuthAccess();
@@ -135,6 +141,7 @@ private:
 
   CollectionWidget* inboxWidget;
 
+  OAuthWizard* oaWizard;
   int timerId;
 };
 

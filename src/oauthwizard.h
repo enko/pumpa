@@ -32,9 +32,16 @@ class OAuthFirstPage : public QWizardPage {
 public:
   OAuthFirstPage(QWidget* parent=0);
   virtual bool validatePage(); 
+  void userLoopDone() { status = 2; }
 
 signals:
-  void firstPageCommitted(QString, QString);
+  void committed(QString, QString);
+
+protected:
+  virtual bool isComplete() const;
+
+private:
+  int status;
 };
 
 //------------------------------------------------------------------------------
@@ -44,17 +51,29 @@ class OAuthSecondPage : public QWizardPage {
 
 public:
   OAuthSecondPage(QWidget* parent=0);
-  virtual void initializePage(int id);
 
 signals:
-  void secondPageCommitted(QString, QString);
+  void committed(QString, QString);
 };
 
 //------------------------------------------------------------------------------
 
 class OAuthWizard : public QWizard {
+Q_OBJECT
+
 public:
   OAuthWizard(QWidget* parent=0);
+
+signals:
+  void firstPageCommitted(QString, QString);
+  void secondPageCommitted(QString, QString);
+
+public slots:
+  void gotoSecondPage();
+
+private:
+  OAuthFirstPage* p1;
+  OAuthSecondPage* p2;
 };
 
 #endif /* _OAUTHWIZARD_H_ */

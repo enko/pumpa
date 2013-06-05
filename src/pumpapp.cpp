@@ -21,31 +21,16 @@
 #include "json.h"
 #include "qactivitystreams.h"
 #include "messagewindow.h"
-#include "oauthwizard.h"
 
 //------------------------------------------------------------------------------
 
-PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
+PumpApp::PumpApp(QWidget* parent) : 
+  QMainWindow(parent),
+  oaWizard(NULL)
+{
   settings = new QSettings(CLIENT_NAME, CLIENT_NAME, this);
   readSettings();
   
-  fail = false;
-  if (m_siteUrl.isEmpty() || m_userName.isEmpty()) {
-    qDebug() << "ERROR: You need to fill in \"site_url\" and \"username\" in "
-      "the config file at:";
-    qDebug() << settings->fileName().toLatin1().constData();
-    qDebug();
-    qDebug() << "For example:";
-    qDebug() << "[Account]";
-    qDebug() << "site_url=https://microca.st/";
-    qDebug() << "username=someguy";
-    qDebug();
-    qDebug() << "You can leave the other fields empty.";
-    fail = true;
-    writeSettings();
-    return;
-  } 
-
   netManager = new QNetworkAccessManager(this);
 
   oaRequest = new KQOAuthRequest(this);
@@ -67,34 +52,44 @@ PumpApp::PumpApp(QWidget* parent) : QMainWindow(parent) {
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(":/images/pumpa.png"));
   setCentralWidget(inboxWidget);
-  show();
 
   // oaRequest->setEnableDebugOutput(true);
   syncOAuthInfo();
 
   timerId = -1;
 
-  if (clientId.isEmpty() || clientSecret.isEmpty() || token.isEmpty() || tokenSecret.isEmpty()) {
-    OAuthWizard* w = new OAuthWizard(this);
-    connect(w, SIGNAL(firstPageCommitted(QString, QString)),
+  if (!haveOAuth()) {
+    oaWizard = new OAuthWizard(this);
+    connect(oaWizard, SIGNAL(firstPageCommitted(QString, QString)),
             this, SLOT(onFirstPageCommitted(QString, QString)));
-    connect(w, SIGNAL(secondPageCommitted(QString, QString)),
-            this, SLOT(onSecondPageCommitted(QString, QString)));
-    w->show();
-  }
-  //   registerOAuthClient();
-  // else if (token.isEmpty() || tokenSecret.isEmpty())
-  //   getOAuthAccess();
-  else
-    fetchAll();
-
-  resetTimer();
+    connect(oaWizard, SIGNAL(rejected()), this, SLOT(exit()));
+    connect(oaWizard, SIGNAL(accepted()), this, SLOT(wizardDone()));
+    connect(this, SIGNAL(userAuthorizationStarted()),
+            oaWizard, SLOT(gotoSecondPage()));
+    oaWizard->show();
+  } else
+    startPumping();
 }
 
 //------------------------------------------------------------------------------
 
 PumpApp::~PumpApp() {
   writeSettings();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::startPumping() {
+  show();
+  fetchAll();
+  resetTimer();
+}
+
+//------------------------------------------------------------------------------
+
+bool PumpApp::haveOAuth() {
+  return !clientId.isEmpty() && !clientSecret.isEmpty() &&
+    !token.isEmpty() && !tokenSecret.isEmpty();
 }
 
 //------------------------------------------------------------------------------
@@ -107,7 +102,10 @@ void PumpApp::onFirstPageCommitted(QString userName, QString serverUrl) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::onSecondPageCommitted(QString token, QString verifier) {
+void PumpApp::wizardDone() {
+  QString token = oaWizard->field("token").toString();
+  QString verifier = oaWizard->field("verifier").toString();
+
   onAuthorizationReceived(token, verifier);
 }
 
@@ -388,8 +386,8 @@ void PumpApp::getOAuthAccess() {
 
   connect(oaManager, SIGNAL(temporaryTokenReceived(QString, QString)),
           this, SLOT(onTemporaryTokenReceived(QString, QString)));
-  connect(oaManager, SIGNAL(authorizationReceived(QString,QString)),
-          this, SLOT(onAuthorizationReceived(QString, QString)));
+  // connect(oaManager, SIGNAL(authorizationReceived(QString,QString)),
+  //         this, SLOT(onAuthorizationReceived(QString, QString)));
   connect(oaManager, SIGNAL(accessTokenReceived(QString,QString)),
           this, SLOT(onAccessTokenReceived(QString,QString)));
 
@@ -408,22 +406,19 @@ void PumpApp::getOAuthAccess() {
 void PumpApp::onTemporaryTokenReceived(QString /*token*/,
                                        QString /*tokenSecret*/) {
   QUrl userAuthURL(m_siteUrl+"/oauth/authorize");
-  qDebug() << "bar1";
   if (oaManager->lastError() == KQOAuthManager::NoError) {
-    qDebug() << "bar2";
     oaManager->getUserAuthorization(userAuthURL);
+    emit userAuthorizationStarted();
   }
-  qDebug() << "bar3";
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::onAuthorizationReceived(QString token,
                                       QString verifier) {
-  qDebug() << "foo1";
   oaManager->verifyToken(token, verifier);
   oaManager->getUserAccessTokens(QUrl(m_siteUrl+"/oauth/access_token"));
-  qDebug() << "foo2";
+  show();
 }
 
 //------------------------------------------------------------------------------
@@ -431,13 +426,11 @@ void PumpApp::onAuthorizationReceived(QString token,
 void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
     this->token = token;
     this->tokenSecret = tokenSecret;
-
     writeSettings();
 
     notifyMessage("User authorised for [" + m_siteUrl + "]");
-
     syncOAuthInfo();
-    fetchAll();
+    startPumping();
 }
 
 //------------------------------------------------------------------------------
