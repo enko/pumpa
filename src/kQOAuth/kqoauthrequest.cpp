@@ -56,7 +56,10 @@ void KQOAuthRequestPrivate::prepareRequest() {
 
     switch ( requestType ) {
     case KQOAuthRequest::TemporaryCredentials:
-        requestParameters.append( qMakePair( OAUTH_KEY_CALLBACK, oauthCallbackUrl.toString()) );  // This is so ugly that it is almost beautiful.
+        requestParameters.append( qMakePair( OAUTH_KEY_CALLBACK,
+                                             oauthCallbackUrl.isEmpty() ?
+                                             "oob" :
+                                             oauthCallbackUrl.toString() ));
         requestParameters.append( qMakePair( OAUTH_KEY_SIGNATURE_METHOD, oauthSignatureMethod) );
         requestParameters.append( qMakePair( OAUTH_KEY_CONSUMER_KEY, oauthConsumerKey ));
         requestParameters.append( qMakePair( OAUTH_KEY_VERSION, oauthVersion ));
