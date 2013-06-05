@@ -26,7 +26,7 @@ Oh, and "pumpa" just means pumpkin in Swedish :-)
 ## Build dependencies
   
 Pumpa should build with Qt 4.8 or Qt 5.0 or newer. If you are using Qt
-4, you will also need the QJson library.
+4, you will also need the [QJson library][4].
 
 For example on Debian 7.0 "wheezy" the following command should
 install everything needed to build the code:
@@ -37,6 +37,7 @@ If you want spell checking install the aspell library as well:
 
     aptitude install libaspell-dev
 
+[4]: http://qjson.sourceforge.net/
 
 ## Building
 
