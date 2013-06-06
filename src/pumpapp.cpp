@@ -515,6 +515,10 @@ void PumpApp::postNote(QString note) {
   if (note.isEmpty())
     return;
 
+  note.replace("<", "&lt;");
+  note.replace(">", "&gt;");
+  note.replace("\n", "<br/>");
+
   QVariantMap obj;
   obj["objectType"] = "note";
   obj["content"] = note;
