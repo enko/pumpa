@@ -22,6 +22,8 @@
 #include "qactivitystreams.h"
 #include "messagewindow.h"
 
+#include <QStatusBar>
+
 //------------------------------------------------------------------------------
 
 PumpApp::PumpApp(QWidget* parent) : 
