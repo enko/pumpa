@@ -299,6 +299,9 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
            m_repliesList[i]->sortInt() < sortInt)
       i++;
 
+    if (m_repliesMap.contains(replyId))
+      continue;
+
     if (i < m_repliesList.size() && m_repliesList[i]->id() == replyId)
       continue;
 
@@ -328,6 +331,7 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
     
     m_rightLayout->insertLayout(li + i, replyLayout);
     m_repliesList.insert(i, replyObj);
+    m_repliesMap.insert(replyId);
   }
 }
 

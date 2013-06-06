@@ -85,6 +85,7 @@ private:
   QASActivity* m_activity;
 
   QList<QASObject*> m_repliesList;
+  QSet<QString> m_repliesMap;
 };
 
 #endif 
