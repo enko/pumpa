@@ -706,7 +706,8 @@ void KQOAuthManager::slotError(QNetworkReply::NetworkError error) {
     QByteArray emptyResponse;
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     d->r = d->requestMap.key(reply);
-    d->currentRequestType = d->r->requestType();
+    d->currentRequestType = d->r ? d->r->requestType() :
+      KQOAuthRequest::AuthorizedRequest;
     if( d->requestIds.contains(reply) ) {
         int id = d->requestIds.value(reply);
         emit authorizedRequestReady(emptyResponse, id);
