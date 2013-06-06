@@ -87,6 +87,8 @@ QString processText(QString old_text) {
     }
   }
 
+  text.replace("< ", "&lt; ");
+
   // remove trailing <br>:s
   while (text.endsWith("<br>"))
     text.chop(4);
