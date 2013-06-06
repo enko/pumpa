@@ -529,6 +529,9 @@ void PumpApp::postNote(QString note) {
 //------------------------------------------------------------------------------
 
 void PumpApp::postReply(QASObject* replyToObj, QString content) {
+  content.replace("<", "&lt;");
+  content.replace(">", "&gt;");
+
   QVariantMap obj;
   obj["objectType"] = "comment";
   obj["content"] = content;
