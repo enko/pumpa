@@ -284,6 +284,12 @@ void PumpApp::about() {
 //------------------------------------------------------------------------------
 
 void PumpApp::newNote(QASObject* obj) {
+  QASObject* irtObj = obj->inReplyTo();
+  if (irtObj)
+    obj = irtObj;
+
+  qDebug() << "[DEBUG] Opening reply window to" << obj->type() << obj->id();
+
   MessageWindow* w = new MessageWindow(obj, this);
   connect(w, SIGNAL(sendMessage(QString)),
           this, SLOT(postNote(QString)));

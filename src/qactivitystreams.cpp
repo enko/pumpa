@@ -182,6 +182,7 @@ QASObject::QASObject(QString id, QObject* parent) :
   QObject(parent),
   m_id(id),
   m_liked(false),
+  m_inReplyTo(NULL),
   m_author(NULL),
   m_replies(NULL)
 {
@@ -219,7 +220,7 @@ void QASObject::update(QVariantMap json) {
   m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
 
   if (json.contains("inReplyTo"))
-    m_inReplyToId = json["inReplyTo"].toMap()["id"].toString();
+    m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
 
   if (json.contains("author"))
     m_author = QASActor::getActor(json["author"].toMap(), parent());

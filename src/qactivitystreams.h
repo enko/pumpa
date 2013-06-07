@@ -94,7 +94,6 @@ public:
   QString type() const { return m_objectType; }
   QString url() const { return m_url; }
   QString imageUrl() const { return m_imageUrl; }
-  QString inReplyToId() const { return m_inReplyToId; }
 
   QDateTime published() const { return m_published; }
   bool liked() const { return m_liked; }
@@ -102,6 +101,7 @@ public:
   QASObjectList* replies() const { return m_replies; }
 
   QASActor* author() const { return m_author; }
+  QASObject* inReplyTo() const { return m_inReplyTo; }
 
 signals:
   void changed();
@@ -113,10 +113,11 @@ private:
   QString m_objectType;
   QString m_url;
   QString m_imageUrl;
-  QString m_inReplyToId;
+
   QDateTime m_published;
   QDateTime m_updated;
 
+  QASObject* m_inReplyTo;
   QASActor* m_author;
   QASObjectList* m_replies;
 
