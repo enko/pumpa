@@ -133,6 +133,7 @@ public:
   QString id() const { return m_id; }
   QString verb() const { return m_verb; }
   QString content() const { return m_content; }
+  QString generatorName() const { return m_generatorName; }
 
   qint64 sortInt() const { return sortIntByDateTime(m_updated); }
 
@@ -147,6 +148,7 @@ private:
   QString m_url;
   QString m_content;
   QString m_verb;
+  QString m_generatorName;
 
   QDateTime m_published;
   QDateTime m_updated;

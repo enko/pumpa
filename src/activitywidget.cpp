@@ -247,6 +247,11 @@ void ActivityWidget::updateText() {
     arg(author->url()).
     arg(relativeFuzzyTime(noteObj->published())).
     arg(noteObj->url());
+
+  QString generatorName = m_activity->generatorName();
+  if (!generatorName.isEmpty())
+    text += " via " + generatorName;
+
   if (m_activity->verb() == "share")
     text += " (shared by " + m_activity->actor()->displayName() + ")";
 

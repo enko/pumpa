@@ -306,6 +306,9 @@ void QASActivity::update(QVariantMap json) {
   m_published = parseTime(json["published"].toString());
   m_updated = parseTime(json["updated"].toString());
 
+  if (json.contains("generator"))
+    m_generatorName = json["generator"].toMap()["displayName"].toString();
+
   // Stuff not handled yet:
 
   // "generator": {
