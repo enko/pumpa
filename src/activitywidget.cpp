@@ -58,13 +58,32 @@ QString processText(QString old_text) {
     s_allowedTags 
       << "br" << "p" << "b" << "i" << "blockquote" << "div"
       /*<< "pre" */<< "code" << "h1" << "h2" << "h3" << "h4" << "h5"
-      << "a" << "em" << "ol" << "li" << "strong";
+      << "em" << "ol" << "li" << "ul" << "strong";
+    s_allowedTags << "a";
   }
   
   QString text = old_text.trimmed();
 
-  QRegExp rx("<(\\/?)([a-zA-Z0-9]+)[^>]*>");
+  //  QRegExp rxa("<a\\s[^>]*href=([^>\\s]*)[^>]*>([^<]*)</a>");
+  QRegExp rxa("<a\\s[^>]*href=([^>\\s]+)[^>]*>([^<]*)</a>");
   int pos = 0;
+  while ((pos = rxa.indexIn(text, pos)) != -1) {
+    int len = rxa.matchedLength();
+    QString url = rxa.cap(1);
+    QString linkText = rxa.cap(2);
+
+    if ((linkText.startsWith("http://") || linkText.startsWith("https://")) &&
+        linkText.length() > MAX_WORD_LENGTH) {
+      linkText = linkText.left(MAX_WORD_LENGTH-3) + "...";
+      QString newText = QString("<a href=%1>%2</a>").arg(url).arg(linkText);
+      text.replace(pos, len, newText);
+      pos += newText.length();
+    } else
+      pos += len;
+  }
+
+  QRegExp rx("<(\\/?)([a-zA-Z0-9]+)[^>]*>");
+  pos = 0;
   while ((pos = rx.indexIn(text, pos)) != -1) {
     int len = rx.matchedLength();
     QString tag = rx.cap(2);
