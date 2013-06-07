@@ -82,6 +82,9 @@ private:
 
 public:
   static QASObject* getObject(QVariantMap json, QObject* parent);
+  static QASObject* getObject(QString id) { 
+    return s_objects.contains(id) ? s_objects[id] : NULL;
+  }
   void update(QVariantMap json);
 
   qint64 sortInt() const { return sortIntByDateTime(m_updated); }
@@ -91,6 +94,7 @@ public:
   QString type() const { return m_objectType; }
   QString url() const { return m_url; }
   QString imageUrl() const { return m_imageUrl; }
+  QString inReplyToId() const { return m_inReplyToId; }
 
   QDateTime published() const { return m_published; }
   bool liked() const { return m_liked; }

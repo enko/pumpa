@@ -252,6 +252,13 @@ void ActivityWidget::updateText() {
   if (!generatorName.isEmpty())
     text += " via " + generatorName;
 
+  QString inReplyToId = noteObj->inReplyToId();
+  if (!inReplyToId.isEmpty()) {
+    QASObject* robj = QASObject::getObject(inReplyToId);
+    if (robj)
+      text += " in reply to a <a href=\"" + robj->url() + "\">note</a>";
+  }
+
   if (m_activity->verb() == "share")
     text += " (shared by " + m_activity->actor()->displayName() + ")";
 
