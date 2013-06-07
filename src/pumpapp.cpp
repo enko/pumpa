@@ -284,11 +284,11 @@ void PumpApp::about() {
 //------------------------------------------------------------------------------
 
 void PumpApp::newNote(QASObject* obj) {
-  QASObject* irtObj = obj->inReplyTo();
-  if (irtObj)
+  QASObject* irtObj = obj ? obj->inReplyTo() : NULL;
+  if (irtObj) {
     obj = irtObj;
-
-  qDebug() << "[DEBUG] Opening reply window to" << obj->type() << obj->id();
+    qDebug() << "[DEBUG] Opening reply window to" << obj->type() << obj->id();
+  }
 
   MessageWindow* w = new MessageWindow(obj, this);
   connect(w, SIGNAL(sendMessage(QString)),

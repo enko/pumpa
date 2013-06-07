@@ -202,9 +202,12 @@ void QASObject::update(QVariantMap json) {
   QDateTime old_updated = m_updated;
   bool num_replies = m_replies ? m_replies->size() : 0;
 
-  m_content = json["content"].toString();
   m_objectType = json["objectType"].toString();
+  if (!json.contains("url"))
+    return;
+
   m_url = json["url"].toString();
+  m_content = json["content"].toString();
   m_liked = json["liked"].toBool();
 
   if (m_objectType == "image") {
