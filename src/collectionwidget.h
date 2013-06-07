@@ -41,6 +41,7 @@ public:
   void addCollection(const QASCollection& coll);
 
 signals:
+  void highlightMe();  
   void request(QString, int);
   void newReply(QASObject*);
   void linkHovered(const QString&);
@@ -55,6 +56,8 @@ private:
   QMap<QString, QASActivity*> m_activity_map;
   
   QString m_nextUrl;
+
+  bool firstTime;
 };
 
 #endif /* _COLLECTIONWIDGET_H_ */

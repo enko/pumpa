@@ -25,7 +25,7 @@
 //------------------------------------------------------------------------------
 
 CollectionWidget::CollectionWidget(QWidget* parent) :
-  QScrollArea(parent)
+  QScrollArea(parent), firstTime(true)
 {
 
   // loadSignalMapper = new QSignalMapper(this);
@@ -46,7 +46,7 @@ CollectionWidget::CollectionWidget(QWidget* parent) :
 
 void CollectionWidget::addCollection(const QASCollection& coll) {
   int li = 0; // index into internal m_list
-
+  int newCount = 0;
   m_nextUrl = coll.nextUrl();
 
   for (size_t i=0; i<coll.size(); i++) {
@@ -67,7 +67,13 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
             this,  SIGNAL(linkHovered(const QString&)));
 
     m_itemLayout->insertWidget(li++, aw);
+    newCount++;
   }
+
+  if (newCount && !isVisible() && !firstTime) {
+    emit highlightMe();
+  }
+  firstTime = false;
 }
 
 //------------------------------------------------------------------------------

@@ -35,6 +35,7 @@
 
 #include "collectionwidget.h"
 #include "oauthwizard.h"
+#include "tabwidget.h"
 
 #define CLIENT_NAME           "pumpa"
 #define CLIENT_FANCY_NAME     "Pumpa"
@@ -61,6 +62,7 @@ private slots:
   void notifyMessage(QString msg);
   void statusMessage(const QString& msg);
 
+  void tabSelected(int index);
   void onFirstPageCommitted(QString, QString);
   void wizardDone();
 
@@ -139,7 +141,10 @@ private:
 
   QNetworkAccessManager *netManager;
 
+  TabWidget* tabWidget;
   CollectionWidget* inboxWidget;
+  CollectionWidget* directMajorWidget;
+  CollectionWidget* directMinorWidget;
 
   OAuthWizard* oaWizard;
   int timerId;

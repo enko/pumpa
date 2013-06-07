@@ -51,9 +51,31 @@ PumpApp::PumpApp(QWidget* parent) :
   connect(inboxWidget, SIGNAL(linkHovered(const QString&)),
           this,  SLOT(statusMessage(const QString&)));
 
+  directMajorWidget = new CollectionWidget(this);
+  connect(directMajorWidget, SIGNAL(request(QString, int)),
+          this, SLOT(request(QString, int)));
+  connect(directMajorWidget, SIGNAL(newReply(QASObject*)),
+          this, SLOT(newNote(QASObject*)));
+  connect(directMajorWidget, SIGNAL(linkHovered(const QString&)),
+          this,  SLOT(statusMessage(const QString&)));
+
+  directMinorWidget = new CollectionWidget(this);
+  connect(directMinorWidget, SIGNAL(request(QString, int)),
+          this, SLOT(request(QString, int)));
+  connect(directMinorWidget, SIGNAL(newReply(QASObject*)),
+          this, SLOT(newNote(QASObject*)));
+  connect(directMinorWidget, SIGNAL(linkHovered(const QString&)),
+          this,  SLOT(statusMessage(const QString&)));
+
+  tabWidget = new TabWidget(this);
+  connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected(int)));
+  tabWidget->addTab(inboxWidget, "inbox");
+  tabWidget->addTab(directMinorWidget, "mentions");
+  tabWidget->addTab(directMajorWidget, "direct");
+
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(":/images/pumpa.png"));
-  setCentralWidget(inboxWidget);
+  setCentralWidget(tabWidget);
 
   // oaRequest->setEnableDebugOutput(true);
   syncOAuthInfo();
@@ -92,6 +114,12 @@ void PumpApp::startPumping() {
 bool PumpApp::haveOAuth() {
   return !clientId.isEmpty() && !clientSecret.isEmpty() &&
     !token.isEmpty() && !tokenSecret.isEmpty();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::tabSelected(int index) {
+  tabWidget->deHighlightTab(index);
 }
 
 //------------------------------------------------------------------------------
@@ -456,19 +484,21 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   //     qDebug() << "MINOR" << act->content();
   //   }
   } else if (id == (QAS_INBOX_DIRECT_MAJOR)) {
-  //   QVariantMap obj = parseJson(response);
-  //   QASCollection c(obj, this);
-  //   for (size_t i=0; i<3 && i<c.size(); i++) {
-  //     QASActivity* act = c.at(i);
-  //     qDebug() << "MAJOR DIRECT" << act->content();
-  //   }
+    QVariantMap obj = parseJson(response);
+    QASCollection c(obj, this);
+    directMajorWidget->addCollection(c);
+    // for (size_t i=0; i<3 && i<c.size(); i++) {
+    //   QASActivity* act = c.at(i);
+    //   qDebug() << "MAJOR DIRECT" << act->content();
+    // }
   } else if (id == (QAS_INBOX_DIRECT_MINOR)) {
-  //   QVariantMap obj = parseJson(response);
-  //   QASCollection c(obj, this);
-  //   for (size_t i=0; i<3 && i<c.size(); i++) {
-  //     QASActivity* act = c.at(i);
-  //     qDebug() << "MINOR DIRECT" << act->content();
-  //   }
+    QVariantMap obj = parseJson(response);
+    QASCollection c(obj, this);
+    directMinorWidget->addCollection(c);
+    // for (size_t i=0; i<3 && i<c.size(); i++) {
+    //   QASActivity* act = c.at(i);
+    //   qDebug() << "MINOR DIRECT" << act->content();
+    // }
   } else if (id == QAS_REPLIES) {
     QVariantMap obj = parseJson(response);
     QASObjectList::getObjectList(obj, this);
