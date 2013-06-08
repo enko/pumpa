@@ -288,7 +288,13 @@ void PumpApp::about() {
     "<p>You should have received a copy of the GNU General Public License "
     "along with Pumpa.  If not, see "
     "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>."
-    "</p>";
+    "</p>"
+    "<p>The Pumpa logo was "
+    "<a href=\"http://opengameart.org/content/fruit-and-veggie-inventory\">"
+    "created by Joshua Taylor</a> for the "
+    "<a href=\"http://lpc.opengameart.org/\">Liberated Pixel Cup</a>."
+    "The logo is copyrighted by the artist and is dual licensed under the "
+    "CC-BY-SA 3.0 license and the GNU GPL 3.0.";
 
   QMessageBox::about(this, tr("About " CLIENT_FANCY_NAME), 
                      "<p><b>" CLIENT_FANCY_NAME " " CLIENT_VERSION "</b> - "
