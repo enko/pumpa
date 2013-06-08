@@ -57,6 +57,7 @@ private:
   QLabel* m_imageLabel;
   QVBoxLayout* m_layout;
   RichTextLabel* m_infoLabel;
+  QLabel* m_titleLabel;
 
   QASObject* m_object;
 };

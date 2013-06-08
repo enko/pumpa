@@ -22,13 +22,15 @@
 //------------------------------------------------------------------------------
 
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
-  QFrame(parent), m_infoLabel(NULL), m_object(obj)
+  QFrame(parent), m_infoLabel(NULL), m_titleLabel(NULL), m_object(obj)
 {
   m_layout = new QVBoxLayout(this);
-  m_textLabel = new RichTextLabel(this);
-  connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
-          this,  SIGNAL(linkHovered(const QString&)));
-  
+
+  if (!obj->displayName().isEmpty()) {
+    m_titleLabel = new QLabel("<b>" + obj->displayName() + "</b>");
+    m_layout->addWidget(m_titleLabel);
+  }
+
   if (obj->type() == "image") {
     m_imageLabel = new QLabel(this);
     m_imageLabel->setMaximumSize(320, 320);
@@ -39,6 +41,9 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
     m_layout->addWidget(m_imageLabel);
   }
 
+  m_textLabel = new RichTextLabel(this);
+  connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
+          this,  SIGNAL(linkHovered(const QString&)));
   m_layout->addWidget(m_textLabel);
 
   if (obj->type() == "comment") {
