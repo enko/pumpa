@@ -52,8 +52,9 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
     if (m_activity_map.contains(activity_id))
       continue;
     m_activity_map.insert(activity_id, activity);
-
-    if (m_shortDisplay) {
+    
+    QString verb = activity->verb();
+    if (verb != "post" && verb != "share") {
       ShortActivityWidget* aw = new ShortActivityWidget(activity, this);
       connect(aw, SIGNAL(linkHovered(const QString&)),
               this,  SIGNAL(linkHovered(const QString&)));
