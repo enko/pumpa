@@ -17,47 +17,51 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _COLLECTIONWIDGET_H_
-#define _COLLECTIONWIDGET_H_
+#ifndef _SHORTACTIVITYWIDGET_H_
+#define _SHORTACTIVITYWIDGET_H_
 
-#include <QScrollArea>
-#include <QScrollBar>
-#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QFrame>
 #include <QWidget>
-#include <QLabel>
-#include <QMouseEvent>
 
 #include "qactivitystreams.h"
-#include "activitywidget.h"
+#include "actorwidget.h"
+#include "richtextlabel.h"
 
 //------------------------------------------------------------------------------
 
-class CollectionWidget : public QScrollArea {
+class AbstractActivityWidget : public QFrame {
   Q_OBJECT
 
 public:
-  CollectionWidget(QWidget* parent, bool shortDisplay=false);
+  AbstractActivityWidget(QASActivity* a, QWidget* parent=0);
 
-  void addCollection(const QASCollection& coll);
-
-signals:
-  void highlightMe();  
-  void request(QString, int);
-  void newReply(QASObject*);
-  void linkHovered(const QString&);
+  virtual QString getId() const { return m_activity->id(); }
 
 protected:
-  void keyPressEvent(QKeyEvent* event);
-
-private:
-  QVBoxLayout* m_itemLayout;
-  QWidget* m_listContainer;
-  QMap<QString, QASActivity*> m_activity_map;
-  
-  QString m_nextUrl;
-
-  bool m_firstTime;
-  bool m_shortDisplay;
+  QASActivity* m_activity;
 };
 
-#endif /* _COLLECTIONWIDGET_H_ */
+//------------------------------------------------------------------------------
+
+class ShortActivityWidget : public AbstractActivityWidget {
+  Q_OBJECT
+
+public:
+  ShortActivityWidget(QASActivity* a, QWidget* parent=0);
+
+public slots:
+  virtual void onObjectChanged();
+
+signals:
+  void linkHovered(const QString&);
+
+private:
+  void updateText();
+
+  RichTextLabel* m_textLabel;
+  ActorWidget* m_actorWidget;
+  QHBoxLayout* m_acrossLayout;
+};
+
+#endif /* _SHORTACTIVITYWIDGET_H_ */

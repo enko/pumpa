@@ -141,9 +141,9 @@ QString relativeFuzzyTime(QDateTime sTime) {
 //------------------------------------------------------------------------------
 
 ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
-  QFrame(parent),  m_hasMoreButton(NULL), m_activity(a)
+  AbstractActivityWidget(a, parent),  m_hasMoreButton(NULL)
 {
-  QASObject* noteObj = m_activity->object();
+  QASObject* noteObj = a->object();
 
   m_infoLabel = new RichTextLabel(this);
   m_objectWidget = new ObjectWidget(noteObj, this);
@@ -199,13 +199,9 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
       addObjectList(ol);
   }
 
-  // m_rightFrame = new QFrame(this);
-  // m_rightFrame->setLayout(m_rightLayout);
-
   QHBoxLayout* m_acrossLayout = new QHBoxLayout;
   m_acrossLayout->setSpacing(10);
   m_acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignTop);
-  // m_acrossLayout->addWidget(m_rightFrame, 0, Qt::AlignTop);
   m_acrossLayout->addLayout(m_rightLayout, 0); 
 
   setLayout(m_acrossLayout);

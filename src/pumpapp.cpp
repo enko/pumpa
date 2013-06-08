@@ -50,7 +50,7 @@ PumpApp::PumpApp(QWidget* parent) :
   connect(inboxWidget, SIGNAL(linkHovered(const QString&)),
           this,  SLOT(statusMessage(const QString&)));
 
-  inboxMinorWidget = new CollectionWidget(this);
+  inboxMinorWidget = new CollectionWidget(this, true);
   connect(inboxMinorWidget, SIGNAL(request(QString, int)),
           this, SLOT(request(QString, int)));
   connect(inboxMinorWidget, SIGNAL(newReply(QASObject*)),

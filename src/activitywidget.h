@@ -32,12 +32,13 @@
 #include "objectwidget.h"
 #include "actorwidget.h"
 #include "richtextlabel.h"
+#include "shortactivitywidget.h"
 
 #define MAX_WORD_LENGTH       40
 
 //------------------------------------------------------------------------------
 
-class ActivityWidget : public QFrame {
+class ActivityWidget : public AbstractActivityWidget {
   Q_OBJECT
 
 public:
@@ -78,11 +79,7 @@ private:
   QVBoxLayout* m_rightLayout;
   QHBoxLayout* m_acrossLayout;
   
-  QFrame* m_rightFrame;
-
   QPushButton* m_hasMoreButton;
-
-  QASActivity* m_activity;
 
   QList<QASObject*> m_repliesList;
   QSet<QString> m_repliesMap;

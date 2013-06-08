@@ -55,10 +55,11 @@ exists( /usr/lib/libaspell* ) {
 INCLUDEPATH += src
 VPATH       += src
 
-OBJECT_HEADERS = pumpapp.h qactivitystreams.h collectionwidget.h json.h \
-	messagewindow.h messageedit.h fancyhighlighter.h qaspell.h \
-	activitywidget.h objectwidget.h actorwidget.h filedownloader.h \
-	richtextlabel.h oauthwizard.h tabwidget.h util.h
+OBJECT_HEADERS = pumpapp.h qactivitystreams.h collectionwidget.h	\
+	json.h messagewindow.h messageedit.h fancyhighlighter.h		\
+	qaspell.h shortactivitywidget.h activitywidget.h		\
+	objectwidget.h actorwidget.h filedownloader.h richtextlabel.h	\
+	oauthwizard.h tabwidget.h util.h
 
 HEADERS += $$OBJECT_HEADERS pumpa_defines.h
 SOURCES += main.cpp

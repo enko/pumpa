@@ -24,13 +24,9 @@
 
 //------------------------------------------------------------------------------
 
-CollectionWidget::CollectionWidget(QWidget* parent) :
-  QScrollArea(parent), firstTime(true)
+CollectionWidget::CollectionWidget(QWidget* parent, bool shortDisplay) :
+  QScrollArea(parent), m_firstTime(true), m_shortDisplay(shortDisplay)
 {
-
-  // loadSignalMapper = new QSignalMapper(this);
-  // connect(loadSignalMapper, SIGNAL(mapped(int)), this, SLOT(loadOlder(int)));
-  
   m_itemLayout = new QVBoxLayout;
   m_itemLayout->setSpacing(10);
   m_itemLayout->addStretch();
@@ -57,23 +53,30 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
       continue;
     m_activity_map.insert(activity_id, activity);
 
-    ActivityWidget* aw = new ActivityWidget(activity, this);
+    if (m_shortDisplay) {
+      ShortActivityWidget* aw = new ShortActivityWidget(activity, this);
+      connect(aw, SIGNAL(linkHovered(const QString&)),
+              this,  SIGNAL(linkHovered(const QString&)));
+      
+      m_itemLayout->insertWidget(li++, aw);
+    } else {
+      ActivityWidget* aw = new ActivityWidget(activity, this);
 
-    connect(aw, SIGNAL(request(QString, int)),
-            this, SIGNAL(request(QString, int)));
-    connect(aw, SIGNAL(newReply(QASObject*)),
-            this, SIGNAL(newReply(QASObject*)));
-    connect(aw, SIGNAL(linkHovered(const QString&)),
-            this,  SIGNAL(linkHovered(const QString&)));
-
-    m_itemLayout->insertWidget(li++, aw);
+      connect(aw, SIGNAL(request(QString, int)),
+              this, SIGNAL(request(QString, int)));
+      connect(aw, SIGNAL(newReply(QASObject*)),
+              this, SIGNAL(newReply(QASObject*)));
+      connect(aw, SIGNAL(linkHovered(const QString&)),
+              this,  SIGNAL(linkHovered(const QString&)));
+      
+      m_itemLayout->insertWidget(li++, aw);
+    }
     newCount++;
   }
 
-  if (newCount && !isVisible() && !firstTime) {
+  if (newCount && !isVisible() && !m_firstTime)
     emit highlightMe();
-  }
-  firstTime = false;
+  m_firstTime = false;
 }
 
 //------------------------------------------------------------------------------
