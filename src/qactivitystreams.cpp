@@ -74,6 +74,34 @@ QString getUrlOrProxy(QVariantMap obj) {
 
 //------------------------------------------------------------------------------
 
+void updateVar(QVariantMap obj, QString& var, QString name) {
+  if (obj.contains(name))
+    var = obj[name].toString();
+}
+
+//------------------------------------------------------------------------------
+
+void updateVar(QVariantMap obj, bool& var, QString name) {
+  if (obj.contains(name))
+    var = obj[name].toBool();
+}
+
+//------------------------------------------------------------------------------
+
+void updateVar(QVariantMap obj, qulonglong& var, QString name) {
+  if (obj.contains(name))
+    var = obj[name].toULongLong();
+}
+
+//------------------------------------------------------------------------------
+
+void updateVar(QVariantMap obj, QDateTime& var, QString name) {
+  if (obj.contains(name))
+    var = parseTime(obj[name].toString());
+}
+
+//------------------------------------------------------------------------------
+
 QASActor::QASActor(QString id, QObject* parent) :
   QObject(parent),
   m_id(id) 
@@ -89,10 +117,10 @@ void QASActor::update(QVariantMap json) {
 #if DEBUG >= 1
   qDebug() << "updating Actor" << m_id;
 #endif
-
-  m_preferredUsername = json["preferredUsername"].toString();
-  m_url = json["url"].toString();
-  m_displayName = json["displayName"].toString();
+  
+  updateVar(json, m_preferredUsername, "preferredUsername");
+  updateVar(json, m_url, "url"); 
+  updateVar(json, m_displayName, "displayName");
 
   if (json.contains("image")) {
     QVariantMap im = json["image"].toMap();
@@ -100,66 +128,6 @@ void QASActor::update(QVariantMap json) {
   }
 
   Q_ASSERT_X(!m_id.isEmpty(), "QASActor", serializeJsonC(json));
-
-        //   "links": {
-      //     "self": {
-      //       "href": "https://microca.st/api/user/encycl/profile"
-      //     },
-      //     "activity-inbox": {
-      //       "href": "https://microca.st/api/user/encycl/inbox"
-      //     },
-      //     "activity-outbox": {
-      //       "href": "https://microca.st/api/user/encycl/feed"
-      //     }
-      //   },
-      //   "objectType": "person",
-      //   "followers": {
-      //     "url": "https://microca.st/api/user/encycl/followers",
-      //     "author": {
-      //       "id": "acct:encycl@microca.st",
-      //       "objectType": "person"
-      //     },
-      //     "links": {
-      //       "self": {
-      //         "href": "https://microca.st/api/user/encycl/followers"
-      //       }
-      //     },
-      //     "displayName": "Followers",
-      //     "members": {
-      //       "url": "https://microca.st/api/user/encycl/followers"
-      //     },
-      //     "objectType": "collection",
-      //     "id": "https://microca.st/api/user/encycl/followers",
-      //     "pump_io": {
-      //       "proxyURL": "https://io.saz.im/api/proxy/35H_pp91SW657XmH3m3tPw"
-      //     }
-      //   },
-      //   "following": {
-      //     "url": "https://microca.st/api/user/encycl/following",
-      //     "pump_io": {
-      //       "proxyURL": "https://io.saz.im/api/proxy/809G1WAHSzGe68K5Ls0T8g"
-      //     }
-      //   },
-      //   "favorites": {
-      //     "url": "https://microca.st/api/user/encycl/favorites"
-      //   },
-      //   "lists": {
-      //     "url": "https://microca.st/api/user/encycl/lists/person",
-      //     "displayName": "Collections of persons for encycl",
-      //     "objectTypes": [
-      //       "collection"
-      //     ],
-      //     "links": {
-      //       "first": {
-      //         "href": "https://microca.st/api/user/encycl/lists/person"
-      //       },
-      //       "self": {
-      //         "href": "https://microca.st/api/user/encycl/lists/person"
-      //       },
-      //       "prev": {
-      //         "href": "https://microca.st/api/user/encycl/lists/person?since=https%3A%2F%2Fmicroca.st%2Fapi%2Fcollection%2FujrvzbkZTaWfqNkwMxy0hw"
-      //       }
-      //     },
 }
 
 //------------------------------------------------------------------------------
@@ -203,24 +171,26 @@ void QASObject::update(QVariantMap json) {
   bool num_replies = m_replies ? m_replies->size() : 0;
 
   m_objectType = json["objectType"].toString();
-  if (!json.contains("url"))
-    return;
 
-  m_url = json["url"].toString();
-  m_content = json["content"].toString();
-  m_liked = json["liked"].toBool();
+  updateVar(json, m_url, "url");
+  updateVar(json, m_content, "content");
+  updateVar(json, m_liked, "liked");
+  updateVar(json, m_displayName, "displayName");
 
   if (m_objectType == "image") {
     QVariantMap imageObj = json["image"].toMap();
     m_imageUrl = getUrlOrProxy(imageObj);
   }
 
-  m_published = parseTime(json["published"].toString());
-  m_updated = parseTime(json["updated"].toString());
+  updateVar(json, m_published, "published");
+  updateVar(json, m_updated, "updated");
 
   Q_ASSERT_X(!m_id.isEmpty(), "QASObject", serializeJsonC(json));
 
   m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
+
+  if (!json.contains("url"))
+    return;
 
   if (json.contains("inReplyTo"))
     m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
@@ -231,28 +201,6 @@ void QASObject::update(QVariantMap json) {
   if (old_liked != m_liked || old_updated != m_updated ||
       num_replies != numReplies())
     emit changed();
-
-      //   "links": {
-      //     "self": {
-      //       "href": "http://frodo:8000/api/note/jMgmxKHfSuaLM1eqsvFKaw"
-      //     }
-      //   },
-      //   "likes": {
-      //     "url": "http://frodo:8000/api/note/jMgmxKHfSuaLM1eqsvFKaw/likes",
-      //     "totalItems": 0
-      //   },
-      //   "replies": {
-      //     "url": "http://frodo:8000/api/note/jMgmxKHfSuaLM1eqsvFKaw/replies",
-      //     "totalItems": 0
-      //   },
-      //   "shares": {
-      //     "url": "http://frodo:8000/api/note/jMgmxKHfSuaLM1eqsvFKaw/shares",
-      //     "totalItems": 0
-      //   },
-      //   "pump_io": {
-      //     "shared": false
-      //   }
-      // },
 }
 
 //------------------------------------------------------------------------------
@@ -298,84 +246,23 @@ void QASActivity::update(QVariantMap json) {
   qDebug() << debugDumpJson(json, "QASActivity");
 #endif
 
-  m_verb = json["verb"].toString();
-  m_url = json["url"].toString();
-  m_content = json["content"].toString();
+  updateVar(json, m_verb, "verb");
+  updateVar(json, m_url, "url");
+  updateVar(json, m_content, "content");
   
   Q_ASSERT_X(!m_id.isEmpty(), "QASActivity::update", serializeJsonC(json));
 
-  m_object = QASObject::getObject(json["object"].toMap(), parent());
-  m_actor = QASActor::getActor(json["actor"].toMap(), parent());
+  if (json.contains("object"))
+    m_object = QASObject::getObject(json["object"].toMap(), parent());
+  if (json.contains("actor"))
+    m_actor = QASActor::getActor(json["actor"].toMap(), parent());
 
-  m_published = parseTime(json["published"].toString());
-  m_updated = parseTime(json["updated"].toString());
+  updateVar(json, m_published, "published");
+  updateVar(json, m_updated, "updated");
 
   if (json.contains("generator"))
     m_generatorName = json["generator"].toMap()["displayName"].toString();
 
-  // Stuff not handled yet:
-
-  // "generator": {
-  //   "objectType": "application",
-  //   "id": "http://frodo:8000/api/application/oGi8xnNvS1GXZHjiCn9CFQ",
-  //   "updated": "2013-05-25T21:06:06Z",
-  //   "published": "2013-05-25T21:06:06Z",
-  //   "links": { "self": {"href": "http://frodo:8000/api/application/oGi8xnNvS1GXZHjiCn9CFQ"} },
-  //   "likes": { "url": "http://frodo:8000/api/application/oGi8xnNvS1GXZHjiCn9CFQ/likes"},
-  //   "replies": {"url": "http://frodo:8000/api/application/oGi8xnNvS1GXZHjiCn9CFQ/replies" },
-  //   "shares": { "url": "http://frodo:8000/api/application/oGi8xnNvS1GXZHjiCn9CFQ/shares" }
-  // },
-  // "cc": [
-  //   {
-  //     "author": {
-  //       "preferredUsername": "sazius",
-  //       "url": "http://frodo:8000/sazius",
-  //       "displayName": "sazius",
-  //       "id": "http://frodo:8000/api/user/sazius/profile",
-  //       "links": {
-  //         "self": {
-  //           "href": "http://frodo:8000/api/user/sazius/profile"
-  //         },
-  //         "activity-inbox": {
-  //           "href": "http://frodo:8000/api/user/sazius/inbox"
-  //         },
-  //         "activity-outbox": {
-  //           "href": "http://frodo:8000/api/user/sazius/feed"
-  //         }
-  //       },
-  //       "objectType": "person",
-  //       "followers": {
-  //         "url": "http://frodo:8000/api/user/sazius/followers"
-  //       },
-  //       "following": {
-  //         "url": "http://frodo:8000/api/user/sazius/following"
-  //       },
-  //       "favorites": {
-  //         "url": "http://frodo:8000/api/user/sazius/favorites"
-  //       },
-  //       "lists": {
-  //         "url": "http://frodo:8000/api/user/sazius/lists/person"
-  //       }
-  //     },
-  //     "id": "http://frodo:8000/api/user/sazius/followers",
-  //     "links": {
-  //       "self": {
-  //         "href": "http://frodo:8000/api/user/sazius/followers"
-  //       }
-  //     },
-  //     "url": "http://frodo:8000/sazius/followers",
-  //     "displayName": "Followers",
-  //     "members": {
-  //       "url": "http://frodo:8000/api/user/sazius/followers"
-  //     },
-  //     "objectType": "collection"
-  //   }
-  // ],
-  // "links": {
-  //   "self": {
-  //     "href": "http://frodo:8000/api/activity/H1rhziiJRiSkihKckkHJ3A"
-  //   }
-  // },
 }
 
 //------------------------------------------------------------------------------
@@ -414,13 +301,13 @@ void QASObjectList::update(QVariantMap json) {
 #if DEBUG >= 3
   qDebug() << debugDumpJson(json, "QASObjectList");
 #endif
-  
+
   qulonglong old_totalItems = m_totalItems;
   int old_item_count = m_items.size();
 
-  m_url = json["url"].toString();
+  updateVar(json, m_url, "url");
+  updateVar(json, m_totalItems, "totalItems");
   m_proxyUrl = getProxyUrl(json);
-  m_totalItems = json["totalItems"].toULongLong();
 
   m_items.clear();
   QVariantList items_json = json["items"].toList();
@@ -467,9 +354,9 @@ QASCollection::QASCollection(QObject* parent) : QObject(parent),
 QASCollection::QASCollection(QVariantMap json, QObject* parent) :
   QObject(parent) 
 {
-  m_displayName = json["displayName"].toString();
-  m_url = json["url"].toString();
-  m_totalItems = json["totalItems"].toULongLong();
+  updateVar(json, m_displayName, "displayName");
+  updateVar(json, m_url, "url");
+  updateVar(json, m_totalItems, "totalItems");
 
   m_nextUrl = json["links"].toMap()["next"].toMap()["href"].toString();
 
@@ -479,25 +366,5 @@ QASCollection::QASCollection(QVariantMap json, QObject* parent) :
                                                 parent);
     m_items.append(act);
   }
-
-  // Stuff not handled yet:
-  //   "objectTypes": [ "activity"  ],
-  //   "links": { "first": {"href": ""}, "self": {"href": "http://"}, "prev": {"href": "" }  },
-  //   "author": {
-  //     "preferredUsername": "sazius",
-  //     "url": "http://frodo:8000/sazius",
-  //     "displayName": "sazius",
-  //     "id": "http://frodo:8000/api/user/sazius/profile",
-  //     "links": {
-  //       "self": { "href": "http://frodo:8000/api/user/sazius/profile"},
-  //       "activity-inbox": {"href": "http://frodo:8000/api/user/sazius/inbox"},
-  //       "activity-outbox": {"href": "http://frodo:8000/api/user/sazius/feed"}
-  //     },
-  //     "objectType": "person",
-  //     "followers": {"url": "http://frodo:8000/api/user/sazius/followers"},
-  //     "following": { "url": "http://frodo:8000/api/user/sazius/following" },
-  //     "favorites": { "url": "http://frodo:8000/api/user/sazius/favorites" },
-  //     "lists": { "url": "http://frodo:8000/api/user/sazius/lists/person" }
-  //   },
 }
 

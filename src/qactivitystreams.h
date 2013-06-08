@@ -94,6 +94,7 @@ public:
   QString type() const { return m_objectType; }
   QString url() const { return m_url; }
   QString imageUrl() const { return m_imageUrl; }
+  QString displayName() const { return m_displayName; }
 
   QDateTime published() const { return m_published; }
   bool liked() const { return m_liked; }
@@ -113,6 +114,7 @@ private:
   QString m_objectType;
   QString m_url;
   QString m_imageUrl;
+  QString m_displayName;
 
   QDateTime m_published;
   QDateTime m_updated;
