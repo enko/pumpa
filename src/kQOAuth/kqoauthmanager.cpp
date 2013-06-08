@@ -445,7 +445,6 @@ void KQOAuthManager::getUserAuthorization(QUrl authorizationEndpoint) {
 
     d->error = KQOAuthManager::NoError;
 
-    qDebug() << "HERE";
     QPair<QString, QString> tokenParam = qMakePair(QString("oauth_token"), QString(d->requestToken));
     QUrl openWebPageUrl(authorizationEndpoint.toString(), QUrl::StrictMode);
 

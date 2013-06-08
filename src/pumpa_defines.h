@@ -17,25 +17,11 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "richtextlabel.h"
+#ifndef _PUMPA_DEFINES_H_
+#define _PUMPA_DEFINES_H_
 
-//------------------------------------------------------------------------------
+#define CLIENT_NAME           "pumpa"
+#define CLIENT_FANCY_NAME     "Pumpa"
+#define CLIENT_VERSION        "0.1"
 
-RichTextLabel::RichTextLabel(QWidget* parent) : QLabel(parent) {
-  // useful for debugging layouts and margins
-  // setLineWidth(1);
-  // setFrameStyle(QFrame::Box);
-
-  setWordWrap(true);
-
-  setOpenExternalLinks(true);
-  setTextInteractionFlags(Qt::TextSelectableByMouse |
-                          Qt::LinksAccessibleByMouse);
-  setScaledContents(false);
-  setTextFormat(Qt::RichText);
-
-  setLineWidth(2);
-  setMargin(0);
-  setFocusPolicy(Qt::NoFocus);
-
-}
+#endif /* _PUMPA_DEFINES_H_ */

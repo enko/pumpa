@@ -33,13 +33,10 @@
 
 #include "QtKOAuth"
 
+#include "pumpa_defines.h"
 #include "collectionwidget.h"
 #include "oauthwizard.h"
 #include "tabwidget.h"
-
-#define CLIENT_NAME           "pumpa"
-#define CLIENT_FANCY_NAME     "Pumpa"
-#define CLIENT_VERSION        "0.1"
 
 //------------------------------------------------------------------------------
 
@@ -49,8 +46,6 @@ class PumpApp : public QMainWindow {
 public:
   PumpApp(QWidget* parent=0);
   virtual ~PumpApp();                            
-
-  static QString siteUrlFixer(QString url);
 
 signals:
   void userAuthorizationStarted();
@@ -63,15 +58,9 @@ private slots:
   void statusMessage(const QString& msg);
 
   void tabSelected(int index);
-  void onFirstPageCommitted(QString, QString);
-  void wizardDone();
 
-  void onTemporaryTokenReceived(QString temporaryToken,
-                                QString temporaryTokenSecret);
-  void onAuthorizationReceived(QString token, QString verifier);
+  void onClientRegistered(QString, QString, QString, QString);
   void onAccessTokenReceived(QString token, QString tokenSecret);
-  // void onAuthorizedRequestDone();
-  void onOAuthClientRegDone();
 
   void onAuthorizedRequestReady(QByteArray response, int id);
   
@@ -86,17 +75,18 @@ private slots:
   void newPicture();
   void reload();
 
+  void startPumping();
+
 protected:
   void timerEvent(QTimerEvent*);
 
 private:
-  void startPumping();
   bool haveOAuth();
 
   void resetTimer();
 
-  void getOAuthAccess();
-  void registerOAuthClient();
+  // void getOAuthAccess();
+  // void registerOAuthClient();
   void syncOAuthInfo();
 
   void fetchAll();
@@ -128,25 +118,23 @@ private:
   QString m_siteUrl;
   QString m_userName;
 
-  QString clientId;
-  QString clientSecret;
+  QString m_clientId;
+  QString m_clientSecret;
 
-  QString token;
-  QString tokenSecret;
+  QString m_token;
+  QString m_tokenSecret;
 
   int m_reloadTime;
 
   KQOAuthManager *oaManager;
   KQOAuthRequest *oaRequest;
 
-  QNetworkAccessManager *netManager;
-
   TabWidget* tabWidget;
   CollectionWidget* inboxWidget;
   CollectionWidget* directMajorWidget;
   CollectionWidget* directMinorWidget;
 
-  OAuthWizard* oaWizard;
+  OAuthWizard* m_wiz;
   int timerId;
 };
 
