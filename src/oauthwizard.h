@@ -20,9 +20,13 @@
 #ifndef _OAUTHWIZARD_H_
 #define _OAUTHWIZARD_H_
 
+#include <QWidget>
+#include <QLabel>
 #include <QWizard>
 #include <QWizardPage>
-#include <QWidget>
+#include <QNetworkAccessManager>
+
+#include "QtKOAuth"
 
 //------------------------------------------------------------------------------
 
@@ -31,17 +35,18 @@ class OAuthFirstPage : public QWizardPage {
 
 public:
   OAuthFirstPage(QWidget* parent=0);
-  virtual bool validatePage(); 
-  void userLoopDone() { status = 2; }
+  void setMessage(QString msg);
 
 signals:
   void committed(QString, QString);
 
 protected:
+  virtual bool validatePage(); 
   virtual bool isComplete() const;
 
 private:
-  int status;
+  bool splitAccountId(QString& username, QString& server) const;
+  QLabel* m_messageLabel;
 };
 
 //------------------------------------------------------------------------------
@@ -51,6 +56,9 @@ class OAuthSecondPage : public QWizardPage {
 
 public:
   OAuthSecondPage(QWidget* parent=0);
+
+protected:
+  virtual bool validatePage(); 
 
 signals:
   void committed(QString, QString);
@@ -65,15 +73,36 @@ public:
   OAuthWizard(QWidget* parent=0);
 
 signals:
-  void firstPageCommitted(QString, QString);
-  void secondPageCommitted(QString, QString);
+  void clientRegistered(QString, QString, QString, QString);
+  void accessTokenReceived(QString, QString);
 
-public slots:
-  void gotoSecondPage();
+private slots:
+  void onFirstPageCommitted(QString, QString);
+  void onSecondPageCommitted(QString, QString);
+
+  void onOAuthClientRegDone();
+  void onTemporaryTokenReceived(QString temporaryToken,
+                                QString temporaryTokenSecret);
+  void onAccessTokenReceived(QString token, QString tokenSecret);
 
 private:
+  void notifyMessage(QString);
+  void errorMessage(QString);
+
+  void registerOAuthClient();
+  void getOAuthAccess();
+
   OAuthFirstPage* p1;
   OAuthSecondPage* p2;
+
+  KQOAuthManager *m_oam;
+  KQOAuthRequest *m_oar;
+  QNetworkAccessManager *m_nam;
+
+  QString m_server, m_username;
+  QString m_clientId, m_clientSecret;
+
+  int m_clientRegTryCount;
 };
 
 #endif /* _OAUTHWIZARD_H_ */

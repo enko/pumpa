@@ -17,40 +17,59 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "oauthwizard.h"
-
 #include <QDebug>
-#include <QVBoxLayout>
-#include <QLabel>
 #include <QLineEdit>
+#include <QVBoxLayout>
+#include <QRegExp>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QVariantMap>
+#include <QByteArray>
+
+#include "pumpa_defines.h"
+#include "oauthwizard.h"
+#include "util.h"
+#include "json.h"
+
+#define EXAMPLE_ACCOUNT_ID "username@example.com"
 
 //------------------------------------------------------------------------------
 
 OAuthFirstPage::OAuthFirstPage(QWidget* parent) :
-  QWizardPage(parent), status(0) 
+  QWizardPage(parent)
 {
-  setTitle("Enter username and server");
+  setTitle("Welcome to Pumpa!");
 
   QVBoxLayout* layout = new QVBoxLayout(this);
 
-  QLabel* infoLabel = new QLabel("Some long explanation here.", this);
+  QLabel* infoLabel = 
+    new QLabel("<p>In order to use pump.io you need to first register an "
+               "account with a pump.io server. If you haven't done this yet "
+               "you can do it now by trying out one of the existing public "
+               "servers: <br /><a href=\"http://pump.io/tryit.html\">"
+               "http://pump.io/tryit.html</a>.</p>"
+               "<p>When you are done enter your new pump.io account id below "
+               "in the form of <b>username@servername</b>.</p>", this);
+  infoLabel->setOpenExternalLinks(true);
+  infoLabel->setTextInteractionFlags(Qt::TextSelectableByMouse |
+                                     Qt::LinksAccessibleByMouse);
   infoLabel->setWordWrap(true);
   layout->addWidget(infoLabel);
+  layout->addStretch();
 
-  QLabel* userNameLabel = new QLabel("Username:", this);
-  QLineEdit* userNameEdit = new QLineEdit(this);
-  userNameLabel->setBuddy(userNameEdit);
-  layout->addWidget(userNameLabel);
-  layout->addWidget(userNameEdit);
+  m_messageLabel = new QLabel(this);
+  layout->addWidget(m_messageLabel);
 
-  QLabel* serverLabel = new QLabel("Server:", this);
-  QLineEdit* serverEdit = new QLineEdit(this);
-  serverLabel->setBuddy(serverEdit);
-  layout->addWidget(serverLabel);
-  layout->addWidget(serverEdit);
+  QLabel* accountIdLabel = new QLabel("<b>Your pump.io account id:</b>", this);
+  QLineEdit* accountIdEdit = new QLineEdit(EXAMPLE_ACCOUNT_ID, this);
+  accountIdLabel->setBuddy(accountIdEdit);
+  connect(accountIdEdit, SIGNAL(textEdited(const QString&)),
+          this, SIGNAL(completeChanged()));
 
-  registerField("userName*", userNameEdit);
-  registerField("serverUrl*", serverEdit);
+  layout->addWidget(accountIdLabel);
+  layout->addWidget(accountIdEdit);
+
+  registerField("accountId*", accountIdEdit);
 
   setButtonText(QWizard::CommitButton, "Next");
   setCommitPage(true);
@@ -59,35 +78,62 @@ OAuthFirstPage::OAuthFirstPage(QWidget* parent) :
 
 //------------------------------------------------------------------------------
 
-bool OAuthFirstPage::validatePage() {
-  if (status == 1)
+void OAuthFirstPage::setMessage(QString msg) {
+  m_messageLabel->setText(msg);
+}
+
+//------------------------------------------------------------------------------
+
+bool OAuthFirstPage::splitAccountId(QString& username, QString& server) const {
+  static QRegExp rx("^([\\w\\._-+]+)@([\\w\\._-+]+)$");
+  QString accountId = field("accountId").toString().trimmed();
+
+  if (accountId == EXAMPLE_ACCOUNT_ID)
     return false;
 
-  if (status == 2)
-    return true;
+  if (!rx.exactMatch(accountId))
+    return false;
 
-  status = 1;
-  QString userName = field("userName").toString();
-  QString serverUrl = field("serverUrl").toString();
+  username = rx.cap(1);
+  server = rx.cap(2);
 
-  emit committed(userName, serverUrl);
-  return false;
+  return true;
 }
 
 //------------------------------------------------------------------------------
 
 bool OAuthFirstPage::isComplete() const {
-  return (status != 1) && QWizardPage::isComplete();
+  QString username, server;
+  return splitAccountId(username, server);
+}
+
+//------------------------------------------------------------------------------
+
+bool OAuthFirstPage::validatePage() {
+  QString username, server;
+  bool ok = splitAccountId(username, server);
+
+  if (!ok)
+    return false;
+
+  emit committed(username, server);
+  return true;
 }
 
 //------------------------------------------------------------------------------
 
 OAuthSecondPage::OAuthSecondPage(QWidget* parent) : QWizardPage(parent) {
-  setTitle("User authorisation.");
+  setTitle("Authorise Pumpa");
 
   QVBoxLayout* layout = new QVBoxLayout(this);
 
-  QLabel* infoLabel = new QLabel("Some long explanation here.", this);
+  QLabel* infoLabel = 
+    new QLabel("In order for Pumpa to be able to read and post new messages "
+               "to your pump.io account you need to grant Pumpa access via "
+               "the web page. Pumpa will open the web page for you - just "
+               "follow the instructions and copy &amp; paste the <b>token</b> "
+               "and <b>verifier</b> text strings back into the fields below.",
+               this);
   infoLabel->setWordWrap(true);
   layout->addWidget(infoLabel);
 
@@ -111,29 +157,155 @@ OAuthSecondPage::OAuthSecondPage(QWidget* parent) : QWizardPage(parent) {
 
 //------------------------------------------------------------------------------
 
+bool OAuthSecondPage::validatePage() {
+  QString token = field("token").toString();
+  QString verifier = field("verifier").toString();
+
+  if (token.isEmpty() || verifier.isEmpty())
+    return false;
+
+  emit committed(token, verifier);
+  return true;
+}
+
+//------------------------------------------------------------------------------
+
 OAuthWizard::OAuthWizard(QWidget* parent) : QWizard(parent) {
-  setWindowTitle("foo");
+  setWindowTitle("Pumpa");
+
+  m_nam = new QNetworkAccessManager(this);
+  m_oam = new KQOAuthManager(this);
+  m_oar = new KQOAuthRequest(this);
+
   p1 = new OAuthFirstPage(this);
   p2 = new OAuthSecondPage(this);
 
   connect(p1, SIGNAL(committed(QString, QString)),
-          this, SIGNAL(firstPageCommitted(QString, QString)));
+          this, SLOT(onFirstPageCommitted(QString, QString)));
   connect(p2, SIGNAL(committed(QString, QString)),
-          this, SIGNAL(secondPageCommitted(QString, QString)));
+          this, SLOT(onSecondPageCommitted(QString, QString)));
 
   addPage(p1);
   addPage(p2);
-
-  setField("userName", "sazius");
-  setField("serverUrl", "io.saz.im");
 }
 
 //------------------------------------------------------------------------------
 
-void OAuthWizard::gotoSecondPage() {
-  p1->userLoopDone();
-  next();
+void OAuthWizard::notifyMessage(QString msg) {
+  qDebug() << "[OAuthWizard]" << msg;
 }
 
 //------------------------------------------------------------------------------
+
+void OAuthWizard::errorMessage(QString msg) {
+  p1->setMessage("<b><font color=\"red\">"+msg+"</font></b>");
+  qDebug() << "[OAuthWizard ERROR]" << msg;
+  back();
+}
+
+//------------------------------------------------------------------------------
+
+void OAuthWizard::onFirstPageCommitted(QString username, QString server) {
+  m_username = username;
+  m_server = siteUrlFixer(server);
+  m_clientRegTryCount = 0;
+  registerOAuthClient();
+}
+
+//------------------------------------------------------------------------------
+
+void OAuthWizard::registerOAuthClient() {
+  notifyMessage("Registering client ...");
+  m_clientRegTryCount++;
+
+  QUrl serverUrl(m_server);
+  serverUrl.setPath("/api/client/register");
+  qDebug() << serverUrl;
+
+  QNetworkRequest req;
+  req.setUrl(serverUrl);
+  req.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+  QVariantMap post;
+  post["type"] = "client_associate";
+  post["application_type"] = "native";
+  post["application_name"] = CLIENT_FANCY_NAME;
+  post["logo_uri"] = "http://saz.im/images/pumpa.png";
+
+  QByteArray postData = serializeJson(post);
+  
+  // qDebug() << "data=" << postData;
+
+  QNetworkReply *reply = m_nam->post(req, postData);
+
+  connect(reply, SIGNAL(finished()), this, SLOT(onOAuthClientRegDone()));
+}
+
+//------------------------------------------------------------------------------
+
+void OAuthWizard::onOAuthClientRegDone() {
+  QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+  if (reply->error() != QNetworkReply::NoError) {
+    if (m_clientRegTryCount == 1 && m_server.startsWith("https://")) {
+      m_server.replace("https://", "http://");
+      registerOAuthClient();
+    } else
+      errorMessage("Network error: " + reply->errorString());
+    return;
+  }
+
+  QByteArray data = reply->readAll();
+
+  QVariantMap json = parseJson(data);
+  m_clientId = json["client_id"].toString();
+  m_clientSecret = json["client_secret"].toString();
+
+  emit clientRegistered(m_username, m_server, m_clientId, m_clientSecret);
+
+  notifyMessage("Registered client to [" + m_server + "] successfully.");
+
+  getOAuthAccess();
+}
+
+//------------------------------------------------------------------------------
+
+void OAuthWizard::getOAuthAccess() {
+  notifyMessage("Authorising user ...");
+
+  connect(m_oam, SIGNAL(temporaryTokenReceived(QString, QString)),
+          this, SLOT(onTemporaryTokenReceived(QString, QString)));
+  connect(m_oam, SIGNAL(accessTokenReceived(QString, QString)),
+          this, SLOT(onAccessTokenReceived(QString, QString)));
+
+  m_oar->initRequest(KQOAuthRequest::TemporaryCredentials,
+                     QUrl(m_server+"/oauth/request_token"));
+  m_oar->setConsumerKey(m_clientId);
+  m_oar->setConsumerSecretKey(m_clientSecret);
+
+  m_oam->executeRequest(m_oar);
+}
+
+//------------------------------------------------------------------------------
+
+void OAuthWizard::onTemporaryTokenReceived(QString /*token*/,
+                                           QString /*tokenSecret*/) {
+  QUrl userAuthURL(m_server+"/oauth/authorize");
+  if (m_oam->lastError() == KQOAuthManager::NoError)
+    m_oam->getUserAuthorization(userAuthURL);
+  else 
+    errorMessage("Network or authentication error!");
+}
+
+//------------------------------------------------------------------------------
+
+void OAuthWizard::onSecondPageCommitted(QString token, QString verifier) {
+  m_oam->verifyToken(token, verifier);
+  m_oam->getUserAccessTokens(QUrl(m_server+"/oauth/access_token"));
+}
+
+//------------------------------------------------------------------------------
+
+void OAuthWizard::onAccessTokenReceived(QString token, QString tokenSecret) {
+  emit accessTokenReceived(token, tokenSecret);
+}
 

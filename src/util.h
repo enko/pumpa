@@ -17,25 +17,13 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "richtextlabel.h"
+#ifndef _UTIL_H_
+#define _UTIL_H_
+
+#include <QString>
 
 //------------------------------------------------------------------------------
 
-RichTextLabel::RichTextLabel(QWidget* parent) : QLabel(parent) {
-  // useful for debugging layouts and margins
-  // setLineWidth(1);
-  // setFrameStyle(QFrame::Box);
+QString siteUrlFixer(QString url);
 
-  setWordWrap(true);
-
-  setOpenExternalLinks(true);
-  setTextInteractionFlags(Qt::TextSelectableByMouse |
-                          Qt::LinksAccessibleByMouse);
-  setScaledContents(false);
-  setTextFormat(Qt::RichText);
-
-  setLineWidth(2);
-  setMargin(0);
-  setFocusPolicy(Qt::NoFocus);
-
-}
+#endif /* _UTIL_H_ */
