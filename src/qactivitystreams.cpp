@@ -59,21 +59,6 @@ QDateTime parseTime(QString timeStr) {
 
 //------------------------------------------------------------------------------
 
-QString getProxyUrl(QVariantMap obj) {
-  if (obj.contains("pump_io")) 
-    return obj["pump_io"].toMap()["proxyURL"].toString();
-  return "";
-}
-
-//------------------------------------------------------------------------------
-
-QString getUrlOrProxy(QVariantMap obj) {
-  QString proxyUrl = getProxyUrl(obj);
-  return proxyUrl.isEmpty() ? obj["url"].toString() : proxyUrl;
-}
-
-//------------------------------------------------------------------------------
-
 void updateVar(QVariantMap obj, QString& var, QString name) {
   if (obj.contains(name))
     var = obj[name].toString();
@@ -102,6 +87,24 @@ void updateVar(QVariantMap obj, QDateTime& var, QString name) {
 
 //------------------------------------------------------------------------------
 
+QString getProxyUrl(QVariantMap obj) {
+  if (obj.contains("pump_io")) 
+    return obj["pump_io"].toMap()["proxyURL"].toString();
+  return "";
+}
+
+//------------------------------------------------------------------------------
+
+void updateUrlOrProxy(QVariantMap obj, QString& var) {
+  QString proxyUrl = getProxyUrl(obj);
+  if (!proxyUrl.isEmpty())
+    var = proxyUrl;
+  else
+    updateVar(obj, var, "url");
+}
+
+//------------------------------------------------------------------------------
+
 QASActor::QASActor(QString id, QObject* parent) :
   QObject(parent),
   m_id(id) 
@@ -124,7 +127,7 @@ void QASActor::update(QVariantMap json) {
 
   if (json.contains("image")) {
     QVariantMap im = json["image"].toMap();
-    m_imageUrl = getUrlOrProxy(im);
+    updateUrlOrProxy(im, m_imageUrl);
   }
 
   Q_ASSERT_X(!m_id.isEmpty(), "QASActor", serializeJsonC(json));
@@ -179,7 +182,7 @@ void QASObject::update(QVariantMap json) {
 
   if (m_objectType == "image") {
     QVariantMap imageObj = json["image"].toMap();
-    m_imageUrl = getUrlOrProxy(imageObj);
+    updateUrlOrProxy(imageObj, m_imageUrl);
   }
 
   updateVar(json, m_published, "published");
