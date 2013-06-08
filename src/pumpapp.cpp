@@ -50,6 +50,14 @@ PumpApp::PumpApp(QWidget* parent) :
   connect(inboxWidget, SIGNAL(linkHovered(const QString&)),
           this,  SLOT(statusMessage(const QString&)));
 
+  inboxMinorWidget = new CollectionWidget(this);
+  connect(inboxMinorWidget, SIGNAL(request(QString, int)),
+          this, SLOT(request(QString, int)));
+  connect(inboxMinorWidget, SIGNAL(newReply(QASObject*)),
+          this, SLOT(newNote(QASObject*)));
+  connect(inboxMinorWidget, SIGNAL(linkHovered(const QString&)),
+          this,  SLOT(statusMessage(const QString&)));
+
   directMajorWidget = new CollectionWidget(this);
   connect(directMajorWidget, SIGNAL(request(QString, int)),
           this, SLOT(request(QString, int)));
@@ -71,6 +79,7 @@ PumpApp::PumpApp(QWidget* parent) :
   tabWidget->addTab(inboxWidget, "inbox");
   tabWidget->addTab(directMinorWidget, "mentions");
   tabWidget->addTab(directMajorWidget, "direct");
+  tabWidget->addTab(inboxMinorWidget, "meanwhile");
 
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(":/images/pumpa.png"));
@@ -369,54 +378,6 @@ void PumpApp::readSettings() {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
-  if (oaManager->lastError()) {
-    errorMessage(QString("Network or authorisation error [id=%1].").
-                 arg(oaManager->lastError()));
-    return;
-  }
-
-  if (id == QAS_INBOX_MAJOR) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    inboxWidget->addCollection(c);
-  } else if (id == QAS_INBOX_MINOR) {
-  //   QVariantMap obj = parseJson(response);
-  //   QASCollection c(obj, this);
-  //   for (size_t i=0; i<3 && i<c.size(); i++) {
-  //     QASActivity* act = c.at(i);
-  //     qDebug() << "MINOR" << act->content();
-  //   }
-  } else if (id == (QAS_INBOX_DIRECT_MAJOR)) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    directMajorWidget->addCollection(c);
-    // for (size_t i=0; i<3 && i<c.size(); i++) {
-    //   QASActivity* act = c.at(i);
-    //   qDebug() << "MAJOR DIRECT" << act->content();
-    // }
-  } else if (id == (QAS_INBOX_DIRECT_MINOR)) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    directMinorWidget->addCollection(c);
-    // for (size_t i=0; i<3 && i<c.size(); i++) {
-    //   QASActivity* act = c.at(i);
-    //   qDebug() << "MINOR DIRECT" << act->content();
-    // }
-  } else if (id == QAS_REPLIES) {
-    QVariantMap obj = parseJson(response);
-    QASObjectList::getObjectList(obj, this);
-  } else if (id == QAS_NEW_POST) {
-    // nice to refresh inbox after posting
-    fetchAll();
-  } else {
-    qDebug() << "[WARNING] Unknown request id!" << id;
-  }
-  notifyMessage("Ready!");
-}
-
-//------------------------------------------------------------------------------
-
 void PumpApp::fetchAll() {
   notifyMessage("Loading ...");
   fetchInbox(QAS_INBOX_MAJOR);
@@ -523,3 +484,41 @@ void PumpApp::request(QString endpoint, int response_id,
 
   oaManager->executeAuthorizedRequest(oaRequest, response_id);
 }
+
+//------------------------------------------------------------------------------
+
+void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
+  if (oaManager->lastError()) {
+    errorMessage(QString("Network or authorisation error [id=%1].").
+                 arg(oaManager->lastError()));
+    return;
+  }
+
+  if (id == QAS_INBOX_MAJOR) {
+    QVariantMap obj = parseJson(response);
+    QASCollection c(obj, this);
+    inboxWidget->addCollection(c);
+  } else if (id == QAS_INBOX_MINOR) {
+    QVariantMap obj = parseJson(response);
+    QASCollection c(obj, this);
+    inboxMinorWidget->addCollection(c);
+  } else if (id == (QAS_INBOX_DIRECT_MAJOR)) {
+    QVariantMap obj = parseJson(response);
+    QASCollection c(obj, this);
+    directMajorWidget->addCollection(c);
+  } else if (id == (QAS_INBOX_DIRECT_MINOR)) {
+    QVariantMap obj = parseJson(response);
+    QASCollection c(obj, this);
+    directMinorWidget->addCollection(c);
+  } else if (id == QAS_REPLIES) {
+    QVariantMap obj = parseJson(response);
+    QASObjectList::getObjectList(obj, this);
+  } else if (id == QAS_NEW_POST) {
+    // nice to refresh inbox after posting
+    fetchAll();
+  } else {
+    qDebug() << "[WARNING] Unknown request id!" << id;
+  }
+  notifyMessage("Ready!");
+}
+

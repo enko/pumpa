@@ -133,6 +133,7 @@ private:
   CollectionWidget* inboxWidget;
   CollectionWidget* directMajorWidget;
   CollectionWidget* directMinorWidget;
+  CollectionWidget* inboxMinorWidget;
 
   OAuthWizard* m_wiz;
   int timerId;
