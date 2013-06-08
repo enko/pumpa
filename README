@@ -48,6 +48,11 @@ To download and build, type the following:
     qmake-qt4     # or just "qmake" on some systems
     make
 
+The procedure on Mac OS X is the same, but getting the dependencies is
+a bit different, David Haberthür has made a detailed guide for
+building on Mac OS X here:
+<https://github.com/e14n/pump.io/wiki/HowTo-for-building-Pumpa-on-OS-X>
+
 
 ## Running
 
