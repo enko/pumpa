@@ -21,10 +21,26 @@
 
 //------------------------------------------------------------------------------
 
+QString actorNames(QASActorList* alist) {
+  QString text;
+  for (size_t i=0; i<alist->size(); i++) {
+    QASActor* a = alist->at(i);
+    text += QString("<a href=\"%1\">%2</a>")
+      .arg(a->url())
+      .arg(a->displayNameOrYou());
+    if (i != alist->size()-1)
+      text += ", ";
+  }
+  return text;
+}
+
+//------------------------------------------------------------------------------
+
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
   QFrame(parent),
   m_infoLabel(NULL),
   m_likesLabel(NULL),
+  m_sharesLabel(NULL),
   m_titleLabel(NULL),
   m_object(obj)
 {
@@ -59,6 +75,8 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
   }
 
   updateLikes();
+
+  updateShares();
   
   setLayout(m_layout);
 
@@ -69,6 +87,7 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
 
 void ObjectWidget::onChanged() {
   updateLikes();
+  updateShares();
 }
 
 //------------------------------------------------------------------------------
@@ -139,7 +158,8 @@ void ObjectWidget::updateLikes() {
     return;
   }
 
-  if (!m_object->likes()->size())
+  QASActorList* likes = m_object->likes();
+  if (!likes->size())
     return;
 
   if (m_likesLabel == NULL) {
@@ -149,22 +169,37 @@ void ObjectWidget::updateLikes() {
     m_layout->addWidget(m_likesLabel);
   }
 
-  QString text;
-  QASActorList* likes = m_object->likes();
-  for (size_t i=0; i<likes->size(); i++) {
-    QASActor* a = likes->at(i);
-    text += QString("<a href=\"%1\">%2</a>")
-      .arg(a->url())
-      .arg(a->displayName());
-    if (i != likes->size()-1)
-      text += ", ";
-  }
-
-  if (likes->size() == 1)
-    text += " likes";
-  else 
-    text += " like";
+  QString text = actorNames(likes);
+  text += (likes->size()==1 && !likes->onlyYou()) ? " likes" : " like";
   text += " this.";
   
   m_likesLabel->setText(text);
+}
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::updateShares() {
+  if (!m_object->numShares()) {
+    if (m_sharesLabel != NULL) {
+      m_layout->removeWidget(m_sharesLabel);
+      delete m_sharesLabel;
+      m_sharesLabel = NULL;
+    }
+    return;
+  }
+
+  if (!m_object->shares()->size())
+    return;
+
+  if (m_sharesLabel == NULL) {
+    m_sharesLabel = new RichTextLabel(this);
+    connect(m_sharesLabel, SIGNAL(linkHovered(const QString&)),
+            this,  SIGNAL(linkHovered(const QString&)));
+    m_layout->addWidget(m_sharesLabel);
+  }
+
+  QString text = actorNames(m_object->shares());
+  text += " shared this.";
+  
+  m_sharesLabel->setText(text);
 }

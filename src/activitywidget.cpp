@@ -242,6 +242,8 @@ void ActivityWidget::updateShareButton(bool /*wait*/) {
 void ActivityWidget::updateText() {
   const QASObject* noteObj = m_activity->object();
   const QASActor* author = effectiveAuthor();
+  
+  bool share = (m_activity->verb() == "share");
 
   QString text = QString("<a href=\"%2\">%1</a> at <a href=\"%4\">%3</a>").
     arg(author->displayName()).
@@ -250,14 +252,14 @@ void ActivityWidget::updateText() {
     arg(noteObj->url());
 
   QString generatorName = m_activity->generatorName();
-  if (!generatorName.isEmpty())
+  if (!generatorName.isEmpty() && !share)
     text += " via " + generatorName;
 
   QASObject* irtObj = noteObj->inReplyTo();
   if (irtObj && !irtObj->url().isEmpty())
     text += " in reply to a <a href=\"" + irtObj->url() + "\">note</a>";
 
-  if (m_activity->verb() == "share")
+  if (share)
     text += " (shared by " + m_activity->actor()->displayName() + ")";
 
   m_infoLabel->setText(text);

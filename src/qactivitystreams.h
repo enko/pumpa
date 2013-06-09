@@ -64,12 +64,14 @@ public:
 
   QDateTime published() const { return m_published; }
 
-  void setLike(bool like);
+  //  void setLike(bool like);
   bool liked() const { return m_liked; }
   size_t numLikes() const;
   QASActorList* likes() const { return m_likes; }
 
   bool shared() const { return m_shared; }
+  size_t numShares() const;
+  QASActorList* shares() const { return m_shares; }
 
   size_t numReplies() const;
   QASObjectList* replies() const { return m_replies; }
@@ -103,6 +105,7 @@ protected:
   QASActor* m_author;
   QASObjectList* m_replies;
   QASActorList* m_likes;
+  QASActorList* m_shares;
 
 private:
   static QMap<QString, QASObject*> s_objects;
@@ -120,8 +123,13 @@ public:
   static QASActor* getActor(QVariantMap json, QObject* parent);
   virtual void update(QVariantMap json);
 
+  QString displayNameOrYou() const { return isYou() ? "You" : displayName(); }
+  bool isYou() const { return m_isYou; }
+  void setYou() { m_isYou = true; }
+
 private:
   static QMap<QString, QASActor*> s_actors;
+  bool m_isYou;
 };
 
 //------------------------------------------------------------------------------
@@ -218,6 +226,8 @@ public:
   static QASActorList* getActorList(QVariantMap json, QObject* parent);
 
   virtual QASActor* at(size_t i) const;
+
+  bool onlyYou() const { return size()==1 && at(0)->isYou(); }
 
 private:
   static QMap<QString, QASActorList*> s_actorLists;

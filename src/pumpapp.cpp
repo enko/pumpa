@@ -542,6 +542,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   } else if (id == QAS_FETCH_SELF) {
     QVariantMap obj = parseJson(response);
     m_selfActor = QASActor::getActor(obj["profile"].toMap(), this);
+    m_selfActor->setYou();
   } else {
     qDebug() << "[WARNING] Unknown request id!" << id;
     qDebug() << response;

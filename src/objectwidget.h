@@ -52,6 +52,7 @@ private slots:
 private:
   void updateImage(const QString& fileName="");
   void updateLikes();
+  void updateShares();
 
   QString m_imageUrl;
   QString m_localFile;
@@ -61,6 +62,7 @@ private:
   QVBoxLayout* m_layout;
   RichTextLabel* m_infoLabel;
   RichTextLabel* m_likesLabel;
+  RichTextLabel* m_sharesLabel;
   QLabel* m_titleLabel;
 
   QASObject* m_object;

@@ -137,7 +137,8 @@ void updateUrlOrProxy(QVariantMap obj, QString& var) {
 //------------------------------------------------------------------------------
 
 QASActor::QASActor(QString id, QObject* parent) :
-  QASObject(id, parent)
+  QASObject(id, parent),
+  m_isYou(false)
 {
 #if DEBUG >= 1
   qDebug() << "new Actor" << m_id;
@@ -186,7 +187,8 @@ QASObject::QASObject(QString id, QObject* parent) :
   m_inReplyTo(NULL),
   m_author(NULL),
   m_replies(NULL),
-  m_likes(NULL)
+  m_likes(NULL),
+  m_shares(NULL)
 {
 #if DEBUG >= 1
   qDebug() << "new Object" << m_id;
@@ -204,6 +206,7 @@ void QASObject::update(QVariantMap json) {
   QDateTime old_updated = m_updated;
   size_t num_replies = numReplies();
   size_t num_likes = numLikes();
+  size_t num_shares = numShares();
 
   m_objectType = json["objectType"].toString();
 
@@ -233,6 +236,7 @@ void QASObject::update(QVariantMap json) {
   m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
 
   m_likes = QASActorList::getActorList(json["likes"].toMap(), parent());
+  m_shares = QASActorList::getActorList(json["shares"].toMap(), parent());
 
   if (json.contains("inReplyTo"))
     m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
@@ -241,7 +245,8 @@ void QASObject::update(QVariantMap json) {
     m_author = QASActor::getActor(json["author"].toMap(), parent());
 
   if (old_liked != m_liked || old_updated != m_updated ||
-      num_replies != numReplies() || num_likes != numLikes())
+      num_replies != numReplies() || num_likes != numLikes() ||
+      num_shares != numShares())
     emit changed();
 }
 
@@ -261,16 +266,22 @@ QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
 
 //------------------------------------------------------------------------------
 
-void QASObject::setLike(bool like) {
-  m_liked = like;
-  emit changed();
-}
+// void QASObject::setLike(bool like) {
+//   m_liked = like;
+//   emit changed();
+// }
 
 //------------------------------------------------------------------------------
 
 size_t QASObject::numLikes() const {
   // return m_likes ? m_likes->size() : 0;
   return m_likes ? m_likes->totalItems() : 0;
+}
+
+//------------------------------------------------------------------------------
+
+size_t QASObject::numShares() const {
+  return m_shares ? m_shares->totalItems() : 0;
 }
 
 //------------------------------------------------------------------------------
