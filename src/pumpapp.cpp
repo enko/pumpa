@@ -21,7 +21,6 @@
 
 #include "pumpapp.h"
 #include "json.h"
-#include "qactivitystreams.h"
 #include "messagewindow.h"
 #include "util.h"
 
@@ -93,6 +92,7 @@ PumpApp::~PumpApp() {
 
 void PumpApp::startPumping() {
   show();
+  request("/api/user/"+m_userName, QAS_FETCH_SELF);
   fetchAll();
   resetTimer();
 }
@@ -105,6 +105,7 @@ void PumpApp::connectCollection(CollectionWidget* w) {
   connect(w, SIGNAL(linkHovered(const QString&)),
           this, SLOT(statusMessage(const QString&)));
   connect(w, SIGNAL(like(QASObject*)), this, SLOT(onLike(QASObject*)));
+  connect(w, SIGNAL(share(QASObject*)), this, SLOT(onShare(QASObject*)));
 }
 
 //------------------------------------------------------------------------------
@@ -410,6 +411,12 @@ void PumpApp::onLike(QASObject* obj) {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::onShare(QASObject* obj) {
+  feed("share", obj->toJson(), QAS_SHARE);
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::postNote(QString note) {
   if (note.isEmpty())
     return;
@@ -522,14 +529,19 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   } else if (id == QAS_LIKE) {
     QVariantMap act = parseJson(response);
 
-    // refresh object
+    // refresh object since fetchAll() might not fetch it if it's old
+    // enough
     QASObject* obj = QASObject::getObject(act["object"].toMap(), this);
     request(obj->apiLink(), QAS_OBJECT);
-
     fetchAll();
   } else if (id == QAS_OBJECT) {
     QVariantMap obj = parseJson(response);
     QASObject::getObject(obj, this);
+  } else if (id == QAS_SHARE) {
+    fetchAll();
+  } else if (id == QAS_FETCH_SELF) {
+    QVariantMap obj = parseJson(response);
+    m_selfActor = QASActor::getActor(obj["profile"].toMap(), this);
   } else {
     qDebug() << "[WARNING] Unknown request id!" << id;
     qDebug() << response;

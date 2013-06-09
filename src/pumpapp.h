@@ -34,6 +34,7 @@
 #include "QtKOAuth"
 
 #include "pumpa_defines.h"
+#include "qactivitystreams.h"
 #include "collectionwidget.h"
 #include "oauthwizard.h"
 #include "tabwidget.h"
@@ -52,6 +53,7 @@ signals:
                     
 private slots:
   void onLike(QASObject* obj);
+  void onShare(QASObject* obj);
   void postNote(QString note);
   void postReply(QASObject* replyToObj, QString content);
   void errorMessage(QString msg);
@@ -137,6 +139,8 @@ private:
   CollectionWidget* directMajorWidget;
   CollectionWidget* directMinorWidget;
   CollectionWidget* inboxMinorWidget;
+
+  QASActor* m_selfActor;
 
   OAuthWizard* m_wiz;
   int timerId;

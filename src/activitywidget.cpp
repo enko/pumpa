@@ -164,17 +164,15 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
 
   m_shareButton = new QToolButton();
-  m_shareButton->setText("share"); //QChar(0x267A));
   m_shareButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
   m_shareButton->setFocusPolicy(Qt::NoFocus);
-  m_shareButton->setEnabled(false);
+  updateShareButton();
   connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
 
   m_commentButton = new QToolButton();
   m_commentButton->setText("comment");
   m_commentButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
   m_commentButton->setFocusPolicy(Qt::NoFocus);
-  // m_commentButton->setEnabled(false);
   connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
 
   m_buttonLayout = new QHBoxLayout;
@@ -235,6 +233,12 @@ void ActivityWidget::updateFavourButton(bool wait) {
 
 //------------------------------------------------------------------------------
 
+void ActivityWidget::updateShareButton(bool /*wait*/) {
+  m_shareButton->setText("share");
+}
+
+//------------------------------------------------------------------------------
+
 void ActivityWidget::updateText() {
   const QASObject* noteObj = m_activity->object();
   const QASActor* author = effectiveAuthor();
@@ -271,7 +275,8 @@ void ActivityWidget::favourite() {
 //------------------------------------------------------------------------------
 
 void ActivityWidget::repeat() {
-  // FIXME
+  updateShareButton(true);
+  emit share(m_activity->object());
 }
 
 //------------------------------------------------------------------------------
@@ -285,6 +290,7 @@ void ActivityWidget::reply() {
 void ActivityWidget::onObjectChanged() {
   updateText();
   updateFavourButton();
+  updateShareButton();
 
   const QASObject* noteObj = m_activity->object();
   if (noteObj->numReplies() > 0) {
@@ -350,8 +356,8 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
                 arg(relativeFuzzyTime(replyObj->published())).
                 arg(replyObj->url()));
     connect(ow, SIGNAL(linkHovered(const QString&)),
-            this,  SIGNAL(linkHovered(const QString&)));
-      
+            this, SIGNAL(linkHovered(const QString&)));
+
     QHBoxLayout* replyLayout = new QHBoxLayout;
     replyLayout->setContentsMargins(0, 0, 0, 0);
     replyLayout->addWidget(aw, 0, Qt::AlignTop);

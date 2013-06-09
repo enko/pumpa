@@ -69,6 +69,8 @@ public:
   size_t numLikes() const;
   QASActorList* likes() const { return m_likes; }
 
+  bool shared() const { return m_shared; }
+
   size_t numReplies() const;
   QASObjectList* replies() const { return m_replies; }
 
@@ -86,6 +88,7 @@ protected:
   QString m_id;
   QString m_content;
   bool m_liked;
+  bool m_shared;
   QString m_objectType;
   QString m_url;
   QString m_imageUrl;

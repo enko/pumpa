@@ -58,6 +58,7 @@ signals:
   void request(QString, int);
   void newReply(QASObject*);
   void like(QASObject*);
+  void share(QASObject*);
   void linkHovered(const QString&);
 
 private:
@@ -65,6 +66,7 @@ private:
 
   void addHasMoreButton(QASObjectList* ol, int li);
   void updateFavourButton(bool wait = false);
+  void updateShareButton(bool wait = false);
   void updateText();
   void addObjectList(QASObjectList* ol);
 

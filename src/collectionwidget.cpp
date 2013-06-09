@@ -70,6 +70,7 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
       connect(aw, SIGNAL(linkHovered(const QString&)),
               this,  SIGNAL(linkHovered(const QString&)));
       connect(aw, SIGNAL(like(QASObject*)), this, SIGNAL(like(QASObject*)));
+      connect(aw, SIGNAL(share(QASObject*)), this, SIGNAL(share(QASObject*)));
       m_itemLayout->insertWidget(li++, aw);
     }
     newCount++;

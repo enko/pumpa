@@ -95,6 +95,13 @@ void updateVar(QVariantMap obj, QString& var, QString name1, QString name2) {
 
 //------------------------------------------------------------------------------
 
+void updateVar(QVariantMap obj, bool& var, QString name1, QString name2) {
+  if (obj.contains(name1))
+    updateVar(obj[name1].toMap(), var, name2);
+}
+
+//------------------------------------------------------------------------------
+
 void updateVar(QVariantMap obj, QString& var, QString name1,
                QString name2, QString name3) {
   if (obj.contains(name1))
@@ -175,6 +182,7 @@ QASObject::QASObject(QString id, QObject* parent) :
   QObject(parent),
   m_id(id),
   m_liked(false),
+  m_shared(false),
   m_inReplyTo(NULL),
   m_author(NULL),
   m_replies(NULL),
@@ -203,6 +211,7 @@ void QASObject::update(QVariantMap json) {
   updateVar(json, m_content, "content");
   updateVar(json, m_liked, "liked");
   updateVar(json, m_displayName, "displayName");
+  updateVar(json, m_shared, "pump_io", "shared");
 
   if (m_objectType == "image") {
     QVariantMap imageObj = json["image"].toMap();

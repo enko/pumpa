@@ -35,6 +35,8 @@
 #define QAS_REPLIES            6
 #define QAS_LIKE               7
 #define QAS_OBJECT             8
+#define QAS_SHARE              9
+#define QAS_FETCH_SELF        10
 
 //------------------------------------------------------------------------------
 

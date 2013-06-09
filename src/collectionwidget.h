@@ -46,6 +46,7 @@ signals:
   void newReply(QASObject*);
   void linkHovered(const QString&);
   void like(QASObject*);
+  void share(QASObject*);
 
 protected:
   void keyPressEvent(QKeyEvent* event);
