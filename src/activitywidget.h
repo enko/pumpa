@@ -57,6 +57,7 @@ public slots:
 signals:
   void request(QString, int);
   void newReply(QASObject*);
+  void like(QASObject*);
   void linkHovered(const QString&);
 
 private:

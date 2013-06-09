@@ -88,6 +88,29 @@ void updateVar(QVariantMap obj, QDateTime& var, QString name) {
 
 //------------------------------------------------------------------------------
 
+void updateVar(QVariantMap obj, QString& var, QString name1, QString name2) {
+  if (obj.contains(name1))
+    updateVar(obj[name1].toMap(), var, name2);
+}
+
+//------------------------------------------------------------------------------
+
+void updateVar(QVariantMap obj, QString& var, QString name1,
+               QString name2, QString name3) {
+  if (obj.contains(name1))
+    updateVar(obj[name1].toMap(), var, name2, name3);
+}
+
+//------------------------------------------------------------------------------
+
+void addVar(QVariantMap& obj, QString var, QString name) {
+  if (var.isEmpty())
+    return;
+  obj[name] = var;
+}
+
+//------------------------------------------------------------------------------
+
 QString getProxyUrl(QVariantMap obj) {
   if (obj.contains("pump_io")) 
     return obj["pump_io"].toMap()["proxyURL"].toString();
@@ -189,6 +212,8 @@ void QASObject::update(QVariantMap json) {
   updateVar(json, m_published, "published");
   updateVar(json, m_updated, "updated");
 
+  updateVar(json, m_apiLink, "links", "self", "href");  updateVar(json, m_proxyUrl, "pump_io", "proxyURL");
+
   Q_ASSERT_X(!m_id.isEmpty(), "QASObject", serializeJsonC(json));
 
   // this is guard against almost empty "shell" objects from emptying
@@ -227,14 +252,44 @@ QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
 
 //------------------------------------------------------------------------------
 
+void QASObject::setLike(bool like) {
+  m_liked = like;
+  emit changed();
+}
+
+//------------------------------------------------------------------------------
+
 size_t QASObject::numLikes() const {
-  return m_likes ? m_likes->size() : 0;
+  // return m_likes ? m_likes->size() : 0;
+  return m_likes ? m_likes->totalItems() : 0;
 }
 
 //------------------------------------------------------------------------------
 
 size_t QASObject::numReplies() const {
   return m_replies ? m_replies->size() : 0;
+}
+
+//------------------------------------------------------------------------------
+
+QString QASObject::apiLink() const {
+  return m_proxyUrl.isEmpty() ? m_apiLink : m_proxyUrl;
+}
+
+//------------------------------------------------------------------------------
+
+QVariantMap QASObject::toJson() const {
+  QVariantMap obj;
+
+  obj["id"] = m_id;
+
+  addVar(obj, m_content, "content");
+  addVar(obj, m_objectType, "objectType");
+  addVar(obj, m_url, "url");
+  addVar(obj, m_displayName, "displayName");
+  // addVar(obj, m_, "");
+
+  return obj;
 }
 
 //------------------------------------------------------------------------------

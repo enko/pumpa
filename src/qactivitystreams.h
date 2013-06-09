@@ -35,17 +35,6 @@ class QASActor;
 
 //------------------------------------------------------------------------------
 
-#define QAS_RESPONSE_NULL      0
-#define QAS_INBOX_MAJOR        1
-#define QAS_INBOX_MINOR        2
-#define QAS_INBOX_DIRECT_MAJOR 3
-#define QAS_INBOX_DIRECT_MINOR 4
-#define QAS_NEW_POST           5
-#define QAS_REPLIES            6
-
-
-//------------------------------------------------------------------------------
-
 qint64 sortIntByDateTime(QDateTime dt);
 
 //------------------------------------------------------------------------------
@@ -71,9 +60,11 @@ public:
   QString url() const { return m_url; }
   QString imageUrl() const { return m_imageUrl; }
   QString displayName() const { return m_displayName; }
+  QString apiLink() const;
 
   QDateTime published() const { return m_published; }
 
+  void setLike(bool like);
   bool liked() const { return m_liked; }
   size_t numLikes() const;
   QASActorList* likes() const { return m_likes; }
@@ -83,6 +74,10 @@ public:
 
   QASActor* author() const { return m_author; }
   QASObject* inReplyTo() const { return m_inReplyTo; }
+
+  // currently just a minimal variant needed for the API e.g. when
+  // favouriting the object
+  QVariantMap toJson() const;
 
 signals:
   void changed();
@@ -95,6 +90,8 @@ protected:
   QString m_url;
   QString m_imageUrl;
   QString m_displayName;
+  QString m_apiLink;
+  QString m_proxyUrl;
 
   QDateTime m_published;
   QDateTime m_updated;

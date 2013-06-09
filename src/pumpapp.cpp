@@ -43,36 +43,16 @@ PumpApp::PumpApp(QWidget* parent) :
   createMenu();
 
   inboxWidget = new CollectionWidget(this);
-  connect(inboxWidget, SIGNAL(request(QString, int)),
-          this, SLOT(request(QString, int)));
-  connect(inboxWidget, SIGNAL(newReply(QASObject*)),
-          this, SLOT(newNote(QASObject*)));
-  connect(inboxWidget, SIGNAL(linkHovered(const QString&)),
-          this,  SLOT(statusMessage(const QString&)));
+  connectCollection(inboxWidget);
 
   inboxMinorWidget = new CollectionWidget(this, true);
-  connect(inboxMinorWidget, SIGNAL(request(QString, int)),
-          this, SLOT(request(QString, int)));
-  connect(inboxMinorWidget, SIGNAL(newReply(QASObject*)),
-          this, SLOT(newNote(QASObject*)));
-  connect(inboxMinorWidget, SIGNAL(linkHovered(const QString&)),
-          this,  SLOT(statusMessage(const QString&)));
+  connectCollection(inboxMinorWidget);
 
   directMajorWidget = new CollectionWidget(this);
-  connect(directMajorWidget, SIGNAL(request(QString, int)),
-          this, SLOT(request(QString, int)));
-  connect(directMajorWidget, SIGNAL(newReply(QASObject*)),
-          this, SLOT(newNote(QASObject*)));
-  connect(directMajorWidget, SIGNAL(linkHovered(const QString&)),
-          this,  SLOT(statusMessage(const QString&)));
+  connectCollection(directMajorWidget);
 
   directMinorWidget = new CollectionWidget(this);
-  connect(directMinorWidget, SIGNAL(request(QString, int)),
-          this, SLOT(request(QString, int)));
-  connect(directMinorWidget, SIGNAL(newReply(QASObject*)),
-          this, SLOT(newNote(QASObject*)));
-  connect(directMinorWidget, SIGNAL(linkHovered(const QString&)),
-          this,  SLOT(statusMessage(const QString&)));
+  connectCollection(directMinorWidget);
 
   tabWidget = new TabWidget(this);
   connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected(int)));
@@ -115,6 +95,16 @@ void PumpApp::startPumping() {
   show();
   fetchAll();
   resetTimer();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::connectCollection(CollectionWidget* w) {
+  connect(w, SIGNAL(request(QString, int)), this, SLOT(request(QString, int)));
+  connect(w, SIGNAL(newReply(QASObject*)), this, SLOT(newNote(QASObject*)));
+  connect(w, SIGNAL(linkHovered(const QString&)),
+          this, SLOT(statusMessage(const QString&)));
+  connect(w, SIGNAL(like(QASObject*)), this, SLOT(onLike(QASObject*)));
 }
 
 //------------------------------------------------------------------------------
@@ -414,6 +404,12 @@ void PumpApp::fetchInbox(int reqType) {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::onLike(QASObject* obj) {
+  feed(obj->liked() ? "unlike" : "like", obj->toJson(), QAS_LIKE);
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::postNote(QString note) {
   if (note.isEmpty())
     return;
@@ -486,6 +482,7 @@ void PumpApp::request(QString endpoint, int response_id,
   if (method == KQOAuthRequest::POST) {
     oaRequest->setContentType("application/json");
     oaRequest->setRawData(serializeJson(data));
+    qDebug() << data;
   }
 
   oaManager->executeAuthorizedRequest(oaRequest, response_id);
@@ -522,8 +519,20 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   } else if (id == QAS_NEW_POST) {
     // nice to refresh inbox after posting
     fetchAll();
+  } else if (id == QAS_LIKE) {
+    QVariantMap act = parseJson(response);
+
+    // refresh object
+    QASObject* obj = QASObject::getObject(act["object"].toMap(), this);
+    request(obj->apiLink(), QAS_OBJECT);
+
+    fetchAll();
+  } else if (id == QAS_OBJECT) {
+    QVariantMap obj = parseJson(response);
+    QASObject::getObject(obj, this);
   } else {
     qDebug() << "[WARNING] Unknown request id!" << id;
+    qDebug() << response;
   }
   notifyMessage("Ready!");
 }

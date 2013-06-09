@@ -24,4 +24,18 @@
 #define CLIENT_FANCY_NAME     "Pumpa"
 #define CLIENT_VERSION        "0.1"
 
+//------------------------------------------------------------------------------
+
+#define QAS_RESPONSE_NULL      0
+#define QAS_INBOX_MAJOR        1
+#define QAS_INBOX_MINOR        2
+#define QAS_INBOX_DIRECT_MAJOR 3
+#define QAS_INBOX_DIRECT_MINOR 4
+#define QAS_NEW_POST           5
+#define QAS_REPLIES            6
+#define QAS_LIKE               7
+#define QAS_OBJECT             8
+
+//------------------------------------------------------------------------------
+
 #endif /* _PUMPA_DEFINES_H_ */

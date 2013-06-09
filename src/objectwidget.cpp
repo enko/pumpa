@@ -139,6 +139,9 @@ void ObjectWidget::updateLikes() {
     return;
   }
 
+  if (!m_object->likes()->size())
+    return;
+
   if (m_likesLabel == NULL) {
     m_likesLabel = new RichTextLabel(this);
     connect(m_likesLabel, SIGNAL(linkHovered(const QString&)),

@@ -18,6 +18,7 @@
 */
 
 #include "activitywidget.h"
+#include "pumpa_defines.h"
 
 #include <QDebug>
 #include <QRegExp>
@@ -160,7 +161,6 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
   m_favourButton->setFocusPolicy(Qt::NoFocus);
   updateFavourButton();
-  m_favourButton->setEnabled(false);
   connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
 
   m_shareButton = new QToolButton();
@@ -226,7 +226,8 @@ QASActor* ActivityWidget::effectiveAuthor() {
 //------------------------------------------------------------------------------
 
 void ActivityWidget::updateFavourButton(bool wait) {
-  QString text = false ? QChar(0x2605) : QChar(0x2606);
+  const QASObject* noteObj = m_activity->object();
+  QString text = noteObj->liked() ? "unlike" : "like";
   if (wait)
     text = "...";
   m_favourButton->setText(text);
@@ -264,7 +265,7 @@ void ActivityWidget::updateText() {
 
 void ActivityWidget::favourite() {
   updateFavourButton(true);
-  // FIXME make favouritisin' request here
+  emit like(m_activity->object());
 }
 
 //------------------------------------------------------------------------------
@@ -283,6 +284,7 @@ void ActivityWidget::reply() {
 
 void ActivityWidget::onObjectChanged() {
   updateText();
+  updateFavourButton();
 
   const QASObject* noteObj = m_activity->object();
   if (noteObj->numReplies() > 0) {

@@ -51,6 +51,7 @@ signals:
   void userAuthorizationStarted();
                     
 private slots:
+  void onLike(QASObject* obj);
   void postNote(QString note);
   void postReply(QASObject* replyToObj, QString content);
   void errorMessage(QString msg);
@@ -81,6 +82,8 @@ protected:
   void timerEvent(QTimerEvent*);
 
 private:
+  void connectCollection(CollectionWidget* w);
+
   bool haveOAuth();
 
   void resetTimer();
