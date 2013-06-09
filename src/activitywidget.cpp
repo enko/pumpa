@@ -44,7 +44,7 @@ QString splitLongWords(QString text) {
       else
         newText += "&shy;";
     }
-    qDebug() << "[DEBUG] splitLongWords:" << word << "=>" << newText;
+    // qDebug() << "[DEBUG] splitLongWords:" << word << "=>" << newText;
 
     text.replace(pos, len, newText);
     pos += newText.count();
@@ -155,7 +155,7 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
 
-  updateText();
+  // updateText();
 
   m_favourButton = new QToolButton();
   m_favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -256,8 +256,13 @@ void ActivityWidget::updateText() {
     text += " via " + generatorName;
 
   QASObject* irtObj = noteObj->inReplyTo();
-  if (irtObj && !irtObj->url().isEmpty())
-    text += " in reply to a <a href=\"" + irtObj->url() + "\">note</a>";
+
+  if (irtObj) {
+    if (!irtObj->url().isEmpty())
+      text += " in reply to a <a href=\"" + irtObj->url() + "\">note</a>";
+    else
+      emit request(irtObj->apiLink(), QAS_OBJECT);
+  }
 
   if (share)
     text += " (shared by " + m_activity->actor()->displayName() + ")";

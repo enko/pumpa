@@ -71,9 +71,14 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
               this,  SIGNAL(linkHovered(const QString&)));
       connect(aw, SIGNAL(like(QASObject*)), this, SIGNAL(like(QASObject*)));
       connect(aw, SIGNAL(share(QASObject*)), this, SIGNAL(share(QASObject*)));
+
+      aw->updateText();
+
       m_itemLayout->insertWidget(li++, aw);
     }
-    newCount++;
+
+    if (!activity->actor()->isYou())
+      newCount++;
   }
 
   if (newCount && !isVisible() && !m_firstTime)

@@ -41,7 +41,7 @@ public:
   virtual void accept();
 
 protected:
-  void showEvent(QShowEvent*);
+  virtual void showEvent(QShowEvent*);
 
 signals:
   void sendMessage(QString);

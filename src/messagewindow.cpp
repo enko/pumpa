@@ -63,6 +63,7 @@ MessageWindow::MessageWindow(QASObject* obj, QWidget* parent) :
 
 void MessageWindow::showEvent(QShowEvent*) {
   textEdit->setFocus(Qt::OtherFocusReason);
+  activateWindow();
 }
 
 //------------------------------------------------------------------------------

@@ -45,6 +45,7 @@ public:
   ActivityWidget(QASActivity* a, QWidget* parent=0);
 
   QString getId() const { return m_activity->id(); }
+  void updateText();
   
 public slots:
   void favourite();
@@ -67,7 +68,6 @@ private:
   void addHasMoreButton(QASObjectList* ol, int li);
   void updateFavourButton(bool wait = false);
   void updateShareButton(bool wait = false);
-  void updateText();
   void addObjectList(QASObjectList* ol);
 
   RichTextLabel* m_infoLabel;

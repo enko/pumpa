@@ -144,6 +144,7 @@ private:
 
   OAuthWizard* m_wiz;
   int timerId;
+  int m_requests;
 };
 
 #endif /* _PUMPAPP_H_ */

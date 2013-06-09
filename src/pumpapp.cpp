@@ -28,7 +28,8 @@
 
 PumpApp::PumpApp(QWidget* parent) : 
   QMainWindow(parent),
-  m_wiz(NULL)
+  m_wiz(NULL),
+  m_requests(0)
 {
   settings = new QSettings(CLIENT_NAME, CLIENT_NAME, this);
   readSettings();
@@ -376,7 +377,6 @@ void PumpApp::readSettings() {
 //------------------------------------------------------------------------------
 
 void PumpApp::fetchAll() {
-  notifyMessage("Loading ...");
   fetchInbox(QAS_INBOX_MAJOR);
   fetchInbox(QAS_INBOX_MINOR);
   fetchInbox(QAS_INBOX_DIRECT_MAJOR);
@@ -475,6 +475,11 @@ void PumpApp::request(QString endpoint, int response_id,
     endpoint = m_siteUrl + endpoint;
   }
 
+  if (!endpoint.startsWith(m_siteUrl)) {
+    qDebug() << "[DEBUG] dropping request for" << endpoint;
+    return;
+  }
+
   qDebug() << "[REQUEST] (" << response_id << "):" << endpoint;
 
   oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, QUrl(endpoint));
@@ -489,15 +494,21 @@ void PumpApp::request(QString endpoint, int response_id,
   if (method == KQOAuthRequest::POST) {
     oaRequest->setContentType("application/json");
     oaRequest->setRawData(serializeJson(data));
-    qDebug() << data;
   }
 
   oaManager->executeAuthorizedRequest(oaRequest, response_id);
+  
+  notifyMessage("Loading ...");
+  m_requests++;
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
+  m_requests--;
+  if (!m_requests) 
+    notifyMessage("Ready!");
+
   if (oaManager->lastError()) {
     errorMessage(QString("Network or authorisation error [id=%1].").
                  arg(oaManager->lastError()));
@@ -547,6 +558,5 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     qDebug() << "[WARNING] Unknown request id!" << id;
     qDebug() << response;
   }
-  notifyMessage("Ready!");
 }
 

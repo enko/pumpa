@@ -208,8 +208,7 @@ void QASObject::update(QVariantMap json) {
   size_t num_likes = numLikes();
   size_t num_shares = numShares();
 
-  m_objectType = json["objectType"].toString();
-
+  updateVar(json, m_objectType, "objectType");
   updateVar(json, m_url, "url");
   updateVar(json, m_content, "content");
   updateVar(json, m_liked, "liked");
@@ -224,25 +223,26 @@ void QASObject::update(QVariantMap json) {
   updateVar(json, m_published, "published");
   updateVar(json, m_updated, "updated");
 
-  updateVar(json, m_apiLink, "links", "self", "href");  updateVar(json, m_proxyUrl, "pump_io", "proxyURL");
+  updateVar(json, m_apiLink, "links", "self", "href");  
+  updateVar(json, m_proxyUrl, "pump_io", "proxyURL");
 
-  Q_ASSERT_X(!m_id.isEmpty(), "QASObject", serializeJsonC(json));
-
-  // this is guard against almost empty "shell" objects from emptying
-  // the real objects
-  if (!json.contains("url"))
-    return;
-
-  m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
-
-  m_likes = QASActorList::getActorList(json["likes"].toMap(), parent());
-  m_shares = QASActorList::getActorList(json["shares"].toMap(), parent());
-
-  if (json.contains("inReplyTo"))
+  if (json.contains("inReplyTo")) {
     m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
+    if (m_inReplyTo)
+      connect(m_inReplyTo, SIGNAL(changed()), this, SIGNAL(changed()));
+  }
 
   if (json.contains("author"))
     m_author = QASActor::getActor(json["author"].toMap(), parent());
+
+  Q_ASSERT_X(!m_id.isEmpty(), "QASObject", serializeJsonC(json));
+
+  if (json.contains("replies"))
+    m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
+  if (json.contains("likes"))
+    m_likes = QASActorList::getActorList(json["likes"].toMap(), parent());
+  if (json.contains("shares"))
+    m_shares = QASActorList::getActorList(json["shares"].toMap(), parent());
 
   if (old_liked != m_liked || old_updated != m_updated ||
       num_replies != numReplies() || num_likes != numLikes() ||
@@ -293,7 +293,10 @@ size_t QASObject::numReplies() const {
 //------------------------------------------------------------------------------
 
 QString QASObject::apiLink() const {
-  return m_proxyUrl.isEmpty() ? m_apiLink : m_proxyUrl;
+  return 
+    !m_proxyUrl.isEmpty() ? m_proxyUrl :
+    !m_apiLink.isEmpty() ? m_apiLink :
+    m_id;
 }
 
 //------------------------------------------------------------------------------
