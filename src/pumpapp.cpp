@@ -56,10 +56,10 @@ PumpApp::PumpApp(QWidget* parent) :
 
   tabWidget = new TabWidget(this);
   connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected(int)));
-  tabWidget->addTab(inboxWidget, "inbox");
-  tabWidget->addTab(directMinorWidget, "mentions");
-  tabWidget->addTab(directMajorWidget, "direct");
-  tabWidget->addTab(inboxMinorWidget, "meanwhile");
+  tabWidget->addTab(inboxWidget, "&inbox");
+  tabWidget->addTab(directMinorWidget, "&mentions");
+  tabWidget->addTab(directMajorWidget, "&direct");
+  tabWidget->addTab(inboxMinorWidget, "mean&while");
 
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(":/images/pumpa.png"));
