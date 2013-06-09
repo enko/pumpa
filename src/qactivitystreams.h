@@ -188,9 +188,7 @@ public:
   qulonglong totalItems() const { return m_totalItems; }
   bool hasMore() const { return m_hasMore; }
   QString url() const { return m_url; }
-  QString urlOrProxy() const {
-    return m_proxyUrl.isEmpty() ? m_url : m_proxyUrl; 
-  }
+  QString urlOrProxy() const;
 
   virtual QASObject* at(size_t i) const {
     if (i >= size())

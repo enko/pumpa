@@ -118,20 +118,9 @@ void addVar(QVariantMap& obj, QString var, QString name) {
 
 //------------------------------------------------------------------------------
 
-QString getProxyUrl(QVariantMap obj) {
-  if (obj.contains("pump_io")) 
-    return obj["pump_io"].toMap()["proxyURL"].toString();
-  return "";
-}
-
-//------------------------------------------------------------------------------
-
 void updateUrlOrProxy(QVariantMap obj, QString& var) {
-  QString proxyUrl = getProxyUrl(obj);
-  if (!proxyUrl.isEmpty())
-    var = proxyUrl;
-  else
-    updateVar(obj, var, "url");
+  updateVar(obj, var, "url");
+  updateVar(obj, var, "pump_io", "proxyURL");
 }
 
 //------------------------------------------------------------------------------
@@ -399,7 +388,7 @@ void QASObjectList::update(QVariantMap json) {
 
   updateVar(json, m_url, "url");
   updateVar(json, m_totalItems, "totalItems");
-  m_proxyUrl = getProxyUrl(json);
+  updateVar(json, m_proxyUrl, "pump_io", "proxyURL");
 
   m_items.clear();
   QVariantList items_json = json["items"].toList();
@@ -442,6 +431,12 @@ QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent) {
 
   ol->update(json);
   return ol;
+}
+
+//------------------------------------------------------------------------------
+
+QString QASObjectList::urlOrProxy() const {
+  return m_proxyUrl.isEmpty() ? m_url : m_proxyUrl; 
 }
 
 //------------------------------------------------------------------------------
