@@ -30,6 +30,8 @@
 
 class QASCollection;
 class QASObjectList;
+class QASActorList;
+class QASActor;
 
 //------------------------------------------------------------------------------
 
@@ -48,36 +50,10 @@ qint64 sortIntByDateTime(QDateTime dt);
 
 //------------------------------------------------------------------------------
 
-class QASActor : public QObject {
-  Q_OBJECT
-
-private:
-  QASActor(QString id, QObject* parent);
-
-public:
-  static QASActor* getActor(QVariantMap json, QObject* parent);
-  void update(QVariantMap json);
-
-  QString url() const { return m_url; }
-  QString displayName() const { return m_displayName; }
-  QString imageUrl() const { return m_imageUrl; }
-
-private:
-  QString m_id;
-  QString m_preferredUsername;
-  QString m_url;
-  QString m_displayName;
-  QString m_imageUrl;
-
-  static QMap<QString, QASActor*> s_actors;
-};
-
-//------------------------------------------------------------------------------
-
 class QASObject : public QObject {
   Q_OBJECT
 
-private:
+protected:
   QASObject(QString id, QObject* parent);
 
 public:
@@ -85,7 +61,7 @@ public:
   static QASObject* getObject(QString id) { 
     return s_objects.contains(id) ? s_objects[id] : NULL;
   }
-  void update(QVariantMap json);
+  virtual void update(QVariantMap json);
 
   qint64 sortInt() const { return sortIntByDateTime(m_updated); }
   
@@ -97,7 +73,11 @@ public:
   QString displayName() const { return m_displayName; }
 
   QDateTime published() const { return m_published; }
+
   bool liked() const { return m_liked; }
+  size_t numLikes() const;
+  QASActorList* likes() const { return m_likes; }
+
   size_t numReplies() const;
   QASObjectList* replies() const { return m_replies; }
 
@@ -107,7 +87,7 @@ public:
 signals:
   void changed();
 
-private:
+protected:
   QString m_id;
   QString m_content;
   bool m_liked;
@@ -122,8 +102,26 @@ private:
   QASObject* m_inReplyTo;
   QASActor* m_author;
   QASObjectList* m_replies;
+  QASActorList* m_likes;
 
+private:
   static QMap<QString, QASObject*> s_objects;
+};
+
+//------------------------------------------------------------------------------
+
+class QASActor : public QASObject {
+  Q_OBJECT
+
+private:
+  QASActor(QString id, QObject* parent);
+
+public:
+  static QASActor* getActor(QVariantMap json, QObject* parent);
+  virtual void update(QVariantMap json);
+
+private:
+  static QMap<QString, QASActor*> s_actors;
 };
 
 //------------------------------------------------------------------------------
@@ -170,6 +168,8 @@ private:
 
 class QASObjectList : public QObject {
   Q_OBJECT
+
+protected:
   QASObjectList(QString url, QObject* parent);
 
 public:
@@ -184,7 +184,7 @@ public:
     return m_proxyUrl.isEmpty() ? m_url : m_proxyUrl; 
   }
 
-  QASObject* at(size_t i) const {
+  virtual QASObject* at(size_t i) const {
     if (i >= size())
       return NULL;
     return m_items[i];
@@ -193,14 +193,34 @@ public:
 signals:
   void changed();
 
-private:
+protected:
+  void addObject(QVariantMap json);
+
   QString m_url;
   QString m_proxyUrl;
   qulonglong m_totalItems;
   QList<QASObject*> m_items;
   bool m_hasMore;
-  
+
+private:
   static QMap<QString, QASObjectList*> s_objectLists;
+};
+
+//------------------------------------------------------------------------------
+
+class QASActorList : public QASObjectList {
+  Q_OBJECT
+
+protected:
+  QASActorList(QString url, QObject* parent);
+
+public:
+  static QASActorList* getActorList(QVariantMap json, QObject* parent);
+
+  virtual QASActor* at(size_t i) const;
+
+private:
+  static QMap<QString, QASActorList*> s_actorLists;
 };
 
 //------------------------------------------------------------------------------

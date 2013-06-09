@@ -22,7 +22,11 @@
 //------------------------------------------------------------------------------
 
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
-  QFrame(parent), m_infoLabel(NULL), m_titleLabel(NULL), m_object(obj)
+  QFrame(parent),
+  m_infoLabel(NULL),
+  m_likesLabel(NULL),
+  m_titleLabel(NULL),
+  m_object(obj)
 {
   m_layout = new QVBoxLayout(this);
 
@@ -53,8 +57,18 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
 
     m_layout->addWidget(m_infoLabel);
   }
+
+  updateLikes();
   
   setLayout(m_layout);
+
+  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+}
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::onChanged() {
+  updateLikes();
 }
 
 //------------------------------------------------------------------------------
@@ -112,3 +126,42 @@ void ObjectWidget::updateImage(const QString& fileName) {
     m_imageLabel->setPixmap(pix);
   }
 }    
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::updateLikes() {
+  if (!m_object->numLikes()) {
+    if (m_likesLabel != NULL) {
+      m_layout->removeWidget(m_likesLabel);
+      delete m_likesLabel;
+      m_likesLabel = NULL;
+    }
+    return;
+  }
+
+  if (m_likesLabel == NULL) {
+    m_likesLabel = new RichTextLabel(this);
+    connect(m_likesLabel, SIGNAL(linkHovered(const QString&)),
+            this,  SIGNAL(linkHovered(const QString&)));
+    m_layout->addWidget(m_likesLabel);
+  }
+
+  QString text;
+  QASActorList* likes = m_object->likes();
+  for (size_t i=0; i<likes->size(); i++) {
+    QASActor* a = likes->at(i);
+    text += QString("<a href=\"%1\">%2</a>")
+      .arg(a->url())
+      .arg(a->displayName());
+    if (i != likes->size()-1)
+      text += ", ";
+  }
+
+  if (likes->size() == 1)
+    text += " likes";
+  else 
+    text += " like";
+  text += " this.";
+  
+  m_likesLabel->setText(text);
+}

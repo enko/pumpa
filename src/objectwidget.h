@@ -47,9 +47,12 @@ signals:
 
 private slots:
   virtual void fileReady(const QString& fn);
+  void onChanged();
 
 private:
   void updateImage(const QString& fileName="");
+  void updateLikes();
+
   QString m_imageUrl;
   QString m_localFile;
 
@@ -57,6 +60,7 @@ private:
   QLabel* m_imageLabel;
   QVBoxLayout* m_layout;
   RichTextLabel* m_infoLabel;
+  RichTextLabel* m_likesLabel;
   QLabel* m_titleLabel;
 
   QASObject* m_object;

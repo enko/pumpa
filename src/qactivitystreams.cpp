@@ -31,6 +31,7 @@ QMap<QString, QASActor*> QASActor::s_actors;
 QMap<QString, QASObject*> QASObject::s_objects;
 QMap<QString, QASActivity*> QASActivity::s_activities;
 QMap<QString, QASObjectList*> QASObjectList::s_objectLists;
+QMap<QString, QASActorList*> QASActorList::s_actorLists;
 
 //------------------------------------------------------------------------------
 
@@ -106,8 +107,7 @@ void updateUrlOrProxy(QVariantMap obj, QString& var) {
 //------------------------------------------------------------------------------
 
 QASActor::QASActor(QString id, QObject* parent) :
-  QObject(parent),
-  m_id(id) 
+  QASObject(id, parent)
 {
 #if DEBUG >= 1
   qDebug() << "new Actor" << m_id;
@@ -121,7 +121,6 @@ void QASActor::update(QVariantMap json) {
   qDebug() << "updating Actor" << m_id;
 #endif
   
-  updateVar(json, m_preferredUsername, "preferredUsername");
   updateVar(json, m_url, "url"); 
   updateVar(json, m_displayName, "displayName");
 
@@ -155,7 +154,8 @@ QASObject::QASObject(QString id, QObject* parent) :
   m_liked(false),
   m_inReplyTo(NULL),
   m_author(NULL),
-  m_replies(NULL)
+  m_replies(NULL),
+  m_likes(NULL)
 {
 #if DEBUG >= 1
   qDebug() << "new Object" << m_id;
@@ -171,7 +171,8 @@ void QASObject::update(QVariantMap json) {
 
   bool old_liked = m_liked;
   QDateTime old_updated = m_updated;
-  bool num_replies = m_replies ? m_replies->size() : 0;
+  size_t num_replies = numReplies();
+  size_t num_likes = numLikes();
 
   m_objectType = json["objectType"].toString();
 
@@ -190,10 +191,14 @@ void QASObject::update(QVariantMap json) {
 
   Q_ASSERT_X(!m_id.isEmpty(), "QASObject", serializeJsonC(json));
 
-  m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
-
+  // this is guard against almost empty "shell" objects from emptying
+  // the real objects
   if (!json.contains("url"))
     return;
+
+  m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
+
+  m_likes = QASActorList::getActorList(json["likes"].toMap(), parent());
 
   if (json.contains("inReplyTo"))
     m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
@@ -202,7 +207,7 @@ void QASObject::update(QVariantMap json) {
     m_author = QASActor::getActor(json["author"].toMap(), parent());
 
   if (old_liked != m_liked || old_updated != m_updated ||
-      num_replies != numReplies())
+      num_replies != numReplies() || num_likes != numLikes())
     emit changed();
 }
 
@@ -218,6 +223,12 @@ QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
 
   obj->update(json);
   return obj;
+}
+
+//------------------------------------------------------------------------------
+
+size_t QASObject::numLikes() const {
+  return m_likes ? m_likes->size() : 0;
 }
 
 //------------------------------------------------------------------------------
@@ -314,11 +325,8 @@ void QASObjectList::update(QVariantMap json) {
 
   m_items.clear();
   QVariantList items_json = json["items"].toList();
-  for (int i=0; i<items_json.count(); i++) {
-    QASObject* act = QASObject::getObject(items_json.at(i).toMap(),
-                                          parent());
-    m_items.append(act);
-  }
+  for (int i=0; i<items_json.count(); i++)
+    addObject(items_json.at(i).toMap());
 
   // set to false if number of items < total, and if we have already
   // fetched it - that seems to have a displayName element
@@ -327,6 +335,17 @@ void QASObjectList::update(QVariantMap json) {
 
   if (old_totalItems != m_totalItems || old_item_count != m_items.size())
     emit changed();
+}
+
+//------------------------------------------------------------------------------
+
+void QASObjectList::addObject(QVariantMap json) {
+  QASObject* act;
+  if (json["objectType"].toString() == "person")
+    act = QASActor::getActor(json, parent());
+  else
+    act = QASObject::getObject(json, parent());
+  m_items.append(act);
 }
 
 //------------------------------------------------------------------------------
@@ -345,6 +364,39 @@ QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent) {
 
   ol->update(json);
   return ol;
+}
+
+//------------------------------------------------------------------------------
+
+QASActorList::QASActorList(QString url, QObject* parent) :
+  QASObjectList(url, parent)
+{
+#if DEBUG >= 1
+  qDebug() << "new ActorList" << m_url;
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+QASActorList* QASActorList::getActorList(QVariantMap json, QObject* parent) {
+  QString url = json["url"].toString();
+  if (url.isEmpty())
+    return NULL;
+
+  QASActorList* ol = s_actorLists.contains(url) ? s_actorLists[url] :
+    new QASActorList(url, parent);
+  s_actorLists.insert(url, ol);
+
+  ol->update(json);
+  return ol;
+}
+
+//------------------------------------------------------------------------------
+
+QASActor* QASActorList::at(size_t i) const {
+  if (i >= size())
+    return NULL;
+  return qobject_cast<QASActor*>(m_items[i]);
 }
 
 //------------------------------------------------------------------------------
