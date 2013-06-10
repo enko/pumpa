@@ -439,7 +439,7 @@ QString PumpApp::addTextMarkup(QString text) {
   text = changePairedTags(text, "__", "__", "<strong>", "</strong>");
   text = changePairedTags(text, "_", "_", "<em>", "</em>");
 
-  text = changePairedTags(text, "``", "``", "<pre>", "</pre>");
+  text = changePairedTags(text, "``", "``", "<pre>", "</pre>", "`");
   text = changePairedTags(text, "`", "`", "<code>", "</code>");
 
   qDebug() << "[DEBUG]: addTextMarkup:" << oldText << "=>" << text;

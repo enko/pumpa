@@ -84,6 +84,8 @@ When you are posting a new note or comment a very limited Markdown-inspired synt
           like 
              this...
 
+    **Known bug:** your "pre" text can't contain a back-tick... :-)
+
 
 ## Missing features
 
