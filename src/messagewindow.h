@@ -51,6 +51,7 @@ private:
   QVBoxLayout* layout;
 
   QLabel* infoLabel;
+  QLabel* markupLabel;
   QHBoxLayout* infoLayout;
 
   MessageEdit* textEdit;

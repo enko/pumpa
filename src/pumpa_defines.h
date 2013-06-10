@@ -22,7 +22,10 @@
 
 #define CLIENT_NAME           "pumpa"
 #define CLIENT_FANCY_NAME     "Pumpa"
-#define CLIENT_VERSION        "0.1"
+#define CLIENT_VERSION        "0.2"
+
+#define WEBSITE_URL           "http://saz.im/software/pumpa.html"
+#define MARKUP_DOC_URL        "http://saz.im/software/pumpa.html#markup"
 
 //------------------------------------------------------------------------------
 

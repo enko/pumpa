@@ -1,4 +1,4 @@
-# Pumpa v0.1
+# Pumpa v0.2
 
 Greetings, fellow pumpkins!
 
@@ -56,21 +56,33 @@ building on Mac OS X here:
 
 ## Running
 
-Currently Pumpa doesn't have a preferences dialog so you'll have to
-edit the configuration file manually.  An empty template will be
-generated when you start pumpa for the first time by running:
+On Linux you can start pumpa by running its binary:
 
     ./pumpa
-    
-You need to fill in "site_url" and "username" in the config file which
-typically resides at `~/.config/pumpa/pumpa.conf`, for example:
 
-    [Account] 
-    site_url=https://microca.st/ 
-    username=someguy 
+On Mac OS X a regular clickable application file (pumpa.app) should be
+created.
 
-You can leave the other fields empty for now.  Now Pumpa should start
-and hopefully do the OAuth authentication successfully ...  :-)
+At first launch an OAuth wizard will pop-up, just enter your pump.io
+account id, and click Next. Then a the authentication page with your
+pump.io server will be opened in the web browser, just follow the
+instructions there. Finally a pair of codes (token, verifier) will
+appear that you need to copy & paste back into pumpa.
+
+## Markup
+
+When you are posting a new note or comment a very limited Markdown-inspired syntax is available:
+
+* Surround with * or _ to make an *emphasis*.
+
+* Surround with ** or __ to make a **strong** statement.
+
+* Surround with a back-tick (`` ` ``) for `monospaced text` or two back-ticks
+
+        for pre-formatted
+        text 
+          like 
+             this...
 
 
 ## Missing features
@@ -79,17 +91,13 @@ There are a lot of missing features still.  This list contains some of
 them, that I almost certainly intend to implement once I get around to
 it (not necessarily in order of importance):
 
-* Notification system for new replies!
-* Viewing of minor feed
+* Notification system
 * Add a GUI preferences dialog
 * Add minimise to tray icon
 * Show To: and Cc: fields of notes
-* Show name of source/client app of notes
-* Ability to favourite posts and comments
 * Add ability to see older notes/activities
 * Sharing of notes
 * Ability to post images
-* Ability to post rich text (HTML) notes
 * Images posted as image notes work fine, but images included in
   `<img>` tags in regular notes do not work yet... not sure what to do
   about that...
