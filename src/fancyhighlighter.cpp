@@ -92,8 +92,6 @@ void FancyHighlighter::highlightBlock(const QString& text) {
   QTextCharFormat monoFormat;
   monoFormat.setFontFamily("monospaced");
 
-  qDebug() << "TEXT" << text;
-
   formatMarkup(text, "\\*\\*", "\\*\\*", strongFormat);
   formatMarkup(text, "[^\\*]\\*", "\\*[^\\*]", emphFormat);
 
