@@ -313,6 +313,9 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
   int li = 3; // index where to insert next widget in the layout
 
   if (ol->hasMore() && (qulonglong)m_repliesList.size() < ol->totalItems()) {
+    qDebug() << "[DEBUG]:" << "addHasMoreButton:"
+             << ol->hasMore() << (qulonglong)m_repliesList.size()
+             << ol->totalItems();
     addHasMoreButton(ol, li++);
   } else if (m_hasMoreButton != NULL) {
     m_rightLayout->removeWidget(m_hasMoreButton);

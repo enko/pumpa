@@ -360,7 +360,7 @@ void PumpApp::readSettings() {
   QSettings& s = *settings;
 
   s.beginGroup("General");
-  m_reloadTime = s.value("reload_time", 5).toInt();
+  m_reloadTime = s.value("reload_time", 1).toInt();
   if (m_reloadTime < 1)
     m_reloadTime = 1;
   s.endGroup();
@@ -572,7 +572,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     // enough
     QASObject* obj = QASObject::getObject(act["object"].toMap(), this);
     request(obj->apiLink(), QAS_OBJECT);
-    fetchAll();
+    // fetchAll();
   } else if (id == QAS_OBJECT) {
     QVariantMap obj = parseJson(response);
     QASObject::getObject(obj, this);

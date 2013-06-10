@@ -149,6 +149,9 @@ void ObjectWidget::updateImage(const QString& fileName) {
 //------------------------------------------------------------------------------
 
 void ObjectWidget::updateLikes() {
+  if (m_object->liked() && m_object->numLikes() == 0)
+    qDebug() << "[DEBUG] updateLikes, weirdness 1";
+
   if (!m_object->numLikes()) {
     if (m_likesLabel != NULL) {
       m_layout->removeWidget(m_likesLabel);
