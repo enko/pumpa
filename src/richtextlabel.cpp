@@ -26,6 +26,7 @@ RichTextLabel::RichTextLabel(QWidget* parent) : QLabel(parent) {
   // setLineWidth(1);
   // setFrameStyle(QFrame::Box);
 
+  setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
   setWordWrap(true);
 
   setOpenExternalLinks(true);
@@ -37,5 +38,15 @@ RichTextLabel::RichTextLabel(QWidget* parent) : QLabel(parent) {
   setLineWidth(2);
   setMargin(0);
   setFocusPolicy(Qt::NoFocus);
-
 }
+
+//------------------------------------------------------------------------------
+
+void RichTextLabel::resizeEvent(QResizeEvent*) {
+  if (sizeHint().width() > size().width()) {
+    setStyleSheet( "border-width: 2px; border-top-style: none; border-right-style: solid; border-bottom-style: none; border-left-style: none; border-color: red; ");
+  } else {
+    setStyleSheet("");
+  }
+}
+

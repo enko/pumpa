@@ -36,6 +36,7 @@ class RichTextLabel : public QLabel {
 public:
   RichTextLabel(QWidget* parent = 0);
 
+  virtual void resizeEvent(QResizeEvent*);
 };
 
 #endif /* _RICHTEXTLABEL_H_ */

@@ -58,16 +58,19 @@ QString processText(QString old_text) {
   if (s_allowedTags.isEmpty()) {
     s_allowedTags 
       << "br" << "p" << "b" << "i" << "blockquote" << "div"
-      /*<< "pre" */<< "code" << "h1" << "h2" << "h3" << "h4" << "h5"
+      << "code" << "h1" << "h2" << "h3" << "h4" << "h5"
       << "em" << "ol" << "li" << "ul" << "strong";
+    s_allowedTags << "pre";
     s_allowedTags << "a";
   }
   
   QString text = old_text.trimmed();
+  int pos;
 
-  //  QRegExp rxa("<a\\s[^>]*href=([^>\\s]*)[^>]*>([^<]*)</a>");
+  // Shorten links that are too long, this is OK, since you can still
+  // click the link.
   QRegExp rxa("<a\\s[^>]*href=([^>\\s]+)[^>]*>([^<]*)</a>");
-  int pos = 0;
+  pos = 0;
   while ((pos = rxa.indexIn(text, pos)) != -1) {
     int len = rxa.matchedLength();
     QString url = rxa.cap(1);
@@ -83,6 +86,7 @@ QString processText(QString old_text) {
       pos += len;
   }
 
+  // Detect single HTML tags for filtering.
   QRegExp rx("<(\\/?)([a-zA-Z0-9]+)[^>]*>");
   pos = 0;
   while ((pos = rx.indexIn(text, pos)) != -1) {
@@ -90,18 +94,14 @@ QString processText(QString old_text) {
     QString tag = rx.cap(2);
     QString slash = rx.cap(1);
 
-    if (tag == "img") {
+    if (tag == "img") { // Replace img's with placeholder
       QString imagePlaceholder = "[image]";
       text.replace(pos, len, imagePlaceholder);
       pos += imagePlaceholder.length();
       qDebug() << "[DEBUG] processText: removing image";
-    } else if (tag == "pre") {
-      QString newTag = QString("<%1p><%1code>").arg(slash);
-      text.replace(pos, len, newTag);
-      pos += newTag.length();
     } else if (s_allowedTags.contains(tag)) {
       pos += len;
-    } else {
+    } else { // drop all other HTML tags
       qDebug() << "[DEBUG] processText: dropping unsupported tag" << tag;
       text.remove(pos, len);
     }

@@ -33,6 +33,8 @@ CollectionWidget::CollectionWidget(QWidget* parent, bool shortDisplay) :
 
   m_listContainer = new QWidget;
   m_listContainer->setLayout(m_itemLayout);
+  m_listContainer->setSizePolicy(QSizePolicy::Ignored,
+                                 QSizePolicy::Ignored);
 
   setWidget(m_listContainer);
   setWidgetResizable(true);
