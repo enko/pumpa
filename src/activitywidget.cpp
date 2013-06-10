@@ -115,7 +115,8 @@ QString processText(QString old_text) {
 
   // qDebug() << "processText:" << old_text;
   // qDebug() << "          ->" << text;
-  return splitLongWords(text);
+  // return splitLongWords(text);
+  return text;
 }
 
 //------------------------------------------------------------------------------
