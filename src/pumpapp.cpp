@@ -417,17 +417,39 @@ void PumpApp::onShare(QASObject* obj) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::postNote(QString note) {
-  if (note.isEmpty())
-    return;
+QString PumpApp::addTextMarkup(QString text) {
+  QString oldText = text;
 
-  note.replace("<", "&lt;");
-  note.replace(">", "&gt;");
-  note.replace("\n", "<br/>");
+  text.replace("<", "&lt;");
+  text.replace(">", "&gt;");
+
+  text = linkifyUrls(text);
+  text.replace("\n", "<br/>");
+  
+  text = changePairedTags(text, "\\*\\*", "\\*\\*",
+                             "<strong>", "</strong>");
+  text = changePairedTags(text, "\\*", "\\*", "<em>", "</em>");
+
+  text = changePairedTags(text, "__", "__", "<strong>", "</strong>");
+  text = changePairedTags(text, "_", "_", "<em>", "</em>");
+
+  text = changePairedTags(text, "``", "``", "<pre>", "</pre>");
+  text = changePairedTags(text, "`", "`", "<code>", "</code>");
+
+  qDebug() << "[DEBUG]: addTextMarkup:" << oldText << "=>" << text;
+  
+  return text;
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::postNote(QString content) {
+  if (content.isEmpty())
+    return;
 
   QVariantMap obj;
   obj["objectType"] = "note";
-  obj["content"] = note;
+  obj["content"] = addTextMarkup(content);
 
   feed("post", obj, QAS_NEW_POST);
 }
@@ -435,12 +457,12 @@ void PumpApp::postNote(QString note) {
 //------------------------------------------------------------------------------
 
 void PumpApp::postReply(QASObject* replyToObj, QString content) {
-  content.replace("<", "&lt;");
-  content.replace(">", "&gt;");
+  if (content.isEmpty())
+    return;
 
   QVariantMap obj;
   obj["objectType"] = "comment";
-  obj["content"] = content;
+  obj["content"] = addTextMarkup(content);
 
   QVariantMap noteObj;
   noteObj["id"] = replyToObj->id();

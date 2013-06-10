@@ -24,6 +24,8 @@
 MessageWindow::MessageWindow(QASObject* obj, QWidget* parent) :
   QDialog(parent), m_obj(obj)
 {
+  setMinimumSize(QSize(400,400));
+
   infoLabel = new QLabel(this);
   infoLabel->setText(QString("Post a ") + (obj == NULL ? "note" : "reply"));
 

@@ -19,6 +19,8 @@
 
 #include "util.h"
 
+#include <QRegExp>
+
 //------------------------------------------------------------------------------
 
 QString siteUrlFixer(QString url) {
@@ -29,4 +31,36 @@ QString siteUrlFixer(QString url) {
     url.chop(1);
 
   return url;
+}
+
+//------------------------------------------------------------------------------
+
+QString linkifyUrls(QString text) {
+  QRegExp rx(URL_REGEX);
+
+  int pos = 0;
+  while ((pos = rx.indexIn(text, pos)) != -1) {
+    int len = rx.matchedLength();
+    QString newText = QString("<a href=\"%1\">%1</a>").arg(rx.cap(1));
+    text.replace(pos, len, newText);
+    pos += newText.count();
+  }
+  return text;
+}
+
+//------------------------------------------------------------------------------
+
+QString changePairedTags(QString text, 
+                         QString begin, QString end,
+                         QString newBegin, QString newEnd,
+                         QString nogoItems) {
+  QRegExp rx(QString(MD_PAIR_REGEX).arg(begin).arg(end).arg(nogoItems));
+  int pos = 0;
+  while ((pos = rx.indexIn(text, pos)) != -1) {
+    int len = rx.matchedLength();
+    QString newText = QString(newBegin + rx.cap(1) + newEnd);
+    text.replace(pos, len, newText);
+    pos += newText.count();
+  }
+  return text;
 }

@@ -84,6 +84,8 @@ protected:
   void timerEvent(QTimerEvent*);
 
 private:
+  QString addTextMarkup(QString content);
+
   void connectCollection(CollectionWidget* w);
 
   bool haveOAuth();

@@ -19,6 +19,8 @@
 
 #include "fancyhighlighter.h"
 
+#include <QRegExp>
+
 //------------------------------------------------------------------------------
 
 FancyHighlighter::FancyHighlighter(QTextDocument* doc) : QSyntaxHighlighter(doc) 
@@ -30,11 +32,23 @@ FancyHighlighter::FancyHighlighter(QTextDocument* doc) : QSyntaxHighlighter(doc)
 
 //------------------------------------------------------------------------------
 
+void FancyHighlighter::formatMarkup(QString text, QString begin, 
+                                    QString end, QTextCharFormat fmt,
+                                    QString nogo) {
+  QRegExp rx(QString(MD_PAIR_REGEX).arg(begin).arg(end).arg(nogo));
+
+  int index = text.indexOf(rx);
+  while (index >= 0) {
+    int length = rx.matchedLength();
+    setFormat(index, length, fmt);
+    index = text.indexOf(rx, index + length);
+  }
+}
+
+//------------------------------------------------------------------------------
+
 void FancyHighlighter::highlightBlock(const QString& text) {
   int index;
-  // QTextCharFormat statusHighlightFormat;
-  // statusHighlightFormat.setFontWeight(QFont::Bold);
-
   QTextCharFormat urlHighlightFormat;
   urlHighlightFormat.setForeground(QBrush(Qt::blue));
 
@@ -44,27 +58,48 @@ void FancyHighlighter::highlightBlock(const QString& text) {
   spellErrorFormat.setUnderlineColor(Qt::red);
   spellErrorFormat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
 
-  QRegExp re("(^|\\s)([\\w']+)");
+  QRegExp rxa("(^|\\s)([\\w']+)");
 
-  index = text.indexOf(re);
+  index = text.indexOf(rxa);
   while (index >= 0) {
-    int length = re.matchedLength();
-    int offset = re.cap(1).count();
+    int length = rxa.matchedLength();
+    int offset = rxa.cap(1).count();
     int s = index+offset;
     int l = length-offset;
 
-    if (!checker->checkWord(re.cap(2)))
+    if (!checker->checkWord(rxa.cap(2)))
       setFormat(s, l, spellErrorFormat);
-    index = text.indexOf(re, index + length);
+    index = text.indexOf(rxa, index + length);
   }
 #endif // USE_ASPELL
 
-  QRegExp re2(URL_REGEX);
+  QRegExp rxu(URL_REGEX);
 
-  index = text.indexOf(re2);
+  index = text.indexOf(rxu);
   while (index >= 0) {
-    int length = re2.matchedLength();
+    int length = rxu.matchedLength();
     setFormat(index, length, urlHighlightFormat);
-    index = text.indexOf(re2, index + length);
+    index = text.indexOf(rxu, index + length);
   }
+
+
+  QTextCharFormat strongFormat;
+  strongFormat.setFontWeight(QFont::Bold);
+
+  QTextCharFormat emphFormat;
+  emphFormat.setFontItalic(true);
+
+  QTextCharFormat monoFormat;
+  monoFormat.setFontFamily("monospaced");
+
+  qDebug() << "TEXT" << text;
+
+  formatMarkup(text, "\\*\\*", "\\*\\*", strongFormat);
+  formatMarkup(text, "[^\\*]\\*", "\\*[^\\*]", emphFormat);
+
+  formatMarkup(text, "__", "__", strongFormat);
+  formatMarkup(text, "[^_]_", "_[^_]", emphFormat);
+
+  formatMarkup(text, "``", "``", monoFormat, "`");
+  formatMarkup(text, "`", "`", monoFormat);
 }

@@ -24,6 +24,30 @@
 
 //------------------------------------------------------------------------------
 
+#define URL_REGEX "((https?://|www.)[^\\s]+\\.[^\\s]+)"
+#define MD_NOGO_ITEMS "\\*`_"
+#define MD_PAIR_REGEX "%1([^\\s%3][^%3]*[^\\s%3]|[^\\s%3])%2"
+
+//------------------------------------------------------------------------------
+
+/*
+  Fixes site url, removes extra / from end, adds https:// if missing.
+*/
 QString siteUrlFixer(QString url);
+
+/* 
+   Finds things that look like URLs and changes them into a href
+   links.  
+*/
+QString linkifyUrls(QString text);
+
+/* 
+   Finds things delimited by 'begin' and 'end' and changes them to be
+   delimited by 'newBegin' and 'newEnd'.
+*/
+QString changePairedTags(QString text,
+                         QString begin, QString end,
+                         QString newBegin, QString newEnd,
+                         QString nogoItems = MD_NOGO_ITEMS);
 
 #endif /* _UTIL_H_ */
