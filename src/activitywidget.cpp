@@ -369,9 +369,9 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
   }
 
   if (ol->hasMore() && (qulonglong)m_repliesList.size() < ol->totalItems()) {
-    qDebug() << "[DEBUG]:" << "addHasMoreButton:"
-             << ol->hasMore() << (qulonglong)m_repliesList.size()
-             << ol->totalItems();
+    // qDebug() << "[DEBUG]:" << "addHasMoreButton:"
+    //          << ol->hasMore() << (qulonglong)m_repliesList.size()
+    //          << ol->totalItems();
     addHasMoreButton(ol, li_before);
   } else if (m_hasMoreButton != NULL) {
     m_rightLayout->removeWidget(m_hasMoreButton);

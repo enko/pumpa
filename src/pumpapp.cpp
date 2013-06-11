@@ -179,7 +179,7 @@ void PumpApp::statusMessage(const QString& msg) {
 
 void PumpApp::notifyMessage(QString msg) {
   statusMessage(msg);
-  qDebug() << "[STATUS]:" << msg;
+  // qDebug() << "[STATUS]:" << msg;
 }
 
 //------------------------------------------------------------------------------
