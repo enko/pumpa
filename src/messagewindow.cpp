@@ -31,7 +31,7 @@ MessageWindow::MessageWindow(QASObject* obj, QWidget* parent) :
   infoLabel->setText(QString("Post a %1").arg(obj == NULL ? "note" : "reply"));
 
   markupLabel = new QLabel(this);
-  markupLabel->setText(QString("<a href=\"%2}\">[markup]</a>").
+  markupLabel->setText(QString("<a href=\"%2\">[markup]</a>").
                        arg(MARKUP_DOC_URL));
   markupLabel->setOpenExternalLinks(true);
   markupLabel->setTextInteractionFlags(Qt::TextSelectableByMouse |
