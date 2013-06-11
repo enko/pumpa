@@ -543,45 +543,21 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     return;
   }
 
-  if (id == QAS_INBOX_MAJOR) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    inboxWidget->addCollection(c);
-  } else if (id == QAS_INBOX_MINOR) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    inboxMinorWidget->addCollection(c);
-  } else if (id == (QAS_INBOX_DIRECT_MAJOR)) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    directMajorWidget->addCollection(c);
-  } else if (id == (QAS_INBOX_DIRECT_MINOR)) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    directMinorWidget->addCollection(c);
-  } else if (id == QAS_REPLIES) {
-    QVariantMap obj = parseJson(response);
-    QASObjectList::getObjectList(obj, this);
-  } else if (id == QAS_NEW_POST) {
-    // nice to refresh inbox after posting
-    fetchAll();
-  } else if (id == QAS_LIKE) {
-    QVariantMap act = parseJson(response);
+  if (id == QAS_NULL)
+    return;
 
-    // refresh object since fetchAll() might not fetch it if it's old
-    // enough
-    QASObject* obj = QASObject::getObject(act["object"].toMap(), this);
-    request(obj->apiLink(), QAS_OBJECT);
-    // fetchAll();
+  QVariantMap obj = parseJson(response);
+  if (id == QAS_COLLECTION) {
+    QASCollection::getCollection(obj, this);
+  } else if (id == QAS_OBJECTLIST) {
+    QASObjectList::getObjectList(obj, this);
   } else if (id == QAS_OBJECT) {
-    QVariantMap obj = parseJson(response);
     QASObject::getObject(obj, this);
-  } else if (id == QAS_SHARE) {
-    fetchAll();
-  } else if (id == QAS_FETCH_SELF) {
-    QVariantMap obj = parseJson(response);
+  } else if (id == QAS_SELF_PROFILE) {
     m_selfActor = QASActor::getActor(obj["profile"].toMap(), this);
     m_selfActor->setYou();
+  } else if (id == QAS_REFRESH) {
+    fetchAll();
   } else {
     qDebug() << "[WARNING] Unknown request id!" << id;
     qDebug() << response;

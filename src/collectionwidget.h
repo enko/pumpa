@@ -38,7 +38,7 @@ class CollectionWidget : public QScrollArea {
 public:
   CollectionWidget(QWidget* parent, bool shortDisplay=false);
 
-  void addCollection(const QASCollection& coll);
+  void setCollection(QASCollection* coll);
 
 signals:
   void highlightMe();  
@@ -51,7 +51,11 @@ signals:
 protected:
   void keyPressEvent(QKeyEvent* event);
 
+private slots:
+  void update();
+
 private:
+
   QVBoxLayout* m_itemLayout;
   QWidget* m_listContainer;
   QMap<QString, QASActivity*> m_activity_map;
@@ -60,6 +64,8 @@ private:
 
   bool m_firstTime;
   bool m_shortDisplay;
+
+  QASCollection* m_collection;
 };
 
 #endif /* _COLLECTIONWIDGET_H_ */

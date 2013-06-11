@@ -127,6 +127,9 @@ public:
   bool isYou() const { return m_isYou; }
   void setYou() { m_isYou = true; }
 
+signal:
+  void changed();
+
 private:
   static QMap<QString, QASActor*> s_actors;
   bool m_isYou;
@@ -236,9 +239,13 @@ private:
 class QASCollection : public QObject {
   Q_OBJECT
 
+protected:
+  QASCollection(QString url, QObject* parent);
+
 public:
-  QASCollection(QObject* parent);
-  QASCollection(QVariantMap json, QObject* parent);
+  static QASCollection* initCollection(QString url, QObject* parent);
+  static QASCollection* getCollection(QVariantMap json, QObject* parent);
+  void update(QVariantMap json);
 
   size_t size() const { return m_items.size(); }
   QString nextUrl() const { return m_nextUrl; }
@@ -249,6 +256,9 @@ public:
     return m_items[i];
   }
 
+signals:
+  void changed();
+
 private:
   QString m_displayName;
   QString m_url;
@@ -256,6 +266,8 @@ private:
   QList<QASActivity*> m_items;
 
   QString m_nextUrl;
+
+  static QMap<QString, QASCollection*> s_collections;
 };
 
 #endif /* _QACTIVITYSTREAMS_H_ */

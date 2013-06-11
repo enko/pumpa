@@ -25,7 +25,10 @@
 //------------------------------------------------------------------------------
 
 CollectionWidget::CollectionWidget(QWidget* parent, bool shortDisplay) :
-  QScrollArea(parent), m_firstTime(true), m_shortDisplay(shortDisplay)
+  QScrollArea(parent),
+  m_firstTime(true),
+  m_shortDisplay(shortDisplay),
+  m_collection(NULL)
 {
   m_itemLayout = new QVBoxLayout;
   m_itemLayout->setSpacing(10);
@@ -42,7 +45,20 @@ CollectionWidget::CollectionWidget(QWidget* parent, bool shortDisplay) :
 
 //------------------------------------------------------------------------------
 
-void CollectionWidget::addCollection(const QASCollection& coll) {
+void CollectionWidget::setCollection(QASCollection* coll) {
+  if (m_collection != NULL) {
+    qDebug() << "[ERROR]: trying to set collection object again!";
+    return;
+  }
+
+  m_collection = coll;
+  connect(m_collection, SIGNAL(changed()), this, SLOT(update()));
+  update();
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::update() {
   int li = 0; // index into internal m_list
   int newCount = 0;
   m_nextUrl = coll.nextUrl();
