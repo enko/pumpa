@@ -311,18 +311,7 @@ void ActivityWidget::onObjectChanged() {
 
 void ActivityWidget::addObjectList(QASObjectList* ol) {
   int li = 3; // index where to insert next widget in the layout
-
-  if (ol->hasMore() && (qulonglong)m_repliesList.size() < ol->totalItems()) {
-    qDebug() << "[DEBUG]:" << "addHasMoreButton:"
-             << ol->hasMore() << (qulonglong)m_repliesList.size()
-             << ol->totalItems();
-    addHasMoreButton(ol, li++);
-  } else if (m_hasMoreButton != NULL) {
-    m_rightLayout->removeWidget(m_hasMoreButton);
-    delete m_hasMoreButton;
-    m_hasMoreButton = NULL;
-  }
-
+  int li_before = li;
   /*
     For now we sort by time, or more accurately by whatever number the
     QASObject::sortInt() returns. Higher number is newer, goes further
@@ -377,6 +366,17 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
     m_rightLayout->insertLayout(li + i, replyLayout);
     m_repliesList.insert(i, replyObj);
     m_repliesMap.insert(replyId);
+  }
+
+  if (ol->hasMore() && (qulonglong)m_repliesList.size() < ol->totalItems()) {
+    qDebug() << "[DEBUG]:" << "addHasMoreButton:"
+             << ol->hasMore() << (qulonglong)m_repliesList.size()
+             << ol->totalItems();
+    addHasMoreButton(ol, li_before);
+  } else if (m_hasMoreButton != NULL) {
+    m_rightLayout->removeWidget(m_hasMoreButton);
+    delete m_hasMoreButton;
+    m_hasMoreButton = NULL;
   }
 }
 
