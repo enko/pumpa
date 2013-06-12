@@ -26,12 +26,15 @@
 
 //------------------------------------------------------------------------------
 
-PumpApp::PumpApp(QWidget* parent) : 
+PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
   QMainWindow(parent),
   m_wiz(NULL),
   m_requests(0)
 {
-  settings = new QSettings(CLIENT_NAME, CLIENT_NAME, this);
+  if (settingsFile.isEmpty())
+    settings = new QSettings(CLIENT_NAME, CLIENT_NAME, this);
+  else
+    settings = new QSettings(settingsFile, QSettings::IniFormat);
   readSettings();
   
   oaRequest = new KQOAuthRequest(this);

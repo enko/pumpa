@@ -20,24 +20,16 @@
 #include <QApplication>
 
 #include "pumpapp.h"
-#include "util.h"
-
-//------------------------------------------------------------------------------
-
-int runTest() {
-  qDebug() << "runTest";
-
-  return 0;
-}
 
 //------------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
   QApplication app(argc,argv);
 
+  QString settingsFile;
   if (argc > 1 && QString(argv[1]) == "test")
-    return runTest();
+    settingsFile = "pumpa-test.conf";
 
-  PumpApp papp;
+  PumpApp papp(settingsFile);
   return app.exec();
 }
