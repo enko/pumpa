@@ -20,11 +20,11 @@
 #ifndef ACTIVITYWIDGET_H
 #define ACTIVITYWIDGET_H
 
+#include <QFrame>
+#include <QWidget>
 #include <QToolButton>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QFrame>
-#include <QWidget>
 #include <QMouseEvent>
 #include <QPushButton>
 

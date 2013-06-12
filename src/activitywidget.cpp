@@ -400,5 +400,5 @@ void ActivityWidget::addHasMoreButton(QASObjectList* ol, int li) {
 
 void ActivityWidget::onHasMoreClicked() {
   m_hasMoreButton->setText("...");
-  emit request(m_activity->object()->replies()->urlOrProxy(), QAS_REPLIES);
+  emit request(m_activity->object()->replies()->urlOrProxy(), QAS_OBJECTLIST);
 }

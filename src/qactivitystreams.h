@@ -20,10 +20,10 @@
 #ifndef _QACTIVITYSTREAMS_H_
 #define _QACTIVITYSTREAMS_H_
 
+#include <QSet>
 #include <QObject>
 #include <QDateTime>
-
-#include "json.h"
+#include <QVariantMap>
 
 //------------------------------------------------------------------------------
 // Forward declarations
@@ -127,7 +127,7 @@ public:
   bool isYou() const { return m_isYou; }
   void setYou() { m_isYou = true; }
 
-signal:
+signals:
   void changed();
 
 private:
@@ -159,6 +159,9 @@ public:
   QDateTime published() const { return m_published; }
   QString url() const { return m_url; }
 
+signals:
+  void changed();
+
 private:
   QString m_id;
   QString m_url;
@@ -184,8 +187,9 @@ protected:
   QASObjectList(QString url, QObject* parent);
 
 public:
-  static QASObjectList* getObjectList(QVariantMap json, QObject* parent);
-  void update(QVariantMap json);
+  static QASObjectList* getObjectList(QVariantMap json, QObject* parent, 
+                                      int id=0);
+  void update(QVariantMap json, bool older);
 
   size_t size() const { return m_items.size(); }
   qulonglong totalItems() const { return m_totalItems; }
@@ -203,8 +207,6 @@ signals:
   void changed();
 
 protected:
-  void addObject(QVariantMap json);
-
   QString m_url;
   QString m_proxyUrl;
   qulonglong m_totalItems;
@@ -224,7 +226,8 @@ protected:
   QASActorList(QString url, QObject* parent);
 
 public:
-  static QASActorList* getActorList(QVariantMap json, QObject* parent);
+  static QASActorList* getActorList(QVariantMap json, QObject* parent,
+                                    int id=0);
 
   virtual QASActor* at(size_t i) const;
 
@@ -244,11 +247,16 @@ protected:
 
 public:
   static QASCollection* initCollection(QString url, QObject* parent);
-  static QASCollection* getCollection(QVariantMap json, QObject* parent);
-  void update(QVariantMap json);
+  static QASCollection* getCollection(QVariantMap json, QObject* parent,
+                                      int id);
+  void update(QVariantMap json, bool older);
+
+  QString prevLink() const { 
+    return m_prevLink.isEmpty() ? m_url : m_prevLink; 
+  }
+  QString nextLink() const { return m_nextLink; }
 
   size_t size() const { return m_items.size(); }
-  QString nextUrl() const { return m_nextUrl; }
 
   QASActivity* at(size_t i) const {
     if (i >= size())
@@ -257,15 +265,16 @@ public:
   }
 
 signals:
-  void changed();
+  void changed(bool older);
 
 private:
   QString m_displayName;
   QString m_url;
   qulonglong m_totalItems;
   QList<QASActivity*> m_items;
+  QSet<QASActivity*> m_item_set;
 
-  QString m_nextUrl;
+  QString m_prevLink, m_nextLink;
 
   static QMap<QString, QASCollection*> s_collections;
 };

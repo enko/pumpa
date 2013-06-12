@@ -18,6 +18,8 @@
 */
 
 #include "qactivitystreams.h"
+#include "pumpa_defines.h"
+#include "json.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -398,7 +400,7 @@ QASObjectList::QASObjectList(QString url, QObject* parent) :
 
 //------------------------------------------------------------------------------
 
-void QASObjectList::update(QVariantMap json) {
+void QASObjectList::update(QVariantMap json, bool) {
 #if DEBUG >= 1
   qDebug() << "updating ObjectList" << m_url;
 #endif
@@ -409,9 +411,20 @@ void QASObjectList::update(QVariantMap json) {
 
   m_items.clear();
   QVariantList items_json = json["items"].toList();
-  for (int i=0; i<items_json.count(); i++)
-    addObject(items_json.at(i).toMap());
+  for (int i=0; i<items_json.count(); i++) {
+    QVariantMap item = items_json[i].toMap();
+    QASObject* obj;
+    if (item["objectType"].toString() == "person")
+      obj = QASActor::getActor(item, parent());
+    else
+      obj = QASObject::getObject(item, parent());
 
+    m_items.append(obj);
+    connect(obj, SIGNAL(changed()), this, SIGNAL(changed()),
+            Qt::UniqueConnection);
+    ch = true;
+  }
+  
   // set to false if number of items < total, and if we have already
   // fetched it - that seems to have a displayName element
   // ^^ FFFUUUGLY HACK !!!
@@ -426,21 +439,8 @@ void QASObjectList::update(QVariantMap json) {
 
 //------------------------------------------------------------------------------
 
-void QASObjectList::addObject(QVariantMap json) {
-  QASObject* act;
-  if (json["objectType"].toString() == "person")
-    act = QASActor::getActor(json, parent());
-  else
-    act = QASObject::getObject(json, parent());
-  m_items.append(act);
-
-  connect(act, SIGNAL(changed()), this, SIGNAL(changed()),
-          Qt::UniqueConnection);
-}
-
-//------------------------------------------------------------------------------
-
-QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent) {
+QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent,
+                                            int id) {
   QString url = json["url"].toString();
   if (url.isEmpty())
     return NULL;
@@ -449,7 +449,7 @@ QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent) {
     new QASObjectList(url, parent);
   s_objectLists.insert(url, ol);
 
-  ol->update(json);
+  ol->update(json, id & QAS_OLDER);
   return ol;
 }
 
@@ -471,7 +471,8 @@ QASActorList::QASActorList(QString url, QObject* parent) :
 
 //------------------------------------------------------------------------------
 
-QASActorList* QASActorList::getActorList(QVariantMap json, QObject* parent) {
+QASActorList* QASActorList::getActorList(QVariantMap json, QObject* parent,
+                                         int id) {
   QString url = json["url"].toString();
   if (url.isEmpty())
     return NULL;
@@ -480,7 +481,7 @@ QASActorList* QASActorList::getActorList(QVariantMap json, QObject* parent) {
     new QASActorList(url, parent);
   s_actorLists.insert(url, ol);
 
-  ol->update(json);
+  ol->update(json, id & QAS_OLDER);
   return ol;
 }
 
@@ -497,7 +498,7 @@ QASActor* QASActorList::at(size_t i) const {
 QASCollection::QASCollection(QString url, QObject* parent) :
   QObject(parent),
   m_url(url),
-  m_totalItems(0),
+  m_totalItems(0)
 {
 #if DEBUG >= 1
   qDebug() << "new Collection" << m_url;
@@ -506,31 +507,44 @@ QASCollection::QASCollection(QString url, QObject* parent) :
 
 //------------------------------------------------------------------------------
 
-void QASCollection::update(QVariantMap json) {
+void QASCollection::update(QVariantMap json, bool older) {
   bool ch = false;
 
   updateVar(json, m_displayName, "displayName", ch);
   updateVar(json, m_totalItems, "totalItems", ch);
 
-  updateVar(json, m_nextUrl, "links", "next", "href", ch);
+  updateVar(json, m_prevLink, "links", "prev", "href", ch);
+  updateVar(json, m_nextLink, "links", "next", "href", ch);
+
+  // We assume that collections come in as newest first, so we add
+  // items starting from the top going downwards. Or if older=true
+  // starting from the end and going downwards (appending).
+
+  // Start adding from the top or bottom, depending on value of older.
+  int mi = older ? m_items.size() : 0;
 
   QVariantList items_json = json["items"].toList();
   for (int i=0; i<items_json.count(); i++) {
     QASActivity* act = QASActivity::getActivity(items_json.at(i).toMap(),
-                                                parent);
-    m_items.append(act);
+                                                parent());
+    if (m_item_set.contains(act))
+      continue;
 
-    connect(act, SIGNAL(changed()), this, SIGNAL(changed()),
-            Qt::UniqueConnection);
+    m_items.insert(mi++, act);
+    m_item_set.insert(act);
+    // connect(act, SIGNAL(changed()), this, SIGNAL(changed()),
+    //         Qt::UniqueConnection);
+    ch = true;
   }
 
   if (ch)
-    emit changed();
+    emit changed(older);
 }
 
 //------------------------------------------------------------------------------
 
-QASCollection* QASCollection::getCollection(QVariantMap json, QObject* parent) {
+QASCollection* QASCollection::getCollection(QVariantMap json, QObject* parent,
+                                            int id) {
   QString url = json["url"].toString();
   if (url.isEmpty())
     return NULL;
@@ -539,7 +553,7 @@ QASCollection* QASCollection::getCollection(QVariantMap json, QObject* parent) {
     new QASCollection(url, parent);
   s_collections.insert(url, coll);
 
-  coll->update(json);
+  coll->update(json, id & QAS_OLDER);
   return coll;
 }
 

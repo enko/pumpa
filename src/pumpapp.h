@@ -45,7 +45,7 @@ class PumpApp : public QMainWindow {
   Q_OBJECT
 
 public:
-  PumpApp(QWidget* parent=0);
+  PumpApp(QString settingsFile="", QWidget* parent=0);
   virtual ~PumpApp();                            
 
 signals:
@@ -97,7 +97,8 @@ private:
   void syncOAuthInfo();
 
   void fetchAll();
-  void fetchInbox(int reqType);
+  QString inboxEndpoint(QString path);
+
   void feed(QString verb, QVariantMap object, int response_id);
   
   void writeSettings();
@@ -136,11 +137,11 @@ private:
   KQOAuthManager *oaManager;
   KQOAuthRequest *oaRequest;
 
-  TabWidget* tabWidget;
-  CollectionWidget* inboxWidget;
-  CollectionWidget* directMajorWidget;
-  CollectionWidget* directMinorWidget;
-  CollectionWidget* inboxMinorWidget;
+  TabWidget* m_tabWidget;
+  CollectionWidget* m_inboxWidget;
+  CollectionWidget* m_directMajorWidget;
+  CollectionWidget* m_directMinorWidget;
+  CollectionWidget* m_inboxMinorWidget;
 
   QASActor* m_selfActor;
 

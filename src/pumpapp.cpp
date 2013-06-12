@@ -45,28 +45,29 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   createActions();
   createMenu();
 
-  inboxWidget = new CollectionWidget(this);
-  connectCollection(inboxWidget);
+  m_inboxWidget = new CollectionWidget(this);
+  connectCollection(m_inboxWidget);
 
-  inboxMinorWidget = new CollectionWidget(this, true);
-  connectCollection(inboxMinorWidget);
+  m_inboxMinorWidget = new CollectionWidget(this, true);
+  connectCollection(m_inboxMinorWidget);
 
-  directMajorWidget = new CollectionWidget(this);
-  connectCollection(directMajorWidget);
+  m_directMajorWidget = new CollectionWidget(this);
+  connectCollection(m_directMajorWidget);
 
-  directMinorWidget = new CollectionWidget(this);
-  connectCollection(directMinorWidget);
+  m_directMinorWidget = new CollectionWidget(this);
+  connectCollection(m_directMinorWidget);
 
-  tabWidget = new TabWidget(this);
-  connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected(int)));
-  tabWidget->addTab(inboxWidget, "&inbox");
-  tabWidget->addTab(directMinorWidget, "&mentions");
-  tabWidget->addTab(directMajorWidget, "&direct");
-  tabWidget->addTab(inboxMinorWidget, "mean&while");
+  m_tabWidget = new TabWidget(this);
+  connect(m_tabWidget, SIGNAL(currentChanged(int)),
+          this, SLOT(tabSelected(int)));
+  m_tabWidget->addTab(m_inboxWidget, "&inbox");
+  m_tabWidget->addTab(m_directMinorWidget, "&mentions");
+  m_tabWidget->addTab(m_directMajorWidget, "&direct");
+  m_tabWidget->addTab(m_inboxMinorWidget, "mean&while");
 
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(":/images/pumpa.png"));
-  setCentralWidget(tabWidget);
+  setCentralWidget(m_tabWidget);
 
   // oaRequest->setEnableDebugOutput(true);
   syncOAuthInfo();
@@ -95,9 +96,17 @@ PumpApp::~PumpApp() {
 //------------------------------------------------------------------------------
 
 void PumpApp::startPumping() {
+  // Setup endpoints for our timeline widgets
+
+  m_inboxWidget->setEndpoint(inboxEndpoint("major"));
+  m_inboxMinorWidget->setEndpoint(inboxEndpoint("minor"));
+  m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"));
+  m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
+
   show();
-  request("/api/user/"+m_userName, QAS_FETCH_SELF);
+  request("/api/user/"+m_userName, QAS_SELF_PROFILE);
   fetchAll();
+
   resetTimer();
 }
 
@@ -146,7 +155,7 @@ bool PumpApp::haveOAuth() {
 //------------------------------------------------------------------------------
 
 void PumpApp::tabSelected(int index) {
-  tabWidget->deHighlightTab(index);
+  m_tabWidget->deHighlightTab(index);
 }
 
 //------------------------------------------------------------------------------
@@ -386,42 +395,32 @@ void PumpApp::readSettings() {
 //------------------------------------------------------------------------------
 
 void PumpApp::fetchAll() {
-  fetchInbox(QAS_INBOX_MAJOR);
-  fetchInbox(QAS_INBOX_MINOR);
-  fetchInbox(QAS_INBOX_DIRECT_MAJOR);
-  fetchInbox(QAS_INBOX_DIRECT_MINOR);
+  m_inboxWidget->fetchNewer();
+  m_directMinorWidget->fetchNewer();
+  m_directMajorWidget->fetchNewer();
+  m_inboxMinorWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::fetchInbox(int reqType) {
-  QString endpoint = "api/user/"+m_userName+"/inbox";
-
-  if (reqType == QAS_INBOX_DIRECT_MAJOR || reqType == QAS_INBOX_DIRECT_MINOR)
-    endpoint += "/direct";
-
-  if (reqType == QAS_INBOX_MAJOR || reqType == QAS_INBOX_DIRECT_MAJOR)
-    endpoint += "/major";
-  else if (reqType == QAS_INBOX_MINOR || reqType == QAS_INBOX_DIRECT_MINOR) 
-    endpoint += "/minor";
-  else {
-    qDebug() << "fetchInbox: unsupported request type:" << reqType;
-    return;
+QString PumpApp::inboxEndpoint(QString path) {
+  if (m_siteUrl.isEmpty()) {
+    errorMessage("Site not configured yet!");
+    return "";
   }
-
-  request(endpoint, reqType);
+  return m_siteUrl + "/api/user/"+m_userName+"/inbox/" + path;
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::onLike(QASObject* obj) {
-  feed(obj->liked() ? "unlike" : "like", obj->toJson(), QAS_LIKE);
+  feed(obj->liked() ? "unlike" : "like", obj->toJson(), QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::onShare(QASObject* obj) {
-  feed("share", obj->toJson(), QAS_SHARE);
+  feed("share", obj->toJson(), QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
@@ -460,7 +459,7 @@ void PumpApp::postNote(QString content) {
   obj["objectType"] = "note";
   obj["content"] = addTextMarkup(content);
 
-  feed("post", obj, QAS_NEW_POST);
+  feed("post", obj, QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
@@ -478,7 +477,7 @@ void PumpApp::postReply(QASObject* replyToObj, QString content) {
   noteObj["objectType"] = replyToObj->type();
   obj["inReplyTo"] = noteObj;
 
-  feed("post", obj, QAS_NEW_POST);
+  feed("post", obj, QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
@@ -546,20 +545,22 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     return;
   }
 
-  if (id == QAS_NULL)
+  int sid = id & 0xFF;
+
+  if (sid == QAS_NULL)
     return;
 
   QVariantMap obj = parseJson(response);
-  if (id == QAS_COLLECTION) {
-    QASCollection::getCollection(obj, this);
-  } else if (id == QAS_OBJECTLIST) {
-    QASObjectList::getObjectList(obj, this);
-  } else if (id == QAS_OBJECT) {
+  if (sid == QAS_COLLECTION) {
+    QASCollection::getCollection(obj, this, id);
+  } else if (sid == QAS_OBJECTLIST) {
+    QASObjectList::getObjectList(obj, this, id);
+  } else if (sid == QAS_OBJECT) {
     QASObject::getObject(obj, this);
-  } else if (id == QAS_SELF_PROFILE) {
+  } else if (sid == QAS_SELF_PROFILE) {
     m_selfActor = QASActor::getActor(obj["profile"].toMap(), this);
     m_selfActor->setYou();
-  } else if (id == QAS_REFRESH) {
+  } else if (sid == QAS_REFRESH) {
     fetchAll();
   } else {
     qDebug() << "[WARNING] Unknown request id!" << id;

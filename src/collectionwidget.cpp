@@ -18,9 +18,9 @@
 */
 
 #include "collectionwidget.h"
+#include "pumpa_defines.h"
 
 #include <QDebug>
-// #include <QPalette>
 
 //------------------------------------------------------------------------------
 
@@ -45,31 +45,48 @@ CollectionWidget::CollectionWidget(QWidget* parent, bool shortDisplay) :
 
 //------------------------------------------------------------------------------
 
-void CollectionWidget::setCollection(QASCollection* coll) {
+void CollectionWidget::setEndpoint(QString endpoint) {
   if (m_collection != NULL) {
-    qDebug() << "[ERROR]: trying to set collection object again!";
+    m_collection->deleteLater();
+
+    qDebug() << "[WARNING]: trying to set collection object again!";
     return;
   }
 
-  m_collection = coll;
-  connect(m_collection, SIGNAL(changed()), this, SLOT(update()));
-  update();
+  m_collection = QASCollection::initCollection(endpoint, this);
+  connect(m_collection, SIGNAL(changed(bool)), this, SLOT(update(bool)));
 }
 
 //------------------------------------------------------------------------------
 
-void CollectionWidget::update() {
-  int li = 0; // index into internal m_list
+void CollectionWidget::fetchNewer() {
+  emit request(m_collection->prevLink(), QAS_COLLECTION);
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::fetchOlder() {
+  emit request(m_collection->nextLink(), QAS_COLLECTION);
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::update(bool older) {
+  /* 
+     We assume m_collection contains all objects, but new ones might
+     have been added. Go through from top (newest) to bottom. Add any
+     non-existing to top (going down from there).
+  */
+
+  int li = older ? m_itemLayout->count() : 0;
   int newCount = 0;
-  m_nextUrl = coll.nextUrl();
 
-  for (size_t i=0; i<coll.size(); i++) {
-    QASActivity* activity = coll.at(i);
-    QString activity_id = activity->id();
+  for (size_t i=0; i<m_collection->size(); i++) {
+    QASActivity* activity = m_collection->at(i);
 
-    if (m_activity_map.contains(activity_id))
+    if (m_activity_set.contains(activity))
       continue;
-    m_activity_map.insert(activity_id, activity);
+    m_activity_set.insert(activity);
     
     QString verb = activity->verb();
     if (verb != "post" && verb != "share") {

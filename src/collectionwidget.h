@@ -20,15 +20,15 @@
 #ifndef _COLLECTIONWIDGET_H_
 #define _COLLECTIONWIDGET_H_
 
-#include <QScrollArea>
-#include <QScrollBar>
-#include <QVBoxLayout>
-#include <QWidget>
-#include <QLabel>
-#include <QMouseEvent>
-
-#include "qactivitystreams.h"
 #include "activitywidget.h"
+#include "qactivitystreams.h"
+
+#include <QLabel>
+#include <QWidget>
+#include <QScrollBar>
+#include <QMouseEvent>
+#include <QScrollArea>
+#include <QVBoxLayout>
 
 //------------------------------------------------------------------------------
 
@@ -37,8 +37,9 @@ class CollectionWidget : public QScrollArea {
 
 public:
   CollectionWidget(QWidget* parent, bool shortDisplay=false);
-
-  void setCollection(QASCollection* coll);
+  void setEndpoint(QString endpoint);
+  void fetchNewer();
+  void fetchOlder();
 
 signals:
   void highlightMe();  
@@ -52,16 +53,13 @@ protected:
   void keyPressEvent(QKeyEvent* event);
 
 private slots:
-  void update();
+  void update(bool older);
 
 private:
-
   QVBoxLayout* m_itemLayout;
   QWidget* m_listContainer;
-  QMap<QString, QASActivity*> m_activity_map;
+  QSet<QASActivity*> m_activity_set;
   
-  QString m_nextUrl;
-
   bool m_firstTime;
   bool m_shortDisplay;
 

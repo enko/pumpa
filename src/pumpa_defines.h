@@ -29,6 +29,10 @@
 
 //------------------------------------------------------------------------------
 
+// First byte is used to tell the slot receiving the network reply how
+// to interpret the response. (Most are just what activitystreams
+// class to hand it off to, or some simple action to perform at once).
+
 #define QAS_NULL         0
 #define QAS_COLLECTION   1
 // #define QAS_ACTIVITY     2
@@ -36,20 +40,13 @@
 #define QAS_OBJECT       4
 // #define QAS_ACTORLIST    5
 // #define QAS_ACTOR        6
-
 #define QAS_SELF_PROFILE 7
 #define QAS_REFRESH      8
 
-// #define QAS_INBOX_MAJOR        1
-// #define QAS_INBOX_MINOR        2
-// #define QAS_INBOX_DIRECT_MAJOR 3
-// #define QAS_INBOX_DIRECT_MINOR 4
-// #define QAS_NEW_POST           5
-// #define QAS_REPLIES            6
-// #define QAS_LIKE               7
-// #define QAS_OBJECT             8
-// #define QAS_SHARE              9 refresh
-// #define QAS_FETCH_SELF        10
+// The higher bits can be used for info for the whatever method is
+// handling the further processing.
+#define QAS_NEWER        (1 << 8)
+#define QAS_OLDER        (1 << 9)
 
 //------------------------------------------------------------------------------
 
