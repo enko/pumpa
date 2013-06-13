@@ -46,7 +46,8 @@ public:
 
   QString getId() const { return m_activity->id(); }
   void updateText();
-  
+  void refreshTimeLabels();
+                   
 public slots:
   void favourite();
   void repeat();
@@ -64,6 +65,7 @@ signals:
 
 private:
   QASActor* effectiveAuthor();
+  void updateInfoText();
 
   void addHasMoreButton(QASObjectList* ol, int li);
   void updateFavourButton(bool wait = false);

@@ -92,8 +92,8 @@ private:
 
   void resetTimer();
 
-  // void getOAuthAccess();
-  // void registerOAuthClient();
+  void refreshTimeLabels();
+
   void syncOAuthInfo();
 
   void fetchAll();
@@ -146,7 +146,8 @@ private:
   QASActor* m_selfActor;
 
   OAuthWizard* m_wiz;
-  int timerId;
+  int m_timerId;
+  int m_timerCount;
   int m_requests;
 };
 

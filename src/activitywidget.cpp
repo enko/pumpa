@@ -240,7 +240,7 @@ void ActivityWidget::updateShareButton(bool /*wait*/) {
 
 //------------------------------------------------------------------------------
 
-void ActivityWidget::updateText() {
+void ActivityWidget::updateInfoText() {
   const QASObject* noteObj = m_activity->object();
   const QASActor* author = effectiveAuthor();
   
@@ -269,8 +269,20 @@ void ActivityWidget::updateText() {
     text += " (shared by " + m_activity->actor()->displayName() + ")";
 
   m_infoLabel->setText(text);
+}
 
-  m_objectWidget->setText(processText(noteObj->content()));
+//------------------------------------------------------------------------------
+
+void ActivityWidget::updateText() {
+  updateInfoText();
+
+  m_objectWidget->setText(processText(m_activity->object()->content()));
+}  
+
+//------------------------------------------------------------------------------
+
+void ActivityWidget::refreshTimeLabels() {
+  updateInfoText();
 }
 
 //------------------------------------------------------------------------------
