@@ -63,6 +63,8 @@ private:
   bool m_firstTime;
   bool m_shortDisplay;
 
+  QSet<QASObject*> m_shown_objects;
+
   QASCollection* m_collection;
 };
 

@@ -87,9 +87,14 @@ void CollectionWidget::update(bool older) {
     if (m_activity_set.contains(activity))
       continue;
     m_activity_set.insert(activity);
-    
+
+    QASObject* obj = activity->object();
     QString verb = activity->verb();
-    if (verb != "post" && verb != "share") {
+    
+    bool full = verb == "post" ||
+      (verb == "share" && !m_shown_objects.contains(obj));
+
+    if (!full) {
       ShortActivityWidget* aw = new ShortActivityWidget(activity, this);
       connect(aw, SIGNAL(linkHovered(const QString&)),
               this,  SIGNAL(linkHovered(const QString&)));
@@ -111,6 +116,8 @@ void CollectionWidget::update(bool older) {
 
       m_itemLayout->insertWidget(li++, aw);
     }
+    
+    m_shown_objects.insert(obj);
 
     if (!activity->actor()->isYou())
       newCount++;
