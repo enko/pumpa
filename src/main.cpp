@@ -23,12 +23,24 @@
 
 //------------------------------------------------------------------------------
 
+int testMarkup(QString str) {
+  qDebug() << PumpApp::addTextMarkup(str);
+  return 0;
+}
+
+//------------------------------------------------------------------------------
+
 int main(int argc, char** argv) {
-  QApplication app(argc,argv);
+  QApplication app(argc, argv);
 
   QString settingsFile;
-  if (argc > 1 && QString(argv[1]) == "test")
-    settingsFile = "pumpa-test.conf";
+  if (argc > 1) {
+    QString arg(argv[1]);
+    if (arg == "test") 
+      settingsFile = "pumpa-test.conf";
+    else if (arg == "testmarkup")
+      return testMarkup(argv[2]);
+  }
 
   PumpApp papp(settingsFile);
   return app.exec();

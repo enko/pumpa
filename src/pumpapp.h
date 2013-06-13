@@ -48,6 +48,8 @@ public:
   PumpApp(QString settingsFile="", QWidget* parent=0);
   virtual ~PumpApp();                            
 
+  static QString addTextMarkup(QString content);
+
 signals:
   void userAuthorizationStarted();
                     
@@ -85,8 +87,6 @@ protected:
   void timerEvent(QTimerEvent*);
 
 private:
-  QString addTextMarkup(QString content);
-
   void connectCollection(CollectionWidget* w);
 
   bool haveOAuth();
