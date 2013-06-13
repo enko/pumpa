@@ -77,6 +77,7 @@ private slots:
   void newNote(QASObject* obj = NULL);
   void newPicture();
   void reload();
+  void loadOlder();
 
   void startPumping();
 
@@ -112,6 +113,7 @@ private:
   QAction* newNoteAction;
   QAction* newPictureAction;
   QAction* reloadAction;
+  QAction* loadOlderAction;
   QAction* openPrefsAction;
   QAction* exitAction;
   QMenu* fileMenu;

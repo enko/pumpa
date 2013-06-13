@@ -428,10 +428,10 @@ void QASObjectList::update(QVariantMap json, bool) {
   // set to false if number of items < total, and if we have already
   // fetched it - that seems to have a displayName element
   // ^^ FFFUUUGLY HACK !!!
-  bool old_hasMore = m_hasMore;
+  // bool old_hasMore = m_hasMore;
   m_hasMore = !json.contains("displayName") && size() < m_totalItems;
-  if (!old_hasMore && m_hasMore)
-    qDebug() << "[DEBUG]: set hasMore" << m_url << m_proxyUrl << urlOrProxy();
+  // if (!old_hasMore && m_hasMore)
+  //   qDebug() << "[DEBUG]: set hasMore" << m_url << m_proxyUrl << urlOrProxy();
 
   if (ch)
     emit changed();
@@ -522,6 +522,7 @@ void QASCollection::update(QVariantMap json, bool older) {
 
   // Start adding from the top or bottom, depending on value of older.
   int mi = older ? m_items.size() : 0;
+
 
   QVariantList items_json = json["items"].toList();
   for (int i=0; i<items_json.count(); i++) {

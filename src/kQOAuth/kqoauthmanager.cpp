@@ -319,11 +319,15 @@ void KQOAuthManager::executeAuthorizedRequest(KQOAuthRequest *request, int id) {
 
     QNetworkReply *reply = NULL;
     if (request->httpMethod() == KQOAuthRequest::GET) {
-        // Get the requested additional params as a list of pairs we can give QUrl
-        QList< QPair<QString, QString> > urlParams = d->createQueryParams(request->additionalParameters());
-
         // Take the original URL and append the query params to it.
         QUrl urlWithParams = networkRequest.url();
+
+        // Get the query params of the original url
+        QList< QPair<QString, QString> > urlParams = urlWithParams.queryItems();
+
+        // Get the requested additional params as a list of pairs we can give QUrl
+        urlParams << d->createQueryParams(request->additionalParameters());
+
 #if QT_VERSION < 0x050000
         urlWithParams.setQueryItems(urlParams);
 #else
@@ -331,6 +335,7 @@ void KQOAuthManager::executeAuthorizedRequest(KQOAuthRequest *request, int id) {
         query.setQueryItems(urlParams);
         urlWithParams.setQuery(query);
 #endif
+
         networkRequest.setUrl(urlWithParams);
 
         // Submit the request including the params.

@@ -60,13 +60,15 @@ void CollectionWidget::setEndpoint(QString endpoint) {
 //------------------------------------------------------------------------------
 
 void CollectionWidget::fetchNewer() {
-  emit request(m_collection->prevLink(), QAS_COLLECTION);
+  emit request(m_collection->prevLink(), QAS_COLLECTION | QAS_NEWER);
 }
 
 //------------------------------------------------------------------------------
 
 void CollectionWidget::fetchOlder() {
-  emit request(m_collection->nextLink(), QAS_COLLECTION);
+  QString nextLink = m_collection->nextLink();
+  if (!nextLink.isEmpty())
+    emit request(nextLink, QAS_COLLECTION | QAS_OLDER);
 }
 
 //------------------------------------------------------------------------------

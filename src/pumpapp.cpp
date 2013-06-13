@@ -207,7 +207,7 @@ void PumpApp::statusMessage(const QString& msg) {
 
 void PumpApp::notifyMessage(QString msg) {
   statusMessage(msg);
-  qDebug() << "[STATUS]:" << msg;
+  // qDebug() << "[STATUS]:" << msg;
 }
 
 //------------------------------------------------------------------------------
@@ -234,9 +234,9 @@ void PumpApp::createActions() {
   connect(reloadAction, SIGNAL(triggered()), 
           this, SLOT(reload()));
 
-  // loadOlderAct = new QAction(tr("Load &older in timeline"), this);
-  // loadOlderAct->setShortcut(tr("Ctrl+O"));
-  // connect(loadOlderAct, SIGNAL(triggered()), this, SLOT(loadOlder()));
+  loadOlderAction = new QAction(tr("Load &older in timeline"), this);
+  loadOlderAction->setShortcut(tr("Ctrl+O"));
+  connect(loadOlderAction, SIGNAL(triggered()), this, SLOT(loadOlder()));
 
   // pauseAct = new QAction(tr("&Pause home timeline"), this);
   // pauseAct->setShortcut(tr("Ctrl+P"));
@@ -267,7 +267,7 @@ void PumpApp::createMenu() {
   fileMenu->addAction(newPictureAction);
   // fileMenu->addSeparator();
   fileMenu->addAction(reloadAction);
-  // fileMenu->addAction(loadOlderAct);
+  fileMenu->addAction(loadOlderAction);
   // fileMenu->addAction(pauseAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openPrefsAction);
@@ -419,6 +419,14 @@ void PumpApp::fetchAll() {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::loadOlder() {
+  CollectionWidget* cw = 
+    qobject_cast<CollectionWidget*>(m_tabWidget->currentWidget());
+  cw->fetchOlder();
+}
+
+//------------------------------------------------------------------------------
+
 QString PumpApp::inboxEndpoint(QString path) {
   if (m_siteUrl.isEmpty()) {
     errorMessage("Site not configured yet!");
@@ -526,12 +534,27 @@ void PumpApp::request(QString endpoint, int response_id,
     return;
   }
 
-  qDebug() << "[REQUEST] (" << response_id << "):" << endpoint;
+  qDebug() << (method == KQOAuthRequest::GET ? "[GET]" : "[POST]") 
+           << response_id << ":" << endpoint;
 
-  oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, QUrl(endpoint));
+  QStringList epl = endpoint.split("?");
+  oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, 
+                         QUrl(epl[0]));
   oaRequest->setConsumerKey(m_clientId);
   oaRequest->setConsumerSecretKey(m_clientSecret);
 
+  // I have no idea why this is the only way that seems to
+  // work. Incredibly frustrating and ugly :-/
+  if (epl.size() > 1) {
+    KQOAuthParameters params;
+    QStringList parts = epl[1].split("&");
+    for (int i=0; i<parts.size(); i++) {
+      QStringList ps = parts[i].split("=");
+      params.insert(ps[0], QUrl::fromPercentEncoding(ps[1].toLatin1()));
+    }
+    oaRequest->setAdditionalParameters(params);
+  }
+  
   oaRequest->setToken(m_token);
   oaRequest->setTokenSecret(m_tokenSecret);
 
