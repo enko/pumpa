@@ -61,10 +61,10 @@ void ShortActivityWidget::updateText() {
     objContent = objContent.section(QRegExp("\\s+"), 0, 10,
                                     QString::SectionSkipEmpty);
     QASActor* author = obj->author();
-    content += QString("<br /><a href\"%1\">%2</a>: \"%3 ...\"")
-      .arg(author->url())
-      .arg(author->displayName())
-      .arg(objContent);
+    content += "<br />";
+    if (author && !author->displayName().isEmpty())
+      content += author->displayName() + ": ";
+    content += "\"" + objContent + " ...\"";
   }
   m_textLabel->setText(content);
 }
