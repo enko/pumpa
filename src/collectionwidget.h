@@ -40,6 +40,7 @@ public:
   void setEndpoint(QString endpoint);
   void fetchNewer();
   void fetchOlder();
+  void refreshTimeLabels();
 
 signals:
   void highlightMe();  

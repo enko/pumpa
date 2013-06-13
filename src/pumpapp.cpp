@@ -72,7 +72,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   // oaRequest->setEnableDebugOutput(true);
   syncOAuthInfo();
 
-  timerId = -1;
+  m_timerId = -1;
 
   if (!haveOAuth()) {
     m_wiz = new OAuthWizard(this);
@@ -161,17 +161,33 @@ void PumpApp::tabSelected(int index) {
 //------------------------------------------------------------------------------
 
 void PumpApp::timerEvent(QTimerEvent* event) {
-  if (event->timerId() != timerId)
+  if (event->timerId() != m_timerId)
     return;
-  fetchAll();
+  m_timerCount++;
+
+  if (m_timerCount >= m_reloadTime) {
+    m_timerCount = 0;
+    fetchAll();
+  }
+  refreshTimeLabels();
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::resetTimer() {
-  if (timerId != -1)
-    killTimer(timerId);
-  timerId = startTimer(m_reloadTime*60*1000);
+  if (m_timerId != -1)
+    killTimer(m_timerId);
+  m_timerId = startTimer(60*1000); // one minute timer
+  m_timerCount = 0;
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::refreshTimeLabels() {
+  m_inboxWidget->refreshTimeLabels();
+  m_directMinorWidget->refreshTimeLabels();
+  m_directMajorWidget->refreshTimeLabels();
+  m_inboxMinorWidget->refreshTimeLabels();
 }
 
 //------------------------------------------------------------------------------

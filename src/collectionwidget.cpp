@@ -71,6 +71,19 @@ void CollectionWidget::fetchOlder() {
 
 //------------------------------------------------------------------------------
 
+void CollectionWidget::refreshTimeLabels() {
+  for (int i=0; i<m_itemLayout->count(); i++) {
+    QLayoutItem* const li = m_itemLayout->itemAt(i);
+    if (dynamic_cast<QWidgetItem*>(li)) {
+      ActivityWidget* aw = qobject_cast<ActivityWidget*>(li->widget());
+      if (aw)
+        aw->refreshTimeLabels();
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+
 void CollectionWidget::update(bool older) {
   /* 
      We assume m_collection contains all objects, but new ones might
