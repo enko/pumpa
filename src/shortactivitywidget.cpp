@@ -57,9 +57,9 @@ void ShortActivityWidget::updateText() {
   QASObject* obj = m_activity->object();
   QString objContent = obj->content();
   if (!objContent.isEmpty()) {
+    objContent.replace(QRegExp("<[^>]*>"), " ");
     objContent = objContent.section(QRegExp("\\s+"), 0, 10,
                                     QString::SectionSkipEmpty);
-    objContent.replace(QRegExp("<[^>]*>"), " ");
     QASActor* author = obj->author();
     content += QString("<br /><a href\"%1\">%2</a>: \"%3 ...\"")
       .arg(author->url())
