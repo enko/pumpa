@@ -53,7 +53,20 @@ ShortActivityWidget::ShortActivityWidget(QASActivity* a, QWidget* parent) :
 //------------------------------------------------------------------------------
 
 void ShortActivityWidget::updateText() {
-  m_textLabel->setText(m_activity->content());
+  QString content = m_activity->content();
+  QASObject* obj = m_activity->object();
+  QString objContent = obj->content();
+  if (!objContent.isEmpty()) {
+    objContent = objContent.section(QRegExp("\\s+"), 0, 10,
+                                    QString::SectionSkipEmpty);
+    objContent.replace(QRegExp("<[^>]*>"), " ");
+    QASActor* author = obj->author();
+    content += QString("<br /><a href\"%1\">%2</a>: \"%3 ...\"")
+      .arg(author->url())
+      .arg(author->displayName())
+      .arg(objContent);
+  }
+  m_textLabel->setText(content);
 }
  
 //------------------------------------------------------------------------------
