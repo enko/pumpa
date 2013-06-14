@@ -177,7 +177,7 @@ void ObjectWidget::updateLikes() {
   if (likes->size()) {
     text = actorNames(likes);
     int others = nl-likes->size();
-    if (others)
+    if (others > 0)
       text += QString(" and %1 other %2").arg(others).
         arg(others > 1 ? "persons" : "person");
     text += (nl==1 && !likes->onlyYou()) ? " likes" : " like";
@@ -216,7 +216,7 @@ void ObjectWidget::updateShares() {
   if (m_object->shares()->size()) {
     text = actorNames(m_object->shares());
     int others = ns-m_object->shares()->size();
-    if (others)
+    if (others > 0)
       text += QString(" and %1 other %2").arg(others).
         arg(others > 1 ? "persons" : "person");
     text += " shared this.";
