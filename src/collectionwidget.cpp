@@ -53,8 +53,11 @@ void CollectionWidget::setEndpoint(QString endpoint) {
     return;
   }
 
-  m_collection = QASCollection::initCollection(endpoint, this);
-  connect(m_collection, SIGNAL(changed(bool)), this, SLOT(update(bool)));
+  m_collection = QASCollection::initCollection(endpoint, parent()->parent()->parent());
+  connect(m_collection, SIGNAL(changed(bool)), this, SLOT(update(bool)),
+          Qt::UniqueConnection);
+  connect(m_collection, SIGNAL(request(QString, int)),
+          this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
 }
 
 //------------------------------------------------------------------------------
@@ -117,9 +120,6 @@ void CollectionWidget::update(bool older) {
       m_itemLayout->insertWidget(li++, aw);
     } else {
       ActivityWidget* aw = new ActivityWidget(activity, this);
-
-      connect(aw, SIGNAL(request(QString, int)),
-              this, SIGNAL(request(QString, int)));
       connect(aw, SIGNAL(newReply(QASObject*)),
               this, SIGNAL(newReply(QASObject*)));
       connect(aw, SIGNAL(linkHovered(const QString&)),

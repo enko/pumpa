@@ -188,11 +188,13 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_rightLayout->addWidget(m_objectWidget);
   m_rightLayout->addLayout(m_buttonLayout);
 
-  connect(noteObj, SIGNAL(changed()), this, SLOT(onObjectChanged()));
+  connect(noteObj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
+          Qt::UniqueConnection);
 
   QASObjectList* ol = noteObj->replies();
   if (ol) {
-    connect(ol, SIGNAL(changed()), this, SLOT(onObjectChanged()));
+    connect(ol, SIGNAL(changed()), this, SLOT(onObjectChanged()),
+            Qt::UniqueConnection);
     
     if (noteObj->numReplies() > 0)
       addObjectList(ol);
@@ -204,8 +206,6 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_acrossLayout->addLayout(m_rightLayout, 0); 
 
   setLayout(m_acrossLayout);
-
-  // connect(msg, SIGNAL(hasUpdated()), this, SLOT(onMessageHasUpdated()));
 }
 
 //------------------------------------------------------------------------------
@@ -262,7 +262,7 @@ void ActivityWidget::updateInfoText() {
     if (!irtObj->url().isEmpty())
       text += " in reply to a <a href=\"" + irtObj->url() + "\">note</a>";
     else
-      emit request(irtObj->apiLink(), QAS_OBJECT);
+      irtObj->refresh();
   }
 
   if (share)
@@ -324,6 +324,9 @@ void ActivityWidget::onObjectChanged() {
 void ActivityWidget::addObjectList(QASObjectList* ol) {
   int li = 3; // index where to insert next widget in the layout
   int li_before = li;
+  if (m_hasMoreButton != NULL)
+    li++;
+
   /*
     For now we sort by time, or more accurately by whatever number the
     QASObject::sortInt() returns. Higher number is newer, goes further
@@ -412,5 +415,5 @@ void ActivityWidget::addHasMoreButton(QASObjectList* ol, int li) {
 
 void ActivityWidget::onHasMoreClicked() {
   m_hasMoreButton->setText("...");
-  emit request(m_activity->object()->replies()->urlOrProxy(), QAS_OBJECTLIST);
+  m_activity->object()->replies()->refresh();
 }

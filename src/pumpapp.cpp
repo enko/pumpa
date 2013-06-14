@@ -438,13 +438,14 @@ QString PumpApp::inboxEndpoint(QString path) {
 //------------------------------------------------------------------------------
 
 void PumpApp::onLike(QASObject* obj) {
-  feed(obj->liked() ? "unlike" : "like", obj->toJson(), QAS_REFRESH);
+  feed(obj->liked() ? "unlike" : "like", obj->toJson(),
+       QAS_ACTIVITY | QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::onShare(QASObject* obj) {
-  feed("share", obj->toJson(), QAS_REFRESH);
+  feed("share", obj->toJson(), QAS_ACTIVITY | QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
@@ -483,7 +484,7 @@ void PumpApp::postNote(QString content) {
   obj["objectType"] = "note";
   obj["content"] = addTextMarkup(content);
 
-  feed("post", obj, QAS_REFRESH);
+  feed("post", obj, QAS_OBJECT | QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
@@ -501,7 +502,7 @@ void PumpApp::postReply(QASObject* replyToObj, QString content) {
   noteObj["objectType"] = replyToObj->type();
   obj["inReplyTo"] = noteObj;
 
-  feed("post", obj, QAS_REFRESH);
+  feed("post", obj, QAS_OBJECT | QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
@@ -586,24 +587,27 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
 
   int sid = id & 0xFF;
 
+  QVariantMap obj = parseJson(response);
   if (sid == QAS_NULL)
     return;
 
-  QVariantMap obj = parseJson(response);
   if (sid == QAS_COLLECTION) {
     QASCollection::getCollection(obj, this, id);
+  } else if (sid == QAS_ACTIVITY) {
+    qDebug() << "QAS_ACTIVITY" << debugDumpJson(obj);
+    QASActivity::getActivity(obj, this);
   } else if (sid == QAS_OBJECTLIST) {
     QASObjectList::getObjectList(obj, this, id);
   } else if (sid == QAS_OBJECT) {
     QASObject::getObject(obj, this);
+  } else if (sid == QAS_ACTORLIST) {
+    QASActorList::getActorList(obj, this);
   } else if (sid == QAS_SELF_PROFILE) {
     m_selfActor = QASActor::getActor(obj["profile"].toMap(), this);
     m_selfActor->setYou();
-  } else if (sid == QAS_REFRESH) {
-    fetchAll();
-  } else {
-    qDebug() << "[WARNING] Unknown request id!" << id;
-    qDebug() << response;
   }
+
+  if (id & QAS_REFRESH) 
+    fetchAll();
 }
 

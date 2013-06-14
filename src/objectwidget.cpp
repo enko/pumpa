@@ -149,10 +149,13 @@ void ObjectWidget::updateImage(const QString& fileName) {
 //------------------------------------------------------------------------------
 
 void ObjectWidget::updateLikes() {
-  if (m_object->liked() && m_object->numLikes() == 0)
-    qDebug() << "[DEBUG] updateLikes, weirdness 1";
+  size_t nl = m_object->numLikes();
 
-  if (!m_object->numLikes()) {
+  if (nl > m_object->likes()->size()) {
+    m_object->likes()->refresh();
+  }
+  
+  if (!nl) {
     if (m_likesLabel != NULL) {
       m_layout->removeWidget(m_likesLabel);
       delete m_likesLabel;
@@ -162,9 +165,8 @@ void ObjectWidget::updateLikes() {
   }
 
   QASActorList* likes = m_object->likes();
-  if (!likes->size())
-    return;
 
+  QString text;
   if (m_likesLabel == NULL) {
     m_likesLabel = new RichTextLabel(this);
     connect(m_likesLabel, SIGNAL(linkHovered(const QString&)),
@@ -172,9 +174,20 @@ void ObjectWidget::updateLikes() {
     m_layout->addWidget(m_likesLabel);
   }
 
-  QString text = actorNames(likes);
-  text += (likes->size()==1 && !likes->onlyYou()) ? " likes" : " like";
-  text += " this.";
+  if (likes->size()) {
+    text = actorNames(likes);
+    int others = nl-likes->size();
+    if (others)
+      text += QString(" and %1 other %2").arg(others).
+        arg(others > 1 ? "persons" : "person");
+    text += (nl==1 && !likes->onlyYou()) ? " likes" : " like";
+    text += " this.";
+  } else {
+    if (nl == 1)
+      text = "1 person likes this.";
+    else
+      text = QString("%1 persons like this.").arg(nl);
+  }
   
   m_likesLabel->setText(text);
 }
@@ -182,7 +195,8 @@ void ObjectWidget::updateLikes() {
 //------------------------------------------------------------------------------
 
 void ObjectWidget::updateShares() {
-  if (!m_object->numShares()) {
+  size_t ns = m_object->numShares();
+  if (!ns) {
     if (m_sharesLabel != NULL) {
       m_layout->removeWidget(m_sharesLabel);
       delete m_sharesLabel;
@@ -191,9 +205,6 @@ void ObjectWidget::updateShares() {
     return;
   }
 
-  if (!m_object->shares()->size())
-    return;
-
   if (m_sharesLabel == NULL) {
     m_sharesLabel = new RichTextLabel(this);
     connect(m_sharesLabel, SIGNAL(linkHovered(const QString&)),
@@ -201,8 +212,20 @@ void ObjectWidget::updateShares() {
     m_layout->addWidget(m_sharesLabel);
   }
 
-  QString text = actorNames(m_object->shares());
-  text += " shared this.";
+  QString text;
+  if (m_object->shares()->size()) {
+    text = actorNames(m_object->shares());
+    int others = ns-m_object->shares()->size();
+    if (others)
+      text += QString(" and %1 other %2").arg(others).
+        arg(others > 1 ? "persons" : "person");
+    text += " shared this.";
+  } else {
+    if (ns == 1)
+      text = "1 person shared this.";
+    else
+      text = QString("%1 persons shared this.").arg(ns);
+  }
   
   m_sharesLabel->setText(text);
 }

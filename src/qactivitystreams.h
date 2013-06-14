@@ -39,7 +39,20 @@ qint64 sortIntByDateTime(QDateTime dt);
 
 //------------------------------------------------------------------------------
 
-class QASObject : public QObject {
+class QASAbstractObject : public QObject {
+  Q_OBJECT
+protected:
+  QASAbstractObject(QObject* parent);
+  virtual void connectSignals(QASAbstractObject* obj);
+
+signals:
+  void changed();
+  void request(QString, int);
+};
+
+//------------------------------------------------------------------------------
+
+class QASObject : public QASAbstractObject {
   Q_OBJECT
 
 protected:
@@ -64,8 +77,11 @@ public:
 
   QDateTime published() const { return m_published; }
 
+  void refresh();
+
   //  void setLike(bool like);
   bool liked() const { return m_liked; }
+  void setLiked(bool l);
   size_t numLikes() const;
   QASActorList* likes() const { return m_likes; }
 
@@ -82,9 +98,6 @@ public:
   // currently just a minimal variant needed for the API e.g. when
   // favouriting the object
   QVariantMap toJson() const;
-
-signals:
-  void changed();
 
 protected:
   QString m_id;
@@ -127,9 +140,6 @@ public:
   bool isYou() const { return m_isYou; }
   void setYou() { m_isYou = true; }
 
-signals:
-  void changed();
-
 private:
   static QMap<QString, QASActor*> s_actors;
   bool m_isYou;
@@ -137,7 +147,7 @@ private:
 
 //------------------------------------------------------------------------------
 
-class QASActivity : public QObject {
+class QASActivity : public QASAbstractObject {
   Q_OBJECT
 
   QASActivity(QString id, QObject* parent);
@@ -159,9 +169,6 @@ public:
   QDateTime published() const { return m_published; }
   QString url() const { return m_url; }
 
-signals:
-  void changed();
-
 private:
   QString m_id;
   QString m_url;
@@ -180,7 +187,7 @@ private:
 
 //------------------------------------------------------------------------------
 
-class QASObjectList : public QObject {
+class QASObjectList : public QASAbstractObject {
   Q_OBJECT
 
 protected:
@@ -196,6 +203,7 @@ public:
   bool hasMore() const { return m_hasMore; }
   QString url() const { return m_url; }
   QString urlOrProxy() const;
+  virtual void refresh();
 
   virtual QASObject* at(size_t i) const {
     if (i >= size())
@@ -233,13 +241,15 @@ public:
 
   bool onlyYou() const { return size()==1 && at(0)->isYou(); }
 
+  virtual void refresh();
+
 private:
   static QMap<QString, QASActorList*> s_actorLists;
 };
 
 //------------------------------------------------------------------------------
 
-class QASCollection : public QObject {
+class QASCollection : public QASAbstractObject {
   Q_OBJECT
 
 protected:
@@ -265,7 +275,7 @@ public:
   }
 
 signals:
-  void changed(bool older);
+  void changed(bool);
 
 private:
   QString m_displayName;

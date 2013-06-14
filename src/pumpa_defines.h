@@ -35,18 +35,20 @@
 
 #define QAS_NULL         0
 #define QAS_COLLECTION   1
-// #define QAS_ACTIVITY     2
+#define QAS_ACTIVITY     2
 #define QAS_OBJECTLIST   3
 #define QAS_OBJECT       4
-// #define QAS_ACTORLIST    5
+#define QAS_ACTORLIST    5
 // #define QAS_ACTOR        6
 #define QAS_SELF_PROFILE 7
-#define QAS_REFRESH      8
 
 // The higher bits can be used for info for the whatever method is
 // handling the further processing.
 #define QAS_NEWER        (1 << 8)
 #define QAS_OLDER        (1 << 9)
+
+#define QAS_REFRESH      (1 << 10)
+
 
 //------------------------------------------------------------------------------
 

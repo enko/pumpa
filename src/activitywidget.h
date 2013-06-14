@@ -57,7 +57,6 @@ public slots:
   void onHasMoreClicked();
 
 signals:
-  void request(QString, int);
   void newReply(QASObject*);
   void like(QASObject*);
   void share(QASObject*);
