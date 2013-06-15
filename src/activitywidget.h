@@ -20,11 +20,11 @@
 #ifndef ACTIVITYWIDGET_H
 #define ACTIVITYWIDGET_H
 
+#include <QFrame>
+#include <QWidget>
 #include <QToolButton>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QFrame>
-#include <QWidget>
 #include <QMouseEvent>
 #include <QPushButton>
 
@@ -46,7 +46,8 @@ public:
 
   QString getId() const { return m_activity->id(); }
   void updateText();
-  
+  void refreshTimeLabels();
+                   
 public slots:
   void favourite();
   void repeat();
@@ -56,14 +57,15 @@ public slots:
   void onHasMoreClicked();
 
 signals:
-  void request(QString, int);
   void newReply(QASObject*);
   void like(QASObject*);
   void share(QASObject*);
   void linkHovered(const QString&);
 
 private:
+  QString processText(QString old_text, bool getImages=false);
   QASActor* effectiveAuthor();
+  void updateInfoText();
 
   void addHasMoreButton(QASObjectList* ol, int li);
   void updateFavourButton(bool wait = false);

@@ -18,14 +18,17 @@
 */
 
 #include "collectionwidget.h"
+#include "pumpa_defines.h"
 
 #include <QDebug>
-// #include <QPalette>
 
 //------------------------------------------------------------------------------
 
 CollectionWidget::CollectionWidget(QWidget* parent, bool shortDisplay) :
-  QScrollArea(parent), m_firstTime(true), m_shortDisplay(shortDisplay)
+  QScrollArea(parent),
+  m_firstTime(true),
+  m_shortDisplay(shortDisplay),
+  m_collection(NULL)
 {
   m_itemLayout = new QVBoxLayout;
   m_itemLayout->setSpacing(10);
@@ -42,21 +45,74 @@ CollectionWidget::CollectionWidget(QWidget* parent, bool shortDisplay) :
 
 //------------------------------------------------------------------------------
 
-void CollectionWidget::addCollection(const QASCollection& coll) {
-  int li = 0; // index into internal m_list
+void CollectionWidget::setEndpoint(QString endpoint) {
+  if (m_collection != NULL) {
+    m_collection->deleteLater();
+
+    qDebug() << "[WARNING]: trying to set collection object again!";
+    return;
+  }
+
+  m_collection = QASCollection::initCollection(endpoint, parent()->parent()->parent());
+  connect(m_collection, SIGNAL(changed(bool)), this, SLOT(update(bool)),
+          Qt::UniqueConnection);
+  connect(m_collection, SIGNAL(request(QString, int)),
+          this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::fetchNewer() {
+  emit request(m_collection->prevLink(), QAS_COLLECTION | QAS_NEWER);
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::fetchOlder() {
+  QString nextLink = m_collection->nextLink();
+  if (!nextLink.isEmpty())
+    emit request(nextLink, QAS_COLLECTION | QAS_OLDER);
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::refreshTimeLabels() {
+  for (int i=0; i<m_itemLayout->count(); i++) {
+    QLayoutItem* const li = m_itemLayout->itemAt(i);
+    if (dynamic_cast<QWidgetItem*>(li)) {
+      ActivityWidget* aw = qobject_cast<ActivityWidget*>(li->widget());
+      if (aw)
+        aw->refreshTimeLabels();
+    }
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::update(bool older) {
+  /* 
+     We assume m_collection contains all objects, but new ones might
+     have been added. Go through from top (newest) to bottom. Add any
+     non-existing to top (going down from there).
+  */
+
+  int li = older ? m_itemLayout->count() : 0;
   int newCount = 0;
-  m_nextUrl = coll.nextUrl();
 
-  for (size_t i=0; i<coll.size(); i++) {
-    QASActivity* activity = coll.at(i);
-    QString activity_id = activity->id();
+  for (size_t i=0; i<m_collection->size(); i++) {
+    QASActivity* activity = m_collection->at(i);
 
-    if (m_activity_map.contains(activity_id))
+    if (m_activity_set.contains(activity))
       continue;
-    m_activity_map.insert(activity_id, activity);
-    
+    m_activity_set.insert(activity);
+
+    QASObject* obj = activity->object();
     QString verb = activity->verb();
-    if (verb != "post" && verb != "share") {
+    
+    bool full = verb == "post" ||
+      (verb == "share" && !m_shown_objects.contains(obj));
+
+    if (!full) {
       ShortActivityWidget* aw = new ShortActivityWidget(activity, this);
       connect(aw, SIGNAL(linkHovered(const QString&)),
               this,  SIGNAL(linkHovered(const QString&)));
@@ -64,9 +120,6 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
       m_itemLayout->insertWidget(li++, aw);
     } else {
       ActivityWidget* aw = new ActivityWidget(activity, this);
-
-      connect(aw, SIGNAL(request(QString, int)),
-              this, SIGNAL(request(QString, int)));
       connect(aw, SIGNAL(newReply(QASObject*)),
               this, SIGNAL(newReply(QASObject*)));
       connect(aw, SIGNAL(linkHovered(const QString&)),
@@ -78,6 +131,8 @@ void CollectionWidget::addCollection(const QASCollection& coll) {
 
       m_itemLayout->insertWidget(li++, aw);
     }
+    
+    m_shown_objects.insert(obj);
 
     if (!activity->actor()->isYou())
       newCount++;

@@ -26,12 +26,15 @@
 
 //------------------------------------------------------------------------------
 
-PumpApp::PumpApp(QWidget* parent) : 
+PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
   QMainWindow(parent),
   m_wiz(NULL),
   m_requests(0)
 {
-  settings = new QSettings(CLIENT_NAME, CLIENT_NAME, this);
+  if (settingsFile.isEmpty())
+    settings = new QSettings(CLIENT_NAME, CLIENT_NAME, this);
+  else
+    settings = new QSettings(settingsFile, QSettings::IniFormat);
   readSettings();
   
   oaRequest = new KQOAuthRequest(this);
@@ -42,33 +45,34 @@ PumpApp::PumpApp(QWidget* parent) :
   createActions();
   createMenu();
 
-  inboxWidget = new CollectionWidget(this);
-  connectCollection(inboxWidget);
+  m_inboxWidget = new CollectionWidget(this);
+  connectCollection(m_inboxWidget);
 
-  inboxMinorWidget = new CollectionWidget(this, true);
-  connectCollection(inboxMinorWidget);
+  m_inboxMinorWidget = new CollectionWidget(this, true);
+  connectCollection(m_inboxMinorWidget);
 
-  directMajorWidget = new CollectionWidget(this);
-  connectCollection(directMajorWidget);
+  m_directMajorWidget = new CollectionWidget(this);
+  connectCollection(m_directMajorWidget);
 
-  directMinorWidget = new CollectionWidget(this);
-  connectCollection(directMinorWidget);
+  m_directMinorWidget = new CollectionWidget(this);
+  connectCollection(m_directMinorWidget);
 
-  tabWidget = new TabWidget(this);
-  connect(tabWidget, SIGNAL(currentChanged(int)), this, SLOT(tabSelected(int)));
-  tabWidget->addTab(inboxWidget, "&inbox");
-  tabWidget->addTab(directMinorWidget, "&mentions");
-  tabWidget->addTab(directMajorWidget, "&direct");
-  tabWidget->addTab(inboxMinorWidget, "mean&while");
+  m_tabWidget = new TabWidget(this);
+  connect(m_tabWidget, SIGNAL(currentChanged(int)),
+          this, SLOT(tabSelected(int)));
+  m_tabWidget->addTab(m_inboxWidget, "&inbox");
+  m_tabWidget->addTab(m_directMinorWidget, "&mentions");
+  m_tabWidget->addTab(m_directMajorWidget, "&direct");
+  m_tabWidget->addTab(m_inboxMinorWidget, "mean&while");
 
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(":/images/pumpa.png"));
-  setCentralWidget(tabWidget);
+  setCentralWidget(m_tabWidget);
 
   // oaRequest->setEnableDebugOutput(true);
   syncOAuthInfo();
 
-  timerId = -1;
+  m_timerId = -1;
 
   if (!haveOAuth()) {
     m_wiz = new OAuthWizard(this);
@@ -92,9 +96,17 @@ PumpApp::~PumpApp() {
 //------------------------------------------------------------------------------
 
 void PumpApp::startPumping() {
+  // Setup endpoints for our timeline widgets
+
+  m_inboxWidget->setEndpoint(inboxEndpoint("major"));
+  m_inboxMinorWidget->setEndpoint(inboxEndpoint("minor"));
+  m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"));
+  m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
+
   show();
-  request("/api/user/"+m_userName, QAS_FETCH_SELF);
+  request("/api/user/"+m_userName, QAS_SELF_PROFILE);
   fetchAll();
+
   resetTimer();
 }
 
@@ -143,23 +155,39 @@ bool PumpApp::haveOAuth() {
 //------------------------------------------------------------------------------
 
 void PumpApp::tabSelected(int index) {
-  tabWidget->deHighlightTab(index);
+  m_tabWidget->deHighlightTab(index);
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::timerEvent(QTimerEvent* event) {
-  if (event->timerId() != timerId)
+  if (event->timerId() != m_timerId)
     return;
-  fetchAll();
+  m_timerCount++;
+
+  if (m_timerCount >= m_reloadTime) {
+    m_timerCount = 0;
+    fetchAll();
+  }
+  refreshTimeLabels();
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::resetTimer() {
-  if (timerId != -1)
-    killTimer(timerId);
-  timerId = startTimer(m_reloadTime*60*1000);
+  if (m_timerId != -1)
+    killTimer(m_timerId);
+  m_timerId = startTimer(60*1000); // one minute timer
+  m_timerCount = 0;
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::refreshTimeLabels() {
+  m_inboxWidget->refreshTimeLabels();
+  m_directMinorWidget->refreshTimeLabels();
+  m_directMajorWidget->refreshTimeLabels();
+  m_inboxMinorWidget->refreshTimeLabels();
 }
 
 //------------------------------------------------------------------------------
@@ -206,9 +234,9 @@ void PumpApp::createActions() {
   connect(reloadAction, SIGNAL(triggered()), 
           this, SLOT(reload()));
 
-  // loadOlderAct = new QAction(tr("Load &older in timeline"), this);
-  // loadOlderAct->setShortcut(tr("Ctrl+O"));
-  // connect(loadOlderAct, SIGNAL(triggered()), this, SLOT(loadOlder()));
+  loadOlderAction = new QAction(tr("Load &older in timeline"), this);
+  loadOlderAction->setShortcut(tr("Ctrl+O"));
+  connect(loadOlderAction, SIGNAL(triggered()), this, SLOT(loadOlder()));
 
   // pauseAct = new QAction(tr("&Pause home timeline"), this);
   // pauseAct->setShortcut(tr("Ctrl+P"));
@@ -239,7 +267,7 @@ void PumpApp::createMenu() {
   fileMenu->addAction(newPictureAction);
   // fileMenu->addSeparator();
   fileMenu->addAction(reloadAction);
-  // fileMenu->addAction(loadOlderAct);
+  fileMenu->addAction(loadOlderAction);
   // fileMenu->addAction(pauseAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openPrefsAction);
@@ -383,42 +411,41 @@ void PumpApp::readSettings() {
 //------------------------------------------------------------------------------
 
 void PumpApp::fetchAll() {
-  fetchInbox(QAS_INBOX_MAJOR);
-  fetchInbox(QAS_INBOX_MINOR);
-  fetchInbox(QAS_INBOX_DIRECT_MAJOR);
-  fetchInbox(QAS_INBOX_DIRECT_MINOR);
+  m_inboxWidget->fetchNewer();
+  m_directMinorWidget->fetchNewer();
+  m_directMajorWidget->fetchNewer();
+  m_inboxMinorWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::fetchInbox(int reqType) {
-  QString endpoint = "api/user/"+m_userName+"/inbox";
+void PumpApp::loadOlder() {
+  CollectionWidget* cw = 
+    qobject_cast<CollectionWidget*>(m_tabWidget->currentWidget());
+  cw->fetchOlder();
+}
 
-  if (reqType == QAS_INBOX_DIRECT_MAJOR || reqType == QAS_INBOX_DIRECT_MINOR)
-    endpoint += "/direct";
+//------------------------------------------------------------------------------
 
-  if (reqType == QAS_INBOX_MAJOR || reqType == QAS_INBOX_DIRECT_MAJOR)
-    endpoint += "/major";
-  else if (reqType == QAS_INBOX_MINOR || reqType == QAS_INBOX_DIRECT_MINOR) 
-    endpoint += "/minor";
-  else {
-    qDebug() << "fetchInbox: unsupported request type:" << reqType;
-    return;
+QString PumpApp::inboxEndpoint(QString path) {
+  if (m_siteUrl.isEmpty()) {
+    errorMessage("Site not configured yet!");
+    return "";
   }
-
-  request(endpoint, reqType);
+  return m_siteUrl + "/api/user/"+m_userName+"/inbox/" + path;
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::onLike(QASObject* obj) {
-  feed(obj->liked() ? "unlike" : "like", obj->toJson(), QAS_LIKE);
+  feed(obj->liked() ? "unlike" : "like", obj->toJson(),
+       QAS_ACTIVITY | QAS_TOGGLE_LIKE);
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::onShare(QASObject* obj) {
-  feed("share", obj->toJson(), QAS_SHARE);
+  feed("share", obj->toJson(), QAS_ACTIVITY | QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
@@ -457,7 +484,7 @@ void PumpApp::postNote(QString content) {
   obj["objectType"] = "note";
   obj["content"] = addTextMarkup(content);
 
-  feed("post", obj, QAS_NEW_POST);
+  feed("post", obj, QAS_OBJECT | QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
@@ -475,7 +502,7 @@ void PumpApp::postReply(QASObject* replyToObj, QString content) {
   noteObj["objectType"] = replyToObj->type();
   obj["inReplyTo"] = noteObj;
 
-  feed("post", obj, QAS_NEW_POST);
+  feed("post", obj, QAS_ACTIVITY | QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------
@@ -508,12 +535,27 @@ void PumpApp::request(QString endpoint, int response_id,
     return;
   }
 
-  qDebug() << "[REQUEST] (" << response_id << "):" << endpoint;
+  qDebug() << (method == KQOAuthRequest::GET ? "[GET]" : "[POST]") 
+           << response_id << ":" << endpoint;
 
-  oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, QUrl(endpoint));
+  QStringList epl = endpoint.split("?");
+  oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, 
+                         QUrl(epl[0]));
   oaRequest->setConsumerKey(m_clientId);
   oaRequest->setConsumerSecretKey(m_clientSecret);
 
+  // I have no idea why this is the only way that seems to
+  // work. Incredibly frustrating and ugly :-/
+  if (epl.size() > 1) {
+    KQOAuthParameters params;
+    QStringList parts = epl[1].split("&");
+    for (int i=0; i<parts.size(); i++) {
+      QStringList ps = parts[i].split("=");
+      params.insert(ps[0], QUrl::fromPercentEncoding(ps[1].toLatin1()));
+    }
+    oaRequest->setAdditionalParameters(params);
+  }
+  
   oaRequest->setToken(m_token);
   oaRequest->setTokenSecret(m_tokenSecret);
 
@@ -543,48 +585,31 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     return;
   }
 
-  if (id == QAS_INBOX_MAJOR) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    inboxWidget->addCollection(c);
-  } else if (id == QAS_INBOX_MINOR) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    inboxMinorWidget->addCollection(c);
-  } else if (id == (QAS_INBOX_DIRECT_MAJOR)) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    directMajorWidget->addCollection(c);
-  } else if (id == (QAS_INBOX_DIRECT_MINOR)) {
-    QVariantMap obj = parseJson(response);
-    QASCollection c(obj, this);
-    directMinorWidget->addCollection(c);
-  } else if (id == QAS_REPLIES) {
-    QVariantMap obj = parseJson(response);
-    QASObjectList::getObjectList(obj, this);
-  } else if (id == QAS_NEW_POST) {
-    // nice to refresh inbox after posting
-    fetchAll();
-  } else if (id == QAS_LIKE) {
-    QVariantMap act = parseJson(response);
+  int sid = id & 0xFF;
 
-    // refresh object since fetchAll() might not fetch it if it's old
-    // enough
-    QASObject* obj = QASObject::getObject(act["object"].toMap(), this);
-    request(obj->apiLink(), QAS_OBJECT);
-    // fetchAll();
-  } else if (id == QAS_OBJECT) {
-    QVariantMap obj = parseJson(response);
+  QVariantMap obj = parseJson(response);
+  if (sid == QAS_NULL)
+    return;
+
+  if (sid == QAS_COLLECTION) {
+    QASCollection::getCollection(obj, this, id);
+  } else if (sid == QAS_ACTIVITY) {
+    // qDebug() << "QAS_ACTIVITY" << debugDumpJson(obj);
+    QASActivity* act = QASActivity::getActivity(obj, this);
+    if ((id & QAS_TOGGLE_LIKE) && act->object())
+      act->object()->toggleLiked();
+  } else if (sid == QAS_OBJECTLIST) {
+    QASObjectList::getObjectList(obj, this, id);
+  } else if (sid == QAS_OBJECT) {
     QASObject::getObject(obj, this);
-  } else if (id == QAS_SHARE) {
-    fetchAll();
-  } else if (id == QAS_FETCH_SELF) {
-    QVariantMap obj = parseJson(response);
+  } else if (sid == QAS_ACTORLIST) {
+    QASActorList::getActorList(obj, this);
+  } else if (sid == QAS_SELF_PROFILE) {
     m_selfActor = QASActor::getActor(obj["profile"].toMap(), this);
     m_selfActor->setYou();
-  } else {
-    qDebug() << "[WARNING] Unknown request id!" << id;
-    qDebug() << response;
   }
+
+  if (id & QAS_REFRESH) 
+    fetchAll();
 }
 

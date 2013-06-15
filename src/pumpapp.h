@@ -45,7 +45,7 @@ class PumpApp : public QMainWindow {
   Q_OBJECT
 
 public:
-  PumpApp(QWidget* parent=0);
+  PumpApp(QString settingsFile="", QWidget* parent=0);
   virtual ~PumpApp();                            
 
   static QString addTextMarkup(QString content);
@@ -79,6 +79,7 @@ private slots:
   void newNote(QASObject* obj = NULL);
   void newPicture();
   void reload();
+  void loadOlder();
 
   void startPumping();
 
@@ -92,12 +93,13 @@ private:
 
   void resetTimer();
 
-  // void getOAuthAccess();
-  // void registerOAuthClient();
+  void refreshTimeLabels();
+
   void syncOAuthInfo();
 
   void fetchAll();
-  void fetchInbox(int reqType);
+  QString inboxEndpoint(QString path);
+
   void feed(QString verb, QVariantMap object, int response_id);
   
   void writeSettings();
@@ -111,6 +113,7 @@ private:
   QAction* newNoteAction;
   QAction* newPictureAction;
   QAction* reloadAction;
+  QAction* loadOlderAction;
   QAction* openPrefsAction;
   QAction* exitAction;
   QMenu* fileMenu;
@@ -136,16 +139,17 @@ private:
   KQOAuthManager *oaManager;
   KQOAuthRequest *oaRequest;
 
-  TabWidget* tabWidget;
-  CollectionWidget* inboxWidget;
-  CollectionWidget* directMajorWidget;
-  CollectionWidget* directMinorWidget;
-  CollectionWidget* inboxMinorWidget;
+  TabWidget* m_tabWidget;
+  CollectionWidget* m_inboxWidget;
+  CollectionWidget* m_directMajorWidget;
+  CollectionWidget* m_directMinorWidget;
+  CollectionWidget* m_inboxMinorWidget;
 
   QASActor* m_selfActor;
 
   OAuthWizard* m_wiz;
-  int timerId;
+  int m_timerId;
+  int m_timerCount;
   int m_requests;
 };
 

@@ -20,7 +20,6 @@
 #include <QApplication>
 
 #include "pumpapp.h"
-#include "util.h"
 
 //------------------------------------------------------------------------------
 
@@ -43,6 +42,6 @@ int main(int argc, char** argv) {
       return testMarkup(argv[2]);
   }
 
-  PumpApp papp;
+  PumpApp papp(settingsFile);
   return app.exec();
 }

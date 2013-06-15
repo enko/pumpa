@@ -19,6 +19,8 @@
 
 #include "objectwidget.h"
 
+#include <QDesktopServices>
+
 //------------------------------------------------------------------------------
 
 QString actorNames(QASActorList* alist) {
@@ -32,6 +34,20 @@ QString actorNames(QASActorList* alist) {
       text += ", ";
   }
   return text;
+}
+
+//------------------------------------------------------------------------------
+
+ImageLabel::ImageLabel(QWidget* parent) : QLabel(parent) {
+  setMaximumSize(320, 320);
+  setFocusPolicy(Qt::NoFocus);
+}
+
+//------------------------------------------------------------------------------
+
+void ImageLabel::mousePressEvent(QMouseEvent* event) {
+  QLabel::mousePressEvent(event);
+  emit clicked();
 }
 
 //------------------------------------------------------------------------------
@@ -52,9 +68,11 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
   }
 
   if (obj->type() == "image") {
-    m_imageLabel = new QLabel(this);
-    m_imageLabel->setMaximumSize(320, 320);
-    m_imageLabel->setFocusPolicy(Qt::NoFocus);
+    m_imageLabel = new ImageLabel(this);
+    if (!obj->fullImageUrl().isEmpty()) {
+      connect(m_imageLabel, SIGNAL(clicked()), this, SLOT(imageClicked()));
+      m_imageLabel->setCursor(Qt::PointingHandCursor);
+    }
     m_imageUrl = obj->imageUrl();
     updateImage();
 
@@ -108,51 +126,19 @@ void ObjectWidget::setInfo(QString text) {
 
 //------------------------------------------------------------------------------
 
-void ObjectWidget::fileReady(const QString& fn) {
-  updateImage(fn);
-}
-
-//------------------------------------------------------------------------------
-
-// FIXME this is duplicated in ActorWidget -> should be made more
-// general and reused.
-void ObjectWidget::updateImage(const QString& fileName) {
-  static QString defaultImage = ":/images/broken_image.png";
-  QString fn = fileName;
-
-  if (fn.isEmpty()) {
-    FileDownloader* fd = FileDownloader::get(m_imageUrl);
-
-    if (fd->ready()) {
-      fn = fd->fileName();
-      fd->deleteLater();
-    } else {
-      connect(fd, SIGNAL(fileReady(const QString&)),
-              this, SLOT(fileReady(const QString&)));
-      fd->download();
-    }
-  }
-
-  if (fn.isEmpty())
-    fn = defaultImage;
-  if (fn != m_localFile) {
-    m_localFile = fn;
-    QPixmap pix(m_localFile);
-    if (pix.isNull()) {
-      m_localFile = defaultImage;
-      pix.load(m_localFile);
-    }
-    m_imageLabel->setPixmap(pix);
-  }
+void ObjectWidget::updateImage() {
+  FileDownloader* fd = FileDownloader::get(m_imageUrl, true);
+  connect(fd, SIGNAL(fileReady()), this, SLOT(updateImage()),
+          Qt::UniqueConnection);
+  m_imageLabel->setPixmap(fd->pixmap(":/images/broken_image.png"));
 }    
 
 //------------------------------------------------------------------------------
 
 void ObjectWidget::updateLikes() {
-  if (m_object->liked() && m_object->numLikes() == 0)
-    qDebug() << "[DEBUG] updateLikes, weirdness 1";
+  size_t nl = m_object->numLikes();
 
-  if (!m_object->numLikes()) {
+  if (nl <= 0) {
     if (m_likesLabel != NULL) {
       m_layout->removeWidget(m_likesLabel);
       delete m_likesLabel;
@@ -162,9 +148,8 @@ void ObjectWidget::updateLikes() {
   }
 
   QASActorList* likes = m_object->likes();
-  if (!likes->size())
-    return;
 
+  QString text;
   if (m_likesLabel == NULL) {
     m_likesLabel = new RichTextLabel(this);
     connect(m_likesLabel, SIGNAL(linkHovered(const QString&)),
@@ -172,8 +157,8 @@ void ObjectWidget::updateLikes() {
     m_layout->addWidget(m_likesLabel);
   }
 
-  QString text = actorNames(likes);
-  text += (likes->size()==1 && !likes->onlyYou()) ? " likes" : " like";
+  text = actorNames(likes);
+  text += (nl==1 && !likes->onlyYou()) ? " likes" : " like";
   text += " this.";
   
   m_likesLabel->setText(text);
@@ -182,7 +167,8 @@ void ObjectWidget::updateLikes() {
 //------------------------------------------------------------------------------
 
 void ObjectWidget::updateShares() {
-  if (!m_object->numShares()) {
+  size_t ns = m_object->numShares();
+  if (!ns) {
     if (m_sharesLabel != NULL) {
       m_layout->removeWidget(m_sharesLabel);
       delete m_sharesLabel;
@@ -191,9 +177,6 @@ void ObjectWidget::updateShares() {
     return;
   }
 
-  if (!m_object->shares()->size())
-    return;
-
   if (m_sharesLabel == NULL) {
     m_sharesLabel = new RichTextLabel(this);
     connect(m_sharesLabel, SIGNAL(linkHovered(const QString&)),
@@ -201,8 +184,28 @@ void ObjectWidget::updateShares() {
     m_layout->addWidget(m_sharesLabel);
   }
 
-  QString text = actorNames(m_object->shares());
-  text += " shared this.";
+  QString text;
+  if (m_object->shares()->size()) {
+    text = actorNames(m_object->shares());
+    int others = ns-m_object->shares()->size();
+    if (others > 0)
+      text += QString(" and %1 other %2").arg(others).
+        arg(others > 1 ? "persons" : "person");
+    text += " shared this.";
+  } else {
+    if (ns == 1)
+      text = "1 person shared this.";
+    else
+      text = QString("%1 persons shared this.").arg(ns);
+  }
   
   m_sharesLabel->setText(text);
 }
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::imageClicked() {
+  QString url = m_object->fullImageUrl();
+  if (!url.isEmpty())
+    QDesktopServices::openUrl(url);
+}  

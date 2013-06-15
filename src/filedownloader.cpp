@@ -91,11 +91,14 @@ FileDownloader::FileDownloader(const QString& url) :
 
 //------------------------------------------------------------------------------
 
-FileDownloader* FileDownloader::get(const QString& url) {
+FileDownloader* FileDownloader::get(const QString& url, bool download) {
   if (m_downloading.contains(url))
     return m_downloading[url];
 
-  return new FileDownloader(url);
+  FileDownloader* fd = new FileDownloader(url);
+  if (download && !fd->ready())
+    fd->download();
+  return fd;
 }
 
 //------------------------------------------------------------------------------
@@ -128,6 +131,21 @@ void FileDownloader::download() {
 
 QString FileDownloader::fileName() const {
   return ready() ? m_cachedFile : urlToPath(m_downloadingUrl);
+}
+
+//------------------------------------------------------------------------------
+
+QString FileDownloader::fileName(QString defaultImage) const {
+  return ready() ? m_cachedFile : defaultImage;
+}
+
+//------------------------------------------------------------------------------
+
+QPixmap FileDownloader::pixmap(QString defaultImage) const {
+  QPixmap pix(fileName(defaultImage));
+  if (pix.isNull())
+    pix.load(defaultImage);
+  return pix;
 }
 
 //------------------------------------------------------------------------------
@@ -171,6 +189,7 @@ void FileDownloader::onAuthorizedRequestReady(QByteArray response, int) {
   fp->close();
   
   emit fileReady(fn);
+  emit fileReady();
 }
 
 //------------------------------------------------------------------------------

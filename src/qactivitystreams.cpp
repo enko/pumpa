@@ -18,6 +18,8 @@
 */
 
 #include "qactivitystreams.h"
+#include "pumpa_defines.h"
+#include "json.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -32,6 +34,7 @@ QMap<QString, QASObject*> QASObject::s_objects;
 QMap<QString, QASActivity*> QASActivity::s_activities;
 QMap<QString, QASObjectList*> QASObjectList::s_objectLists;
 QMap<QString, QASActorList*> QASActorList::s_actorLists;
+QMap<QString, QASCollection*> QASCollection::s_collections;
 
 //------------------------------------------------------------------------------
 
@@ -60,52 +63,62 @@ QDateTime parseTime(QString timeStr) {
 
 //------------------------------------------------------------------------------
 
-void updateVar(QVariantMap obj, QString& var, QString name) {
+void updateVar(QVariantMap obj, QString& var, QString name, bool& changed) {
+  QString oldVar = var;
   if (obj.contains(name))
     var = obj[name].toString();
+  if (oldVar != var) changed = true;
 }
 
 //------------------------------------------------------------------------------
 
-void updateVar(QVariantMap obj, bool& var, QString name) {
+void updateVar(QVariantMap obj, bool& var, QString name, bool& changed) {
+  bool oldVar = var;
   if (obj.contains(name))
     var = obj[name].toBool();
+  if (oldVar != var) changed = true;
 }
 
 //------------------------------------------------------------------------------
 
-void updateVar(QVariantMap obj, qulonglong& var, QString name) {
+void updateVar(QVariantMap obj, qulonglong& var, QString name, bool& changed) {
+  qulonglong oldVar = var;
   if (obj.contains(name))
     var = obj[name].toULongLong();
+  if (oldVar != var) changed = true;
 }
 
 //------------------------------------------------------------------------------
 
-void updateVar(QVariantMap obj, QDateTime& var, QString name) {
+void updateVar(QVariantMap obj, QDateTime& var, QString name, bool& changed) {
+  QDateTime oldVar = var;
   if (obj.contains(name))
     var = parseTime(obj[name].toString());
+  if (oldVar != var) changed = true;
 }
 
 //------------------------------------------------------------------------------
 
-void updateVar(QVariantMap obj, QString& var, QString name1, QString name2) {
+void updateVar(QVariantMap obj, QString& var, QString name1, QString name2,
+               bool& changed) {
   if (obj.contains(name1))
-    updateVar(obj[name1].toMap(), var, name2);
+    updateVar(obj[name1].toMap(), var, name2, changed);
 }
 
 //------------------------------------------------------------------------------
 
-void updateVar(QVariantMap obj, bool& var, QString name1, QString name2) {
+void updateVar(QVariantMap obj, bool& var, QString name1, QString name2,
+               bool& changed) {
   if (obj.contains(name1))
-    updateVar(obj[name1].toMap(), var, name2);
+    updateVar(obj[name1].toMap(), var, name2, changed);
 }
 
 //------------------------------------------------------------------------------
 
 void updateVar(QVariantMap obj, QString& var, QString name1,
-               QString name2, QString name3) {
+               QString name2, QString name3, bool& changed) {
   if (obj.contains(name1))
-    updateVar(obj[name1].toMap(), var, name2, name3);
+    updateVar(obj[name1].toMap(), var, name2, name3, changed);
 }
 
 //------------------------------------------------------------------------------
@@ -118,9 +131,31 @@ void addVar(QVariantMap& obj, QString var, QString name) {
 
 //------------------------------------------------------------------------------
 
-void updateUrlOrProxy(QVariantMap obj, QString& var) {
-  updateVar(obj, var, "url");
-  updateVar(obj, var, "pump_io", "proxyURL");
+void updateUrlOrProxy(QVariantMap obj, QString& var, bool& changed) {
+  QString oldVar = var;
+  bool dummy;
+  updateVar(obj, var, "url", dummy);
+  updateVar(obj, var, "pump_io", "proxyURL", dummy);
+  if (oldVar != var) changed = true;
+}
+
+//------------------------------------------------------------------------------
+
+QASAbstractObject::QASAbstractObject(QObject* parent) : QObject(parent) {}
+
+//------------------------------------------------------------------------------
+
+void QASAbstractObject::connectSignals(QASAbstractObject* obj,
+                                       bool changed, bool req) {
+  if (!obj)
+    return;
+
+  if (changed)
+    connect(obj, SIGNAL(changed()),
+            this, SIGNAL(changed()), Qt::UniqueConnection);
+  if (req)
+    connect(obj, SIGNAL(request(QString, int)),
+            parent(), SLOT(request(QString, int)), Qt::UniqueConnection);
 }
 
 //------------------------------------------------------------------------------
@@ -140,16 +175,18 @@ void QASActor::update(QVariantMap json) {
 #if DEBUG >= 1
   qDebug() << "updating Actor" << m_id;
 #endif
-  
-  updateVar(json, m_url, "url"); 
-  updateVar(json, m_displayName, "displayName");
+  bool ch = false;
+
+  updateVar(json, m_url, "url", ch); 
+  updateVar(json, m_displayName, "displayName", ch);
 
   if (json.contains("image")) {
     QVariantMap im = json["image"].toMap();
-    updateUrlOrProxy(im, m_imageUrl);
+    updateUrlOrProxy(im, m_imageUrl, ch);
   }
 
-  Q_ASSERT_X(!m_id.isEmpty(), "QASActor", serializeJsonC(json));
+  if (ch)
+    emit changed();
 }
 
 //------------------------------------------------------------------------------
@@ -169,7 +206,7 @@ QASActor* QASActor::getActor(QVariantMap json, QObject* parent) {
 //------------------------------------------------------------------------------
 
 QASObject::QASObject(QString id, QObject* parent) :
-  QObject(parent),
+  QASAbstractObject(parent),
   m_id(id),
   m_liked(false),
   m_shared(false),
@@ -190,52 +227,54 @@ void QASObject::update(QVariantMap json) {
 #if DEBUG >= 1
   qDebug() << "updating Object" << m_id;
 #endif
+  bool ch = false;
 
-  bool old_liked = m_liked;
-  QDateTime old_updated = m_updated;
-  size_t num_replies = numReplies();
-  size_t num_likes = numLikes();
-  size_t num_shares = numShares();
+  updateVar(json, m_objectType, "objectType", ch);
+  updateVar(json, m_url, "url", ch);
+  updateVar(json, m_content, "content", ch);
+  updateVar(json, m_liked, "liked", ch);
+  updateVar(json, m_displayName, "displayName", ch);
+  updateVar(json, m_shared, "pump_io", "shared", ch);
 
-  updateVar(json, m_objectType, "objectType");
-  updateVar(json, m_url, "url");
-  updateVar(json, m_content, "content");
-  updateVar(json, m_liked, "liked");
-  updateVar(json, m_displayName, "displayName");
-  updateVar(json, m_shared, "pump_io", "shared");
+  if (m_objectType == "image" && json.contains("image")) {
+    updateUrlOrProxy(json["image"].toMap(), m_imageUrl, ch);
 
-  if (m_objectType == "image") {
-    QVariantMap imageObj = json["image"].toMap();
-    updateUrlOrProxy(imageObj, m_imageUrl);
+    if (json.contains("fullImage"))
+      updateUrlOrProxy(json["fullImage"].toMap(), m_fullImageUrl, ch);
   }
 
-  updateVar(json, m_published, "published");
-  updateVar(json, m_updated, "updated");
+  updateVar(json, m_published, "published", ch);
+  updateVar(json, m_updated, "updated", ch);
 
-  updateVar(json, m_apiLink, "links", "self", "href");  
-  updateVar(json, m_proxyUrl, "pump_io", "proxyURL");
+  updateVar(json, m_apiLink, "links", "self", "href", ch);  
+  updateVar(json, m_proxyUrl, "pump_io", "proxyURL", ch);
 
   if (json.contains("inReplyTo")) {
     m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
-    if (m_inReplyTo)
-      connect(m_inReplyTo, SIGNAL(changed()), this, SIGNAL(changed()));
+    connectSignals(m_inReplyTo, true, false);
   }
 
-  if (json.contains("author"))
+  if (json.contains("author")) {
     m_author = QASActor::getActor(json["author"].toMap(), parent());
+    connectSignals(m_author);
+  }
 
-  Q_ASSERT_X(!m_id.isEmpty(), "QASObject", serializeJsonC(json));
-
-  if (json.contains("replies"))
+  if (json.contains("replies")) {
     m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
-  if (json.contains("likes"))
-    m_likes = QASActorList::getActorList(json["likes"].toMap(), parent());
-  if (json.contains("shares"))
-    m_shares = QASActorList::getActorList(json["shares"].toMap(), parent());
+    connectSignals(m_replies);
+  }
 
-  if (old_liked != m_liked || old_updated != m_updated ||
-      num_replies != numReplies() || num_likes != numLikes() ||
-      num_shares != numShares())
+  if (json.contains("likes")) {
+    m_likes = QASActorList::getActorList(json["likes"].toMap(), parent());
+    connectSignals(m_likes);
+  }
+
+  if (json.contains("shares")) {
+    m_shares = QASActorList::getActorList(json["shares"].toMap(), parent());
+    connectSignals(m_shares);
+  }
+
+  if (ch)
     emit changed();
 }
 
@@ -255,22 +294,60 @@ QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
 
 //------------------------------------------------------------------------------
 
-// void QASObject::setLike(bool like) {
-//   m_liked = like;
-//   emit changed();
-// }
+void QASObject::refresh() {
+  static QDateTime last_refreshed;
+  QDateTime now = QDateTime::currentDateTime();
+  
+  if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
+    emit request(apiLink(), QAS_OBJECT);
+
+  last_refreshed = now;
+}
+
+//------------------------------------------------------------------------------
+
+void QASObject::addReply(QASObject* obj) {
+  if (!m_replies)
+    return;
+  m_replies->addObject(obj);
+}
+
+//------------------------------------------------------------------------------
+
+void QASObject::toggleLiked() { 
+  m_liked = !m_liked; 
+  emit changed();
+}
 
 //------------------------------------------------------------------------------
 
 size_t QASObject::numLikes() const {
-  // return m_likes ? m_likes->size() : 0;
-  return m_likes ? m_likes->totalItems() : 0;
+  return m_likes ? m_likes->size() : 0;
+}
+
+//------------------------------------------------------------------------------
+
+void QASObject::addLike(QASActor* actor, bool like) {
+  if (!m_likes)
+    return;
+  if (like)
+    m_likes->addActor(actor);
+  else
+    m_likes->removeActor(actor);
+}
+
+//------------------------------------------------------------------------------
+
+void QASObject::addShare(QASActor* actor) {
+  if (!m_shares)
+    return;
+  m_shares->addActor(actor);
 }
 
 //------------------------------------------------------------------------------
 
 size_t QASObject::numShares() const {
-  return m_shares ? m_shares->totalItems() : 0;
+  return m_shares ? m_shares->size() : 0;
 }
 
 //------------------------------------------------------------------------------
@@ -307,7 +384,7 @@ QVariantMap QASObject::toJson() const {
 //------------------------------------------------------------------------------
 
 QASActivity::QASActivity(QString id, QObject* parent) : 
-  QObject(parent),
+  QASAbstractObject(parent),
   m_id(id),
   m_object(NULL),
   m_actor(NULL)
@@ -326,24 +403,40 @@ void QASActivity::update(QVariantMap json) {
 #if DEBUG >= 3
   qDebug() << debugDumpJson(json, "QASActivity");
 #endif
+  bool ch = false;
 
-  updateVar(json, m_verb, "verb");
-  updateVar(json, m_url, "url");
-  updateVar(json, m_content, "content");
+  updateVar(json, m_verb, "verb", ch);
+  updateVar(json, m_url, "url", ch);
+  updateVar(json, m_content, "content", ch);
   
-  Q_ASSERT_X(!m_id.isEmpty(), "QASActivity::update", serializeJsonC(json));
-
-  if (json.contains("object"))
-    m_object = QASObject::getObject(json["object"].toMap(), parent());
-  if (json.contains("actor"))
+  if (json.contains("actor")) {
     m_actor = QASActor::getActor(json["actor"].toMap(), parent());
+    connectSignals(m_actor);
+  }
 
-  updateVar(json, m_published, "published");
-  updateVar(json, m_updated, "updated");
+  if (json.contains("object")) {
+    m_object = QASObject::getObject(json["object"].toMap(), parent());
+    connectSignals(m_object);
+    if (!m_object->author())
+      m_object->setAuthor(m_actor);
+  }
 
-  if (json.contains("generator"))
-    m_generatorName = json["generator"].toMap()["displayName"].toString();
+  updateVar(json, m_published, "published", ch);
+  updateVar(json, m_updated, "updated", ch);
+  updateVar(json, m_generatorName, "generator", "displayName", ch);
 
+  if (m_verb == "post" && m_object && m_object->inReplyTo())
+    m_object->inReplyTo()->addReply(m_object);
+
+  if ((m_verb == "favorite" || m_verb == "like" ||
+       m_verb == "unfavorite" || m_verb == "unlike") && m_object && m_actor) 
+    m_object->addLike(m_actor, !m_verb.startsWith("un"));
+
+  if (m_verb == "share" && m_object && m_actor) 
+    m_object->addShare(m_actor);
+
+  if (ch)
+    emit changed();
 }
 
 //------------------------------------------------------------------------------
@@ -363,7 +456,7 @@ QASActivity* QASActivity::getActivity(QVariantMap json, QObject* parent) {
 //------------------------------------------------------------------------------
 
 QASObjectList::QASObjectList(QString url, QObject* parent) :
-  QObject(parent),
+  QASAbstractObject(parent),
   m_url(url),
   m_totalItems(0),
   m_hasMore(false)
@@ -375,68 +468,84 @@ QASObjectList::QASObjectList(QString url, QObject* parent) :
 
 //------------------------------------------------------------------------------
 
-void QASObjectList::update(QVariantMap json) {
+void QASObjectList::update(QVariantMap json, bool) {
 #if DEBUG >= 1
   qDebug() << "updating ObjectList" << m_url;
 #endif
-#if DEBUG >= 3
-  qDebug() << debugDumpJson(json, "QASObjectList");
-#endif
+  bool ch = false;
 
-  qulonglong old_totalItems = m_totalItems;
-  int old_item_count = m_items.size();
+  updateVar(json, m_totalItems, "totalItems", ch);
+  updateVar(json, m_proxyUrl, "pump_io", "proxyURL", ch);
 
-  updateVar(json, m_url, "url");
-  updateVar(json, m_totalItems, "totalItems");
-  updateVar(json, m_proxyUrl, "pump_io", "proxyURL");
-
-  m_items.clear();
-  QVariantList items_json = json["items"].toList();
-  for (int i=0; i<items_json.count(); i++)
-    addObject(items_json.at(i).toMap());
-
+  if (json.contains("items")) {
+    m_items.clear();
+    QVariantList items_json = json["items"].toList();
+    for (int i=0; i<items_json.count(); i++) {
+      QVariantMap item = items_json[i].toMap();
+      QASObject* obj;
+      if (item["objectType"].toString() == "person")
+        obj = QASActor::getActor(item, parent());
+      else
+        obj = QASObject::getObject(item, parent());
+      
+      m_items.append(obj);
+      connectSignals(obj, false, true);
+      ch = true;
+    }
+  }
   // set to false if number of items < total, and if we have already
   // fetched it - that seems to have a displayName element
   // ^^ FFFUUUGLY HACK !!!
+  // bool old_hasMore = m_hasMore;
   m_hasMore = !json.contains("displayName") && size() < m_totalItems;
+  // if (!old_hasMore && m_hasMore)
+  //   qDebug() << "[DEBUG]: set hasMore" << m_url << m_proxyUrl << urlOrProxy();
 
-  if (old_totalItems != m_totalItems || old_item_count != m_items.size())
+  if (ch)
     emit changed();
 }
 
 //------------------------------------------------------------------------------
 
-void QASObjectList::addObject(QVariantMap json) {
-  QASObject* act;
-  if (json["objectType"].toString() == "person")
-    act = QASActor::getActor(json, parent());
-  else
-    act = QASObject::getObject(json, parent());
-  m_items.append(act);
-}
-
-//------------------------------------------------------------------------------
-
-QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent) {
+QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent,
+                                            int id) {
   QString url = json["url"].toString();
-  if (url.isEmpty()) {
-    // qDebug() << "Curious object list" << debugDumpJson(json);
+  if (url.isEmpty())
     return NULL;
-  }
-  // Q_ASSERT_X(!url.isEmpty(), "getObjectList", serializeJsonC(json));
 
   QASObjectList* ol = s_objectLists.contains(url) ? s_objectLists[url] :
     new QASObjectList(url, parent);
   s_objectLists.insert(url, ol);
 
-  ol->update(json);
+  ol->update(json, id & QAS_OLDER);
   return ol;
+}
+
+//------------------------------------------------------------------------------
+
+void QASObjectList::addObject(QASObject* obj) {
+  m_items.append(obj);
+  m_totalItems++;
+  emit changed();
 }
 
 //------------------------------------------------------------------------------
 
 QString QASObjectList::urlOrProxy() const {
   return m_proxyUrl.isEmpty() ? m_url : m_proxyUrl; 
+}
+
+//------------------------------------------------------------------------------
+
+//FIXME, refresh() could be in QASAbstractObject
+void QASObjectList::refresh() {
+  static QDateTime last_refreshed;
+  QDateTime now = QDateTime::currentDateTime();
+  
+  if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
+    emit request(urlOrProxy(), QAS_OBJECTLIST);
+
+  last_refreshed = now;
 }
 
 //------------------------------------------------------------------------------
@@ -451,7 +560,8 @@ QASActorList::QASActorList(QString url, QObject* parent) :
 
 //------------------------------------------------------------------------------
 
-QASActorList* QASActorList::getActorList(QVariantMap json, QObject* parent) {
+QASActorList* QASActorList::getActorList(QVariantMap json, QObject* parent,
+                                         int id) {
   QString url = json["url"].toString();
   if (url.isEmpty())
     return NULL;
@@ -460,7 +570,7 @@ QASActorList* QASActorList::getActorList(QVariantMap json, QObject* parent) {
     new QASActorList(url, parent);
   s_actorLists.insert(url, ol);
 
-  ol->update(json);
+  ol->update(json, id & QAS_OLDER);
   return ol;
 }
 
@@ -474,25 +584,109 @@ QASActor* QASActorList::at(size_t i) const {
 
 //------------------------------------------------------------------------------
 
-QASCollection::QASCollection(QObject* parent) : QObject(parent),
-                                                m_totalItems(0) {}
+void QASActorList::addActor(QASActor* actor) {
+  if (m_items.contains(actor))
+    return;
+
+  m_items.append(actor);
+  m_totalItems++;
+  emit changed();
+}
 
 //------------------------------------------------------------------------------
 
-QASCollection::QASCollection(QVariantMap json, QObject* parent) :
-  QObject(parent) 
-{
-  updateVar(json, m_displayName, "displayName");
-  updateVar(json, m_url, "url");
-  updateVar(json, m_totalItems, "totalItems");
+void QASActorList::removeActor(QASActor* actor) {
+  m_items.removeAll(actor);
+  m_totalItems--;
+  emit changed();
+}
 
-  m_nextUrl = json["links"].toMap()["next"].toMap()["href"].toString();
+//------------------------------------------------------------------------------
+
+//FIXME, refresh() could be in QASAbstractObject
+void QASActorList::refresh() {
+  static QDateTime last_refreshed;
+  QDateTime now = QDateTime::currentDateTime();
+  
+  if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
+    emit request(urlOrProxy(), QAS_ACTORLIST);
+
+  last_refreshed = now;
+}
+
+//------------------------------------------------------------------------------
+
+QASCollection::QASCollection(QString url, QObject* parent) :
+  QASAbstractObject(parent),
+  m_url(url),
+  m_totalItems(0)
+{
+#if DEBUG >= 1
+  qDebug() << "new Collection" << m_url;
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+void QASCollection::update(QVariantMap json, bool older) {
+  bool ch = false;
+
+  updateVar(json, m_displayName, "displayName", ch);
+  updateVar(json, m_totalItems, "totalItems", ch);
+
+  updateVar(json, m_prevLink, "links", "prev", "href", ch);
+  updateVar(json, m_nextLink, "links", "next", "href", ch);
+
+  // We assume that collections come in as newest first, so we add
+  // items starting from the top going downwards. Or if older=true
+  // starting from the end and going downwards (appending).
+
+  // Start adding from the top or bottom, depending on value of older.
+  int mi = older ? m_items.size() : 0;
+
 
   QVariantList items_json = json["items"].toList();
   for (int i=0; i<items_json.count(); i++) {
     QASActivity* act = QASActivity::getActivity(items_json.at(i).toMap(),
-                                                parent);
-    m_items.append(act);
+                                                parent());
+    if (m_item_set.contains(act))
+      continue;
+
+    m_items.insert(mi++, act);
+    m_item_set.insert(act);
+    connectSignals(act);
+
+    ch = true;
   }
+
+  if (ch)
+    emit changed(older);
 }
 
+//------------------------------------------------------------------------------
+
+QASCollection* QASCollection::getCollection(QVariantMap json, QObject* parent,
+                                            int id) {
+  QString url = json["url"].toString();
+  if (url.isEmpty())
+    return NULL;
+
+  QASCollection* coll = s_collections.contains(url) ? s_collections[url] :
+    new QASCollection(url, parent);
+  s_collections.insert(url, coll);
+
+  coll->update(json, id & QAS_OLDER);
+  return coll;
+}
+
+//------------------------------------------------------------------------------
+
+QASCollection* QASCollection::initCollection(QString url, QObject* parent) {
+  if (s_collections.contains(url))
+    return s_collections[url];
+  
+  QASCollection* coll = new QASCollection(url, parent);
+  s_collections.insert(url, coll);
+
+  return coll;
+}

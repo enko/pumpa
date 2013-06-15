@@ -20,10 +20,10 @@
 #ifndef _QACTIVITYSTREAMS_H_
 #define _QACTIVITYSTREAMS_H_
 
+#include <QSet>
 #include <QObject>
 #include <QDateTime>
-
-#include "json.h"
+#include <QVariantMap>
 
 //------------------------------------------------------------------------------
 // Forward declarations
@@ -39,7 +39,21 @@ qint64 sortIntByDateTime(QDateTime dt);
 
 //------------------------------------------------------------------------------
 
-class QASObject : public QObject {
+class QASAbstractObject : public QObject {
+  Q_OBJECT
+protected:
+  QASAbstractObject(QObject* parent);
+  virtual void connectSignals(QASAbstractObject* obj,
+                              bool changed=true, bool req=true);
+
+signals:
+  void changed();
+  void request(QString, int);
+};
+
+//------------------------------------------------------------------------------
+
+class QASObject : public QASAbstractObject {
   Q_OBJECT
 
 protected:
@@ -59,32 +73,36 @@ public:
   QString type() const { return m_objectType; }
   QString url() const { return m_url; }
   QString imageUrl() const { return m_imageUrl; }
+  QString fullImageUrl() const { return m_fullImageUrl; }
   QString displayName() const { return m_displayName; }
   QString apiLink() const;
 
   QDateTime published() const { return m_published; }
 
-  //  void setLike(bool like);
+  void refresh();
+
+  void toggleLiked();
   bool liked() const { return m_liked; }
   size_t numLikes() const;
+  void addLike(QASActor* actor, bool like);
   QASActorList* likes() const { return m_likes; }
 
   bool shared() const { return m_shared; }
   size_t numShares() const;
+  void addShare(QASActor* actor);
   QASActorList* shares() const { return m_shares; }
 
   size_t numReplies() const;
   QASObjectList* replies() const { return m_replies; }
+  void addReply(QASObject* obj);
 
   QASActor* author() const { return m_author; }
+  void setAuthor(QASActor* a) { m_author = a; }
   QASObject* inReplyTo() const { return m_inReplyTo; }
 
   // currently just a minimal variant needed for the API e.g. when
   // favouriting the object
   QVariantMap toJson() const;
-
-signals:
-  void changed();
 
 protected:
   QString m_id;
@@ -94,6 +112,7 @@ protected:
   QString m_objectType;
   QString m_url;
   QString m_imageUrl;
+  QString m_fullImageUrl;
   QString m_displayName;
   QString m_apiLink;
   QString m_proxyUrl;
@@ -134,7 +153,7 @@ private:
 
 //------------------------------------------------------------------------------
 
-class QASActivity : public QObject {
+class QASActivity : public QASAbstractObject {
   Q_OBJECT
 
   QASActivity(QString id, QObject* parent);
@@ -174,21 +193,25 @@ private:
 
 //------------------------------------------------------------------------------
 
-class QASObjectList : public QObject {
+class QASObjectList : public QASAbstractObject {
   Q_OBJECT
 
 protected:
   QASObjectList(QString url, QObject* parent);
 
 public:
-  static QASObjectList* getObjectList(QVariantMap json, QObject* parent);
-  void update(QVariantMap json);
+  static QASObjectList* getObjectList(QVariantMap json, QObject* parent, 
+                                      int id=0);
+  void update(QVariantMap json, bool older);
+
+  void addObject(QASObject* obj);
 
   size_t size() const { return m_items.size(); }
   qulonglong totalItems() const { return m_totalItems; }
   bool hasMore() const { return m_hasMore; }
   QString url() const { return m_url; }
   QString urlOrProxy() const;
+  virtual void refresh();
 
   virtual QASObject* at(size_t i) const {
     if (i >= size())
@@ -200,8 +223,6 @@ signals:
   void changed();
 
 protected:
-  void addObject(QVariantMap json);
-
   QString m_url;
   QString m_proxyUrl;
   qulonglong m_totalItems;
@@ -221,11 +242,17 @@ protected:
   QASActorList(QString url, QObject* parent);
 
 public:
-  static QASActorList* getActorList(QVariantMap json, QObject* parent);
+  static QASActorList* getActorList(QVariantMap json, QObject* parent,
+                                    int id=0);
 
   virtual QASActor* at(size_t i) const;
 
+  void addActor(QASActor* actor);
+  void removeActor(QASActor* actor);
+
   bool onlyYou() const { return size()==1 && at(0)->isYou(); }
+
+  virtual void refresh();
 
 private:
   static QMap<QString, QASActorList*> s_actorLists;
@@ -233,15 +260,24 @@ private:
 
 //------------------------------------------------------------------------------
 
-class QASCollection : public QObject {
+class QASCollection : public QASAbstractObject {
   Q_OBJECT
 
+protected:
+  QASCollection(QString url, QObject* parent);
+
 public:
-  QASCollection(QObject* parent);
-  QASCollection(QVariantMap json, QObject* parent);
+  static QASCollection* initCollection(QString url, QObject* parent);
+  static QASCollection* getCollection(QVariantMap json, QObject* parent,
+                                      int id);
+  void update(QVariantMap json, bool older);
+
+  QString prevLink() const { 
+    return m_prevLink.isEmpty() ? m_url : m_prevLink; 
+  }
+  QString nextLink() const { return m_nextLink; }
 
   size_t size() const { return m_items.size(); }
-  QString nextUrl() const { return m_nextUrl; }
 
   QASActivity* at(size_t i) const {
     if (i >= size())
@@ -249,13 +285,19 @@ public:
     return m_items[i];
   }
 
+signals:
+  void changed(bool);
+
 private:
   QString m_displayName;
   QString m_url;
   qulonglong m_totalItems;
   QList<QASActivity*> m_items;
+  QSet<QASActivity*> m_item_set;
 
-  QString m_nextUrl;
+  QString m_prevLink, m_nextLink;
+
+  static QMap<QString, QASCollection*> s_collections;
 };
 
 #endif /* _QACTIVITYSTREAMS_H_ */

@@ -53,7 +53,20 @@ ShortActivityWidget::ShortActivityWidget(QASActivity* a, QWidget* parent) :
 //------------------------------------------------------------------------------
 
 void ShortActivityWidget::updateText() {
-  m_textLabel->setText(m_activity->content());
+  QString content = m_activity->content();
+  QASObject* obj = m_activity->object();
+  QString objContent = obj->content();
+  if (!objContent.isEmpty()) {
+    objContent.replace(QRegExp("<[^>]*>"), " ");
+    objContent = objContent.section(QRegExp("\\s+"), 0, 10,
+                                    QString::SectionSkipEmpty);
+    QASActor* author = obj->author();
+    content += "<br />";
+    if (author && !author->displayName().isEmpty())
+      content += author->displayName() + ": ";
+    content += "\"" + objContent + " ...\"";
+  }
+  m_textLabel->setText(content);
 }
  
 //------------------------------------------------------------------------------

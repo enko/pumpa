@@ -324,6 +324,7 @@ void KQOAuthManager::executeAuthorizedRequest(KQOAuthRequest *request, int id) {
 
         // Take the original URL and append the query params to it.
         QUrl urlWithParams = networkRequest.url();
+
 #if QT_VERSION < 0x050000
         urlWithParams.setQueryItems(urlParams);
 #else
@@ -331,6 +332,7 @@ void KQOAuthManager::executeAuthorizedRequest(KQOAuthRequest *request, int id) {
         query.setQueryItems(urlParams);
         urlWithParams.setQuery(query);
 #endif
+
         networkRequest.setUrl(urlWithParams);
 
         // Submit the request including the params.

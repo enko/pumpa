@@ -19,6 +19,7 @@
 
 #include "activitywidget.h"
 #include "pumpa_defines.h"
+#include "util.h"
 
 #include <QDebug>
 #include <QRegExp>
@@ -54,7 +55,7 @@ QString splitLongWords(QString text) {
 
 //------------------------------------------------------------------------------
 
-QString processText(QString old_text) {
+QString ActivityWidget::processText(QString old_text, bool getImages) {
   if (s_allowedTags.isEmpty()) {
     s_allowedTags 
       << "br" << "p" << "b" << "i" << "blockquote" << "div"
@@ -62,6 +63,7 @@ QString processText(QString old_text) {
       << "em" << "ol" << "li" << "ul" << "strong";
     s_allowedTags << "pre";
     s_allowedTags << "a";
+    s_allowedTags << "img";
   }
   
   QString text = old_text.trimmed();
@@ -87,18 +89,35 @@ QString processText(QString old_text) {
   }
 
   // Detect single HTML tags for filtering.
-  QRegExp rx("<(\\/?)([a-zA-Z0-9]+)[^>]*>");
+  QRegExp rx("<(\\/?)([a-zA-Z0-9]+)([^>]*)>");
   pos = 0;
   while ((pos = rx.indexIn(text, pos)) != -1) {
     int len = rx.matchedLength();
-    QString tag = rx.cap(2);
     QString slash = rx.cap(1);
+    QString tag = rx.cap(2);
+    QString inside = rx.cap(3);
 
     if (tag == "img") { // Replace img's with placeholder
       QString imagePlaceholder = "[image]";
+
+      if (getImages) {
+        QRegExp rxi("\\s+src=\"?(" URL_REGEX ")\"?");
+        int spos = rxi.indexIn(inside);
+        if (spos != -1) {
+          QString imgSrc = rxi.cap(1);
+          qDebug() << "[DEBUG] processText: img" << imgSrc;
+          
+          FileDownloader* fd = FileDownloader::get(imgSrc, true);
+          connect(fd, SIGNAL(fileReady()), this, SLOT(onObjectChanged()),
+                  Qt::UniqueConnection);
+          if (fd->ready())
+            imagePlaceholder = 
+              QString("<img src=\"%1\" />").arg(fd->fileName());
+        }
+      }
       text.replace(pos, len, imagePlaceholder);
       pos += imagePlaceholder.length();
-      qDebug() << "[DEBUG] processText: removing image";
+      // qDebug() << "[DEBUG] processText: removing image";
     } else if (s_allowedTags.contains(tag)) {
       pos += len;
     } else { // drop all other HTML tags
@@ -188,11 +207,13 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_rightLayout->addWidget(m_objectWidget);
   m_rightLayout->addLayout(m_buttonLayout);
 
-  connect(noteObj, SIGNAL(changed()), this, SLOT(onObjectChanged()));
+  connect(noteObj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
+          Qt::UniqueConnection);
 
   QASObjectList* ol = noteObj->replies();
   if (ol) {
-    connect(ol, SIGNAL(changed()), this, SLOT(onObjectChanged()));
+    connect(ol, SIGNAL(changed()), this, SLOT(onObjectChanged()),
+            Qt::UniqueConnection);
     
     if (noteObj->numReplies() > 0)
       addObjectList(ol);
@@ -204,8 +225,6 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   m_acrossLayout->addLayout(m_rightLayout, 0); 
 
   setLayout(m_acrossLayout);
-
-  // connect(msg, SIGNAL(hasUpdated()), this, SLOT(onMessageHasUpdated()));
 }
 
 //------------------------------------------------------------------------------
@@ -240,7 +259,7 @@ void ActivityWidget::updateShareButton(bool /*wait*/) {
 
 //------------------------------------------------------------------------------
 
-void ActivityWidget::updateText() {
+void ActivityWidget::updateInfoText() {
   const QASObject* noteObj = m_activity->object();
   const QASActor* author = effectiveAuthor();
   
@@ -259,18 +278,33 @@ void ActivityWidget::updateText() {
   QASObject* irtObj = noteObj->inReplyTo();
 
   if (irtObj) {
-    if (!irtObj->url().isEmpty())
-      text += " in reply to a <a href=\"" + irtObj->url() + "\">note</a>";
-    else
-      emit request(irtObj->apiLink(), QAS_OBJECT);
+    text += " in reply to a ";
+    if (!irtObj->url().isEmpty()) {
+      text += "<a href=\"" + irtObj->url() + "\">note</a>";
+    } else {
+      text += "note";
+      irtObj->refresh();
+    }
   }
 
   if (share)
     text += " (shared by " + m_activity->actor()->displayName() + ")";
 
   m_infoLabel->setText(text);
+}
 
-  m_objectWidget->setText(processText(noteObj->content()));
+//------------------------------------------------------------------------------
+
+void ActivityWidget::updateText() {
+  updateInfoText();
+
+  m_objectWidget->setText(processText(m_activity->object()->content(), true));
+}  
+
+//------------------------------------------------------------------------------
+
+void ActivityWidget::refreshTimeLabels() {
+  updateInfoText();
 }
 
 //------------------------------------------------------------------------------
@@ -312,6 +346,9 @@ void ActivityWidget::onObjectChanged() {
 void ActivityWidget::addObjectList(QASObjectList* ol) {
   int li = 3; // index where to insert next widget in the layout
   int li_before = li;
+  if (m_hasMoreButton != NULL)
+    li++;
+
   /*
     For now we sort by time, or more accurately by whatever number the
     QASObject::sortInt() returns. Higher number is newer, goes further
@@ -347,7 +384,7 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
     ow->setLineWidth(1);
     ow->setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
     
-    QString content = processText(replyObj->content());
+    QString content = processText(replyObj->content(), false);
 
     ow->setText(content);
     ow->setInfo(QString("<a href=\"%2\">%1</a> at <a href=\"%4\">%3</a>").
@@ -400,5 +437,5 @@ void ActivityWidget::addHasMoreButton(QASObjectList* ol, int li) {
 
 void ActivityWidget::onHasMoreClicked() {
   m_hasMoreButton->setText("...");
-  emit request(m_activity->object()->replies()->urlOrProxy(), QAS_REPLIES);
+  m_activity->object()->replies()->refresh();
 }
