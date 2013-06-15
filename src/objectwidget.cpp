@@ -19,6 +19,8 @@
 
 #include "objectwidget.h"
 
+#include <QDesktopServices>
+
 //------------------------------------------------------------------------------
 
 QString actorNames(QASActorList* alist) {
@@ -32,6 +34,20 @@ QString actorNames(QASActorList* alist) {
       text += ", ";
   }
   return text;
+}
+
+//------------------------------------------------------------------------------
+
+ImageLabel::ImageLabel(QWidget* parent) : QLabel(parent) {
+  setMaximumSize(320, 320);
+  setFocusPolicy(Qt::NoFocus);
+}
+
+//------------------------------------------------------------------------------
+
+void ImageLabel::mousePressEvent(QMouseEvent* event) {
+  QLabel::mousePressEvent(event);
+  emit clicked();
 }
 
 //------------------------------------------------------------------------------
@@ -52,9 +68,11 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
   }
 
   if (obj->type() == "image") {
-    m_imageLabel = new QLabel(this);
-    m_imageLabel->setMaximumSize(320, 320);
-    m_imageLabel->setFocusPolicy(Qt::NoFocus);
+    m_imageLabel = new ImageLabel(this);
+    if (!obj->fullImageUrl().isEmpty()) {
+      connect(m_imageLabel, SIGNAL(clicked()), this, SLOT(imageClicked()));
+      m_imageLabel->setCursor(Qt::PointingHandCursor);
+    }
     m_imageUrl = obj->imageUrl();
     updateImage();
 
@@ -183,3 +201,11 @@ void ObjectWidget::updateShares() {
   
   m_sharesLabel->setText(text);
 }
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::imageClicked() {
+  QString url = m_object->fullImageUrl();
+  if (!url.isEmpty())
+    QDesktopServices::openUrl(url);
+}  

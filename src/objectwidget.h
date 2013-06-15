@@ -31,6 +31,21 @@
 
 //------------------------------------------------------------------------------
 
+class ImageLabel : public QLabel {
+  Q_OBJECT
+  
+public:
+  ImageLabel(QWidget* parent=0);
+
+signals:
+  void clicked();
+
+protected:
+  virtual void mousePressEvent(QMouseEvent*);
+};
+
+//------------------------------------------------------------------------------
+
 class ObjectWidget : public QFrame {
   Q_OBJECT
 
@@ -48,6 +63,7 @@ signals:
 private slots:
   void onChanged();
   void updateImage();
+  void imageClicked();
 
 private:
   void updateLikes();
@@ -57,7 +73,7 @@ private:
   QString m_localFile;
 
   RichTextLabel* m_textLabel;
-  QLabel* m_imageLabel;
+  ImageLabel* m_imageLabel;
   QVBoxLayout* m_layout;
   RichTextLabel* m_infoLabel;
   RichTextLabel* m_likesLabel;
