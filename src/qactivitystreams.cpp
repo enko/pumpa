@@ -232,9 +232,11 @@ void QASObject::update(QVariantMap json) {
   updateVar(json, m_displayName, "displayName", ch);
   updateVar(json, m_shared, "pump_io", "shared", ch);
 
-  if (m_objectType == "image") {
-    QVariantMap imageObj = json["image"].toMap();
-    updateUrlOrProxy(imageObj, m_imageUrl, ch);
+  if (m_objectType == "image" && json.contains("image")) {
+    updateUrlOrProxy(json["image"].toMap(), m_imageUrl, ch);
+
+    if (json.contains("fullImage"))
+      updateUrlOrProxy(json["fullImage"].toMap(), m_fullImageUrl, ch);
   }
 
   updateVar(json, m_published, "published", ch);

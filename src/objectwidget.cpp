@@ -108,42 +108,11 @@ void ObjectWidget::setInfo(QString text) {
 
 //------------------------------------------------------------------------------
 
-void ObjectWidget::fileReady(const QString& fn) {
-  updateImage(fn);
-}
-
-//------------------------------------------------------------------------------
-
-// FIXME this is duplicated in ActorWidget -> should be made more
-// general and reused.
-void ObjectWidget::updateImage(const QString& fileName) {
-  static QString defaultImage = ":/images/broken_image.png";
-  QString fn = fileName;
-
-  if (fn.isEmpty()) {
-    FileDownloader* fd = FileDownloader::get(m_imageUrl);
-
-    if (fd->ready()) {
-      fn = fd->fileName();
-      fd->deleteLater();
-    } else {
-      connect(fd, SIGNAL(fileReady(const QString&)),
-              this, SLOT(fileReady(const QString&)));
-      fd->download();
-    }
-  }
-
-  if (fn.isEmpty())
-    fn = defaultImage;
-  if (fn != m_localFile) {
-    m_localFile = fn;
-    QPixmap pix(m_localFile);
-    if (pix.isNull()) {
-      m_localFile = defaultImage;
-      pix.load(m_localFile);
-    }
-    m_imageLabel->setPixmap(pix);
-  }
+void ObjectWidget::updateImage() {
+  FileDownloader* fd = FileDownloader::get(m_imageUrl, true);
+  connect(fd, SIGNAL(fileReady()), this, SLOT(updateImage()),
+          Qt::UniqueConnection);
+  m_imageLabel->setPixmap(fd->pixmap(":/images/broken_image.png"));
 }    
 
 //------------------------------------------------------------------------------

@@ -46,11 +46,10 @@ signals:
   void linkHovered(const QString&);
 
 private slots:
-  virtual void fileReady(const QString& fn);
   void onChanged();
+  void updateImage();
 
 private:
-  void updateImage(const QString& fileName="");
   void updateLikes();
   void updateShares();
 

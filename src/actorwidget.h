@@ -34,11 +34,8 @@ public:
   ActorWidget(QASActor* a, QWidget* parent = 0, bool small=false);
 
 public slots:
-  virtual void fileReady(const QString& fn);
   void onImageChanged();
-
-private:
-  void updatePixmap(const QString& fileName="");
+  void updatePixmap();
 
 private:
   QASActor* m_actor;
