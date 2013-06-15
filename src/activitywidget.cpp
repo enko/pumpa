@@ -55,7 +55,7 @@ QString splitLongWords(QString text) {
 
 //------------------------------------------------------------------------------
 
-QString ActivityWidget::processText(QString old_text) {
+QString ActivityWidget::processText(QString old_text, bool getImages) {
   if (s_allowedTags.isEmpty()) {
     s_allowedTags 
       << "br" << "p" << "b" << "i" << "blockquote" << "div"
@@ -100,17 +100,20 @@ QString ActivityWidget::processText(QString old_text) {
     if (tag == "img") { // Replace img's with placeholder
       QString imagePlaceholder = "[image]";
 
-      QRegExp rxi("\\s+src=\"?(" URL_REGEX ")\"?");
-      int spos = rxi.indexIn(inside);
-      if (spos != -1) {
-        QString imgSrc = rxi.cap(1);
-        qDebug() << "[DEBUG] processText: img" << imgSrc;
-
-        FileDownloader* fd = FileDownloader::get(imgSrc, true);
-        connect(fd, SIGNAL(fileReady()), this, SLOT(onObjectChanged()),
-                Qt::UniqueConnection);
-        if (fd->ready())
-          imagePlaceholder = QString("<img src=\"%1\" />").arg(fd->fileName());
+      if (getImages) {
+        QRegExp rxi("\\s+src=\"?(" URL_REGEX ")\"?");
+        int spos = rxi.indexIn(inside);
+        if (spos != -1) {
+          QString imgSrc = rxi.cap(1);
+          qDebug() << "[DEBUG] processText: img" << imgSrc;
+          
+          FileDownloader* fd = FileDownloader::get(imgSrc, true);
+          connect(fd, SIGNAL(fileReady()), this, SLOT(onObjectChanged()),
+                  Qt::UniqueConnection);
+          if (fd->ready())
+            imagePlaceholder = 
+              QString("<img src=\"%1\" />").arg(fd->fileName());
+        }
       }
       text.replace(pos, len, imagePlaceholder);
       pos += imagePlaceholder.length();
@@ -292,7 +295,7 @@ void ActivityWidget::updateInfoText() {
 void ActivityWidget::updateText() {
   updateInfoText();
 
-  m_objectWidget->setText(processText(m_activity->object()->content()));
+  m_objectWidget->setText(processText(m_activity->object()->content(), true));
 }  
 
 //------------------------------------------------------------------------------
@@ -378,7 +381,7 @@ void ActivityWidget::addObjectList(QASObjectList* ol) {
     ow->setLineWidth(1);
     ow->setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
     
-    QString content = processText(replyObj->content());
+    QString content = processText(replyObj->content(), false);
 
     ow->setText(content);
     ow->setInfo(QString("<a href=\"%2\">%1</a> at <a href=\"%4\">%3</a>").
