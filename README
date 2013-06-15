@@ -1,4 +1,4 @@
-# Pumpa v0.2
+# Pumpa v0.3
 
 Greetings, fellow pumpkins!
 
@@ -10,17 +10,22 @@ Pumpa is licensed under the GNU GPL 3.0 (or later).  Please send bug
 reports and feature suggestions to me via e-mail <mats@sjoberg.fi> or
 to my pump.io account [sazius@io.saz.im](https://io.saz.im/sazius).
 
+The [kQOAuth library][2] is copyrighted by [Johan Paul][3] and
+licensed under LGPL 2.1.
+
 The current (temporary?) Pumpa logo is from the
-["Fruit and Veggie Inventory"][2] entry to the
-[Liberated Pixel Cup][3] by Joshua Taylor.  The logo is copyrighted by
+["Fruit and Veggie Inventory"][4] entry to the
+[Liberated Pixel Cup][5] by Joshua Taylor.  The logo is copyrighted by
 the artist and is dual licensed under the CC-BY-SA 3.0 license and the
 GNU GPL 3.0.
 
 Oh, and "pumpa" just means pumpkin in Swedish :-)
 
 [1]: http://pump.io/
-[2]: http://opengameart.org/content/fruit-and-veggie-inventory
-[3]: http://lpc.opengameart.org/
+[2]: https://github.com/kypeli/kQOAuth
+[3]: http://www.johanpaul.com/
+[3]: http://opengameart.org/content/fruit-and-veggie-inventory
+[4]: http://lpc.opengameart.org/
 
 
 ## Build dependencies
