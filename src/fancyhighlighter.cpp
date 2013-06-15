@@ -93,10 +93,10 @@ void FancyHighlighter::highlightBlock(const QString& text) {
   monoFormat.setFontFamily("monospaced");
 
   formatMarkup(text, "\\*\\*", "\\*\\*", strongFormat);
-  formatMarkup(text, "[^\\*]\\*", "\\*[^\\*]", emphFormat);
+  formatMarkup(text, "([^\\*]|^)\\*", "\\*([^\\*]|$)", emphFormat);
 
   formatMarkup(text, "__", "__", strongFormat);
-  formatMarkup(text, "[^_]_", "_[^_]", emphFormat);
+  formatMarkup(text, "([^_]|^)_", "_([^_]|$)", emphFormat);
 
   formatMarkup(text, "``", "``", monoFormat, "`");
   formatMarkup(text, "`", "`", monoFormat);
