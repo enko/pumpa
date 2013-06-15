@@ -73,6 +73,7 @@ public:
   QString type() const { return m_objectType; }
   QString url() const { return m_url; }
   QString imageUrl() const { return m_imageUrl; }
+  QString fullImageUrl() const { return m_fullImageUrl; }
   QString displayName() const { return m_displayName; }
   QString apiLink() const;
 
@@ -111,6 +112,7 @@ protected:
   QString m_objectType;
   QString m_url;
   QString m_imageUrl;
+  QString m_fullImageUrl;
   QString m_displayName;
   QString m_apiLink;
   QString m_proxyUrl;

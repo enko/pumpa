@@ -22,6 +22,7 @@
 
 #include <QtCore>
 #include <QtNetwork>
+#include <QPixmap>
 
 #include "QtKOAuth"
 
@@ -33,7 +34,7 @@ public:
                            QString clientId, QString clientSecret,
                            QString token, QString tokenSecret);
 
-  static FileDownloader* get(const QString& url);
+  static FileDownloader* get(const QString& url, bool download=false);
 
   void download();
 
@@ -41,6 +42,8 @@ public:
 
   bool ready() const { return !m_cachedFile.isEmpty(); }
   QString fileName() const;
+  QString fileName(QString defaultImage) const;
+  QPixmap pixmap(QString defaultImage=":/images/broken_image.png") const;
 
   static QString getCacheDir() { return m_cacheDir; }
   
@@ -49,6 +52,7 @@ public:
 signals:
   void networkError(const QString&);
   void fileReady(const QString&);
+  void fileReady();
 
 private slots:
   void onAuthorizedRequestReady(QByteArray response, int id);

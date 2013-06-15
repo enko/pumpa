@@ -19,6 +19,8 @@
 
 #include "objectwidget.h"
 
+#include <QDesktopServices>
+
 //------------------------------------------------------------------------------
 
 QString actorNames(QASActorList* alist) {
@@ -32,6 +34,20 @@ QString actorNames(QASActorList* alist) {
       text += ", ";
   }
   return text;
+}
+
+//------------------------------------------------------------------------------
+
+ImageLabel::ImageLabel(QWidget* parent) : QLabel(parent) {
+  setMaximumSize(320, 320);
+  setFocusPolicy(Qt::NoFocus);
+}
+
+//------------------------------------------------------------------------------
+
+void ImageLabel::mousePressEvent(QMouseEvent* event) {
+  QLabel::mousePressEvent(event);
+  emit clicked();
 }
 
 //------------------------------------------------------------------------------
@@ -52,9 +68,11 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
   }
 
   if (obj->type() == "image") {
-    m_imageLabel = new QLabel(this);
-    m_imageLabel->setMaximumSize(320, 320);
-    m_imageLabel->setFocusPolicy(Qt::NoFocus);
+    m_imageLabel = new ImageLabel(this);
+    if (!obj->fullImageUrl().isEmpty()) {
+      connect(m_imageLabel, SIGNAL(clicked()), this, SLOT(imageClicked()));
+      m_imageLabel->setCursor(Qt::PointingHandCursor);
+    }
     m_imageUrl = obj->imageUrl();
     updateImage();
 
@@ -108,42 +126,11 @@ void ObjectWidget::setInfo(QString text) {
 
 //------------------------------------------------------------------------------
 
-void ObjectWidget::fileReady(const QString& fn) {
-  updateImage(fn);
-}
-
-//------------------------------------------------------------------------------
-
-// FIXME this is duplicated in ActorWidget -> should be made more
-// general and reused.
-void ObjectWidget::updateImage(const QString& fileName) {
-  static QString defaultImage = ":/images/broken_image.png";
-  QString fn = fileName;
-
-  if (fn.isEmpty()) {
-    FileDownloader* fd = FileDownloader::get(m_imageUrl);
-
-    if (fd->ready()) {
-      fn = fd->fileName();
-      fd->deleteLater();
-    } else {
-      connect(fd, SIGNAL(fileReady(const QString&)),
-              this, SLOT(fileReady(const QString&)));
-      fd->download();
-    }
-  }
-
-  if (fn.isEmpty())
-    fn = defaultImage;
-  if (fn != m_localFile) {
-    m_localFile = fn;
-    QPixmap pix(m_localFile);
-    if (pix.isNull()) {
-      m_localFile = defaultImage;
-      pix.load(m_localFile);
-    }
-    m_imageLabel->setPixmap(pix);
-  }
+void ObjectWidget::updateImage() {
+  FileDownloader* fd = FileDownloader::get(m_imageUrl, true);
+  connect(fd, SIGNAL(fileReady()), this, SLOT(updateImage()),
+          Qt::UniqueConnection);
+  m_imageLabel->setPixmap(fd->pixmap(":/images/broken_image.png"));
 }    
 
 //------------------------------------------------------------------------------
@@ -214,3 +201,11 @@ void ObjectWidget::updateShares() {
   
   m_sharesLabel->setText(text);
 }
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::imageClicked() {
+  QString url = m_object->fullImageUrl();
+  if (!url.isEmpty())
+    QDesktopServices::openUrl(url);
+}  
