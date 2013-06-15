@@ -63,6 +63,7 @@ signals:
   void linkHovered(const QString&);
 
 private:
+  QString processText(QString old_text);
   QASActor* effectiveAuthor();
   void updateInfoText();
 

@@ -19,6 +19,7 @@
 
 #include "activitywidget.h"
 #include "pumpa_defines.h"
+#include "util.h"
 
 #include <QDebug>
 #include <QRegExp>
@@ -54,7 +55,7 @@ QString splitLongWords(QString text) {
 
 //------------------------------------------------------------------------------
 
-QString processText(QString old_text) {
+QString ActivityWidget::processText(QString old_text) {
   if (s_allowedTags.isEmpty()) {
     s_allowedTags 
       << "br" << "p" << "b" << "i" << "blockquote" << "div"
@@ -62,6 +63,7 @@ QString processText(QString old_text) {
       << "em" << "ol" << "li" << "ul" << "strong";
     s_allowedTags << "pre";
     s_allowedTags << "a";
+    s_allowedTags << "img";
   }
   
   QString text = old_text.trimmed();
@@ -87,18 +89,32 @@ QString processText(QString old_text) {
   }
 
   // Detect single HTML tags for filtering.
-  QRegExp rx("<(\\/?)([a-zA-Z0-9]+)[^>]*>");
+  QRegExp rx("<(\\/?)([a-zA-Z0-9]+)([^>]*)>");
   pos = 0;
   while ((pos = rx.indexIn(text, pos)) != -1) {
     int len = rx.matchedLength();
-    QString tag = rx.cap(2);
     QString slash = rx.cap(1);
+    QString tag = rx.cap(2);
+    QString inside = rx.cap(3);
 
     if (tag == "img") { // Replace img's with placeholder
       QString imagePlaceholder = "[image]";
+
+      QRegExp rxi("\\s+src=\"?(" URL_REGEX ")\"?");
+      int spos = rxi.indexIn(inside);
+      if (spos != -1) {
+        QString imgSrc = rxi.cap(1);
+        qDebug() << "[DEBUG] processText: img" << imgSrc;
+
+        FileDownloader* fd = FileDownloader::get(imgSrc, true);
+        connect(fd, SIGNAL(fileReady()), this, SLOT(onObjectChanged()),
+                Qt::UniqueConnection);
+        if (fd->ready())
+          imagePlaceholder = QString("<img src=\"%1\" />").arg(fd->fileName());
+      }
       text.replace(pos, len, imagePlaceholder);
       pos += imagePlaceholder.length();
-      qDebug() << "[DEBUG] processText: removing image";
+      // qDebug() << "[DEBUG] processText: removing image";
     } else if (s_allowedTags.contains(tag)) {
       pos += len;
     } else { // drop all other HTML tags
