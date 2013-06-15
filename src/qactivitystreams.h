@@ -43,7 +43,8 @@ class QASAbstractObject : public QObject {
   Q_OBJECT
 protected:
   QASAbstractObject(QObject* parent);
-  virtual void connectSignals(QASAbstractObject* obj);
+  virtual void connectSignals(QASAbstractObject* obj,
+                              bool changed=true, bool req=true);
 
 signals:
   void changed();

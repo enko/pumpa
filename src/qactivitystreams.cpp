@@ -145,13 +145,17 @@ QASAbstractObject::QASAbstractObject(QObject* parent) : QObject(parent) {}
 
 //------------------------------------------------------------------------------
 
-void QASAbstractObject::connectSignals(QASAbstractObject* obj) {
+void QASAbstractObject::connectSignals(QASAbstractObject* obj,
+                                       bool changed, bool req) {
   if (!obj)
     return;
-  connect(obj, SIGNAL(changed()),
-          this, SIGNAL(changed()), Qt::UniqueConnection);
-  connect(obj, SIGNAL(request(QString, int)),
-          parent(), SLOT(request(QString, int)), Qt::UniqueConnection);
+
+  if (changed)
+    connect(obj, SIGNAL(changed()),
+            this, SIGNAL(changed()), Qt::UniqueConnection);
+  if (req)
+    connect(obj, SIGNAL(request(QString, int)),
+            parent(), SLOT(request(QString, int)), Qt::UniqueConnection);
 }
 
 //------------------------------------------------------------------------------
@@ -245,6 +249,7 @@ void QASObject::update(QVariantMap json) {
 
   if (json.contains("inReplyTo")) {
     m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
+    connectSignals(m_inReplyTo, true, false);
   }
 
   if (json.contains("author")) {
@@ -482,7 +487,7 @@ void QASObjectList::update(QVariantMap json, bool) {
         obj = QASObject::getObject(item, parent());
       
       m_items.append(obj);
-      connectSignals(obj);
+      connectSignals(obj, false, true);
       ch = true;
     }
   }

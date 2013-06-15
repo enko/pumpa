@@ -502,7 +502,7 @@ void PumpApp::postReply(QASObject* replyToObj, QString content) {
   noteObj["objectType"] = replyToObj->type();
   obj["inReplyTo"] = noteObj;
 
-  feed("post", obj, QAS_ACTIVITY/* | QAS_REFRESH*/);
+  feed("post", obj, QAS_ACTIVITY | QAS_REFRESH);
 }
 
 //------------------------------------------------------------------------------

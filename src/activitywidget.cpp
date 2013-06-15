@@ -259,10 +259,13 @@ void ActivityWidget::updateInfoText() {
   QASObject* irtObj = noteObj->inReplyTo();
 
   if (irtObj) {
-    if (!irtObj->url().isEmpty())
-      text += " in reply to a <a href=\"" + irtObj->url() + "\">note</a>";
-    else
+    text += " in reply to a ";
+    if (!irtObj->url().isEmpty()) {
+      text += "<a href=\"" + irtObj->url() + "\">note</a>";
+    } else {
+      text += "note";
       irtObj->refresh();
+    }
   }
 
   if (share)
