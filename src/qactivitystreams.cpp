@@ -307,22 +307,32 @@ void QASObject::addReply(QASObject* obj) {
 
 //------------------------------------------------------------------------------
 
-void QASObject::setLiked(bool l) { 
-  m_liked = l; 
+void QASObject::toggleLiked() { 
+  m_liked = !m_liked; 
   emit changed();
 }
 
 //------------------------------------------------------------------------------
 
 size_t QASObject::numLikes() const {
-  // return m_likes ? m_likes->size() : 0;
-  return m_likes ? m_likes->totalItems() : 0;
+  return m_likes ? m_likes->size() : 0;
+}
+
+//------------------------------------------------------------------------------
+
+void QASObject::addLike(QASActor* actor, bool like) {
+  if (!m_likes)
+    return;
+  if (like)
+    m_likes->addActor(actor);
+  else
+    m_likes->removeActor(actor);
 }
 
 //------------------------------------------------------------------------------
 
 size_t QASObject::numShares() const {
-  return m_shares ? m_shares->totalItems() : 0;
+  return m_shares ? m_shares->size() : 0;
 }
 
 //------------------------------------------------------------------------------
@@ -403,11 +413,9 @@ void QASActivity::update(QVariantMap json) {
   if (m_verb == "post" && m_object && m_object->inReplyTo())
     m_object->inReplyTo()->addReply(m_object);
 
-  // if (m_verb == "favorite" || m_verb == "like" ||
-  //     m_verb == "unfavorite" || m_verb == "unlike") {
-  //   m_object->setLiked(!m_verb.startsWith("un"));
-  //   m_object->refresh();
-  // }
+  if ((m_verb == "favorite" || m_verb == "like" ||
+       m_verb == "unfavorite" || m_verb == "unlike") && m_object && m_actor) 
+    m_object->addLike(m_actor, !m_verb.startsWith("un"));
 
   // if (m_verb == "share")
   //   m_object->refresh();
@@ -557,6 +565,25 @@ QASActor* QASActorList::at(size_t i) const {
   if (i >= size())
     return NULL;
   return qobject_cast<QASActor*>(m_items[i]);
+}
+
+//------------------------------------------------------------------------------
+
+void QASActorList::addActor(QASActor* actor) {
+  if (m_items.contains(actor))
+    return;
+
+  m_items.append(actor);
+  m_totalItems++;
+  emit changed();
+}
+
+//------------------------------------------------------------------------------
+
+void QASActorList::removeActor(QASActor* actor) {
+  m_items.removeAll(actor);
+  m_totalItems--;
+  emit changed();
 }
 
 //------------------------------------------------------------------------------

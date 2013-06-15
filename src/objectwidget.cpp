@@ -151,11 +151,7 @@ void ObjectWidget::updateImage(const QString& fileName) {
 void ObjectWidget::updateLikes() {
   size_t nl = m_object->numLikes();
 
-  if (nl > m_object->likes()->size()) {
-    m_object->likes()->refresh();
-  }
-  
-  if (!nl) {
+  if (nl <= 0) {
     if (m_likesLabel != NULL) {
       m_layout->removeWidget(m_likesLabel);
       delete m_likesLabel;
@@ -174,20 +170,9 @@ void ObjectWidget::updateLikes() {
     m_layout->addWidget(m_likesLabel);
   }
 
-  if (likes->size()) {
-    text = actorNames(likes);
-    int others = nl-likes->size();
-    if (others > 0)
-      text += QString(" and %1 other %2").arg(others).
-        arg(others > 1 ? "persons" : "person");
-    text += (nl==1 && !likes->onlyYou()) ? " likes" : " like";
-    text += " this.";
-  } else {
-    if (nl == 1)
-      text = "1 person likes this.";
-    else
-      text = QString("%1 persons like this.").arg(nl);
-  }
+  text = actorNames(likes);
+  text += (nl==1 && !likes->onlyYou()) ? " likes" : " like";
+  text += " this.";
   
   m_likesLabel->setText(text);
 }

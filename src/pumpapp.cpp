@@ -439,7 +439,7 @@ QString PumpApp::inboxEndpoint(QString path) {
 
 void PumpApp::onLike(QASObject* obj) {
   feed(obj->liked() ? "unlike" : "like", obj->toJson(),
-       QAS_ACTIVITY | QAS_REFRESH);
+       QAS_ACTIVITY | QAS_TOGGLE_LIKE);
 }
 
 //------------------------------------------------------------------------------
@@ -595,7 +595,9 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     QASCollection::getCollection(obj, this, id);
   } else if (sid == QAS_ACTIVITY) {
     // qDebug() << "QAS_ACTIVITY" << debugDumpJson(obj);
-    QASActivity::getActivity(obj, this);
+    QASActivity* act = QASActivity::getActivity(obj, this);
+    if ((id & QAS_TOGGLE_LIKE) && act->object())
+      act->object()->toggleLiked();
   } else if (sid == QAS_OBJECTLIST) {
     QASObjectList::getObjectList(obj, this, id);
   } else if (sid == QAS_OBJECT) {

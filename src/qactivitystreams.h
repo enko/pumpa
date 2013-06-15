@@ -79,10 +79,10 @@ public:
 
   void refresh();
 
-  //  void setLike(bool like);
+  void toggleLiked();
   bool liked() const { return m_liked; }
-  void setLiked(bool l);
   size_t numLikes() const;
+  void addLike(QASActor* actor, bool like);
   QASActorList* likes() const { return m_likes; }
 
   bool shared() const { return m_shared; }
@@ -242,6 +242,9 @@ public:
                                     int id=0);
 
   virtual QASActor* at(size_t i) const;
+
+  void addActor(QASActor* actor);
+  void removeActor(QASActor* actor);
 
   bool onlyYou() const { return size()==1 && at(0)->isYou(); }
 
