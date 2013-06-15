@@ -87,6 +87,7 @@ public:
 
   bool shared() const { return m_shared; }
   size_t numShares() const;
+  void addShare(QASActor* actor);
   QASActorList* shares() const { return m_shares; }
 
   size_t numReplies() const;

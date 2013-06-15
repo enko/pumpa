@@ -331,6 +331,14 @@ void QASObject::addLike(QASActor* actor, bool like) {
 
 //------------------------------------------------------------------------------
 
+void QASObject::addShare(QASActor* actor) {
+  if (!m_shares)
+    return;
+  m_shares->addActor(actor);
+}
+
+//------------------------------------------------------------------------------
+
 size_t QASObject::numShares() const {
   return m_shares ? m_shares->size() : 0;
 }
@@ -417,8 +425,8 @@ void QASActivity::update(QVariantMap json) {
        m_verb == "unfavorite" || m_verb == "unlike") && m_object && m_actor) 
     m_object->addLike(m_actor, !m_verb.startsWith("un"));
 
-  // if (m_verb == "share")
-  //   m_object->refresh();
+  if (m_verb == "share" && m_object && m_actor) 
+    m_object->addShare(m_actor);
 
   if (ch)
     emit changed();
