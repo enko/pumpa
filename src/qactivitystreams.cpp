@@ -299,6 +299,14 @@ void QASObject::refresh() {
 
 //------------------------------------------------------------------------------
 
+void QASObject::addReply(QASObject* obj) {
+  if (!m_replies)
+    return;
+  m_replies->addObject(obj);
+}
+
+//------------------------------------------------------------------------------
+
 void QASObject::setLiked(bool l) { 
   m_liked = l; 
   emit changed();
@@ -376,14 +384,16 @@ void QASActivity::update(QVariantMap json) {
   updateVar(json, m_url, "url", ch);
   updateVar(json, m_content, "content", ch);
   
-  if (json.contains("object")) {
-    m_object = QASObject::getObject(json["object"].toMap(), parent());
-    connectSignals(m_object);
-  }
-
   if (json.contains("actor")) {
     m_actor = QASActor::getActor(json["actor"].toMap(), parent());
     connectSignals(m_actor);
+  }
+
+  if (json.contains("object")) {
+    m_object = QASObject::getObject(json["object"].toMap(), parent());
+    connectSignals(m_object);
+    if (!m_object->author())
+      m_object->setAuthor(m_actor);
   }
 
   updateVar(json, m_published, "published", ch);
@@ -391,16 +401,16 @@ void QASActivity::update(QVariantMap json) {
   updateVar(json, m_generatorName, "generator", "displayName", ch);
 
   if (m_verb == "post" && m_object && m_object->inReplyTo())
-    m_object->inReplyTo()->refresh();
+    m_object->inReplyTo()->addReply(m_object);
 
-  if (m_verb == "favorite" || m_verb == "like" ||
-      m_verb == "unfavorite" || m_verb == "unlike") {
-    m_object->setLiked(!m_verb.startsWith("un"));
-    m_object->refresh();
-  }
+  // if (m_verb == "favorite" || m_verb == "like" ||
+  //     m_verb == "unfavorite" || m_verb == "unlike") {
+  //   m_object->setLiked(!m_verb.startsWith("un"));
+  //   m_object->refresh();
+  // }
 
-  if (m_verb == "share")
-    m_object->refresh();
+  // if (m_verb == "share")
+  //   m_object->refresh();
 
   if (ch)
     emit changed();
@@ -486,6 +496,14 @@ QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent,
 
   ol->update(json, id & QAS_OLDER);
   return ol;
+}
+
+//------------------------------------------------------------------------------
+
+void QASObjectList::addObject(QASObject* obj) {
+  m_items.append(obj);
+  m_totalItems++;
+  emit changed();
 }
 
 //------------------------------------------------------------------------------

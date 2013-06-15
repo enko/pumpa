@@ -502,7 +502,7 @@ void PumpApp::postReply(QASObject* replyToObj, QString content) {
   noteObj["objectType"] = replyToObj->type();
   obj["inReplyTo"] = noteObj;
 
-  feed("post", obj, QAS_OBJECT | QAS_REFRESH);
+  feed("post", obj, QAS_ACTIVITY/* | QAS_REFRESH*/);
 }
 
 //------------------------------------------------------------------------------
@@ -594,7 +594,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   if (sid == QAS_COLLECTION) {
     QASCollection::getCollection(obj, this, id);
   } else if (sid == QAS_ACTIVITY) {
-    qDebug() << "QAS_ACTIVITY" << debugDumpJson(obj);
+    // qDebug() << "QAS_ACTIVITY" << debugDumpJson(obj);
     QASActivity::getActivity(obj, this);
   } else if (sid == QAS_OBJECTLIST) {
     QASObjectList::getObjectList(obj, this, id);

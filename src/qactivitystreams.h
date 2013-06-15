@@ -91,8 +91,10 @@ public:
 
   size_t numReplies() const;
   QASObjectList* replies() const { return m_replies; }
+  void addReply(QASObject* obj);
 
   QASActor* author() const { return m_author; }
+  void setAuthor(QASActor* a) { m_author = a; }
   QASObject* inReplyTo() const { return m_inReplyTo; }
 
   // currently just a minimal variant needed for the API e.g. when
@@ -197,6 +199,8 @@ public:
   static QASObjectList* getObjectList(QVariantMap json, QObject* parent, 
                                       int id=0);
   void update(QVariantMap json, bool older);
+
+  void addObject(QASObject* obj);
 
   size_t size() const { return m_items.size(); }
   qulonglong totalItems() const { return m_totalItems; }
