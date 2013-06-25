@@ -36,6 +36,10 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   else
     settings = new QSettings(settingsFile, QSettings::IniFormat);
   readSettings();
+
+  m_settingsDialog = new PumpaSettingsDialog(settings, this);
+  connect(m_settingsDialog, SIGNAL(settingsChanged()),
+          this, SLOT(writeSettings()));
   
   oaRequest = new KQOAuthRequest(this);
   oaManager = new KQOAuthManager(this);
@@ -225,8 +229,6 @@ void PumpApp::createActions() {
   connect(exitAction, SIGNAL(triggered()), this, SLOT(exit()));
 
   openPrefsAction = new QAction(tr("Preferences"), this);
-  // prefsAct->setShortcut(tr("Ctrl+P"));
-  openPrefsAction->setEnabled(false);
   connect(openPrefsAction, SIGNAL(triggered()), this, SLOT(preferences()));
 
   reloadAction = new QAction(tr("&Reload timeline"), this);
@@ -284,7 +286,7 @@ void PumpApp::createMenu() {
 //------------------------------------------------------------------------------
 
 void PumpApp::preferences() {
-  //settingsDialog->exec();
+  m_settingsDialog->exec();
 }
 
 //------------------------------------------------------------------------------

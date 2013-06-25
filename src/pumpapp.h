@@ -38,6 +38,7 @@
 #include "collectionwidget.h"
 #include "oauthwizard.h"
 #include "tabwidget.h"
+#include "pumpasettingsdialog.h"
 
 //------------------------------------------------------------------------------
 
@@ -105,6 +106,7 @@ private:
   void writeSettings();
   void readSettings();
 
+  PumpaSettingsDialog* m_settingsDialog;
   QSettings* settings;
 
   void createActions();
