@@ -27,6 +27,11 @@
 #define WEBSITE_URL           "http://saz.im/software/pumpa.html"
 #define MARKUP_DOC_URL        "http://saz.im/software/pumpa.html#markup"
 
+#define FEED_INBOX            8
+#define FEED_MENTIONS         4
+#define FEED_DIRECT           2
+#define FEED_MEANWHILE        1
+
 //------------------------------------------------------------------------------
 
 // First byte is used to tell the slot receiving the network reply how

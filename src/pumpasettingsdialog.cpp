@@ -18,6 +18,8 @@
 */
 
 #include "pumpasettingsdialog.h"
+#include "util.h"
+#include "pumpa_defines.h"
 
 //------------------------------------------------------------------------------
 
@@ -28,9 +30,12 @@ PumpaSettingsDialog::PumpaSettingsDialog(QSettings* settings,
 {
   m_layout = new QVBoxLayout;
 
-  m_layout->addWidget(new QLabel("Currently logged in as sazius@io.saz.im."));
+  m_currentAccountLabel = new QLabel("Not logged in currently.", this);
+  m_layout->addWidget(m_currentAccountLabel);
 
-  // [Change account]
+  m_authButton = new QPushButton("Change account", this);
+  connect(m_authButton, SIGNAL(clicked()), this, SLOT(onAuthButtonClicked()));
+  m_layout->addWidget(m_authButton);
 
   QLabel* acctInfoLabel = 
     new QLabel("Clicking \"Change account\" will run the "
@@ -80,3 +85,79 @@ PumpaSettingsDialog::PumpaSettingsDialog(QSettings* settings,
   setLayout(m_layout);
 }
 
+//------------------------------------------------------------------------------
+
+void PumpaSettingsDialog::onAuthButtonClicked() {
+  qDebug() << "clicked";
+}
+
+//------------------------------------------------------------------------------
+
+void PumpaSettingsDialog::setVisible(bool visible) {
+  if (visible)
+    updateUI();
+  QDialog::setVisible(visible);
+}
+
+//------------------------------------------------------------------------------
+
+int PumpaSettingsDialog::comboIndexConverter(int ci, bool backwards) {
+  static QList<int> comboToFeeds;
+  if (comboToFeeds.isEmpty()) {
+    comboToFeeds << 0
+                 << FEED_DIRECT
+                 << (FEED_DIRECT | FEED_MENTIONS)
+                 << (FEED_DIRECT | FEED_MENTIONS | FEED_INBOX)
+                 << (FEED_DIRECT | FEED_MENTIONS | FEED_INBOX | FEED_MEANWHILE);
+    // for (int i=0; i<comboToFeeds.size(); ++i) 
+    //   qDebug() << "comboToFeeds" << i << comboToFeeds[i];
+  }
+
+  if (backwards) {
+    int ret = comboToFeeds.indexOf(ci);
+    return ret == -1 ? 0 : ret;
+  }
+
+  return ci < comboToFeeds.size() ? comboToFeeds[ci] : 0;
+}
+
+//------------------------------------------------------------------------------
+
+void PumpaSettingsDialog::updateUI() {
+  QString accountId = siteUrlToAccountId(s->value("username").toString(),
+                                         s->value("site_url").toString());
+  m_currentAccountLabel->setText(QString("Currently logged in as %1.").
+                                 arg(accountId));
+  
+  m_updateTimeSpinBox->setValue(s->value("reload_time").toInt());
+
+  m_useIconCheckBox->setChecked(s->value("").toBool());
+
+  m_highlightComboBox->
+    setCurrentIndex(feedIntToComboIndex(s->value("").toInt()));
+
+  m_popupComboBox->
+    setCurrentIndex(feedIntToComboIndex(s->value("").toInt()));
+}
+
+//------------------------------------------------------------------------------
+
+// void YAICSSettingsDialog::on_buttonBox_accepted() {
+//   s->setReloadTime(updateTimeSpinBox->value());
+//   s->setUseTrayIcon(trayIconCheckBox->isChecked());
+//   s->setTextToFilter(textToFilterEdit->text());
+//   // useApiRepeat = apiRepeatCheckBox->isChecked();
+//   s->setPrependReplies(prependRepliesCheckBox->isChecked());
+
+//   s->setHomeNotify((YAICSSettings::notifyType)
+//                    homeNotifyComboBox->currentIndex());
+//   s->setMentionsNotify((YAICSSettings::notifyType)
+//                        mentionsNotifyComboBox->currentIndex());
+
+//   s->setAPIUrl(slashify(APIUrlEdit->text()));
+//   s->setUsername(usernameEdit->text());
+//   s->setPassword(passwordEdit->text());
+//   s->setIgnoreSSLWarnings(secureWarningCheckBox->isChecked());
+
+//   emit settingsChanged();
+// }

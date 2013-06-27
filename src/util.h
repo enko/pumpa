@@ -50,4 +50,9 @@ QString changePairedTags(QString text,
                          QString newBegin, QString newEnd,
                          QString nogoItems = MD_NOGO_ITEMS);
 
+/*
+  Transforms foo and https://bar.com to foo@bar.com
+*/
+QString siteUrlToAccountId(QString username, QString url);
+
 #endif /* _UTIL_H_ */

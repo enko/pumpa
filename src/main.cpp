@@ -40,6 +40,37 @@ int main(int argc, char** argv) {
       settingsFile = "pumpa-test.conf";
     else if (arg == "testmarkup")
       return testMarkup(argv[2]);
+    else if (arg == "testfeedint") {
+      qDebug() << PumpaSettingsDialog::feedIntToComboIndex(atoi(argv[2]));
+      return 0;
+    }
+    else if (arg == "autotestfeedint") {
+      int (*f)(int) = PumpaSettingsDialog::feedIntToComboIndex;
+      Q_ASSERT(f(0) == 0);
+      Q_ASSERT(f(1) == 0);
+      Q_ASSERT(f(2) == 1);
+      Q_ASSERT(f(3) == 0);
+      Q_ASSERT(f(4) == 0);
+      Q_ASSERT(f(5) == 0);
+      Q_ASSERT(f(6) == 2);
+      Q_ASSERT(f(11) == 0);
+      Q_ASSERT(f(12) == 0);
+      Q_ASSERT(f(14) == 3);
+      Q_ASSERT(f(15) == 4);
+      Q_ASSERT(f(16) == 0);
+      Q_ASSERT(f(255) == 0);
+      return 0;
+    }
+    else if (arg == "autotestcomboindex") {
+      int (*f)(int) = PumpaSettingsDialog::comboIndexToFeedInt;
+      Q_ASSERT(f(0) == 0);
+      Q_ASSERT(f(1) == 2);
+      Q_ASSERT(f(2) == 6);
+      Q_ASSERT(f(3) == 14);
+      Q_ASSERT(f(4) == 15);
+      Q_ASSERT(f(255) == 0);
+      return 0;
+    }
   }
 
   PumpApp papp(settingsFile);

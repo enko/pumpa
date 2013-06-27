@@ -28,19 +28,32 @@ class PumpaSettingsDialog : public QDialog {
 public:
   PumpaSettingsDialog(QSettings* settings, QWidget* parent=0);
 
+  static int comboIndexToFeedInt(int i) {
+    return comboIndexConverter(i, false); 
+  }
+  static int feedIntToComboIndex(int i) { 
+    return comboIndexConverter(i, true); 
+  }
+
 signals:
   void settingsChanged();
 
 // private slots:
 //   void on_buttonBox_accepted();
 
-// protected:
-//   void setVisible(bool visible);
+protected:
+  void setVisible(bool visible);
+
+private slots:
+  void onAuthButtonClicked();
 
 private:
-  // void updateUI();
+  static int comboIndexConverter(int i, bool backwards=false);
+  void updateUI();
   QSettings* s;
 
+  QLabel* m_currentAccountLabel;
+  QPushButton* m_authButton;
   QSpinBox* m_updateTimeSpinBox;
   QCheckBox* m_useIconCheckBox;
   QDialogButtonBox* m_buttonBox;

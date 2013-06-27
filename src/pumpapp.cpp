@@ -39,7 +39,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
 
   m_settingsDialog = new PumpaSettingsDialog(settings, this);
   connect(m_settingsDialog, SIGNAL(settingsChanged()),
-          this, SLOT(writeSettings()));
+          this, SLOT(readSettings()));
   
   oaRequest = new KQOAuthRequest(this);
   oaManager = new KQOAuthManager(this);
@@ -286,6 +286,7 @@ void PumpApp::createMenu() {
 //------------------------------------------------------------------------------
 
 void PumpApp::preferences() {
+  writeSettings();
   m_settingsDialog->exec();
 }
 

@@ -84,6 +84,8 @@ private slots:
 
   void startPumping();
 
+  void readSettings();
+
 protected:
   void timerEvent(QTimerEvent*);
 
@@ -104,7 +106,6 @@ private:
   void feed(QString verb, QVariantMap object, int response_id);
   
   void writeSettings();
-  void readSettings();
 
   PumpaSettingsDialog* m_settingsDialog;
   QSettings* settings;
