@@ -21,7 +21,6 @@
 #define _PUMPAPP_H_
 
 #include <QObject>
-#include <QSettings>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QApplication>
@@ -39,6 +38,7 @@
 #include "oauthwizard.h"
 #include "tabwidget.h"
 #include "pumpasettingsdialog.h"
+#include "pumpasettings.h"
 
 //------------------------------------------------------------------------------
 
@@ -84,8 +84,6 @@ private slots:
 
   void startPumping();
 
-  void readSettings();
-
 protected:
   void timerEvent(QTimerEvent*);
 
@@ -105,10 +103,8 @@ private:
 
   void feed(QString verb, QVariantMap object, int response_id);
   
-  void writeSettings();
-
   PumpaSettingsDialog* m_settingsDialog;
-  QSettings* settings;
+  PumpaSettings* m_s;
 
   void createActions();
   void createMenu();
@@ -128,17 +124,6 @@ private:
   // QSystemTrayIcon* trayIcon;
   // QMenu* trayIconMenu;
   
-  QString m_siteUrl;
-  QString m_userName;
-
-  QString m_clientId;
-  QString m_clientSecret;
-
-  QString m_token;
-  QString m_tokenSecret;
-
-  int m_reloadTime;
-
   KQOAuthManager *oaManager;
   KQOAuthRequest *oaRequest;
 

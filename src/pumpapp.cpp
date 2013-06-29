@@ -31,13 +31,11 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_wiz(NULL),
   m_requests(0)
 {
-  if (settingsFile.isEmpty())
-    settings = new QSettings(CLIENT_NAME, CLIENT_NAME, this);
-  else
-    settings = new QSettings(settingsFile, QSettings::IniFormat);
-  readSettings();
+  m_s = new PumpaSettings(settingsFile, this);
+  resize(m_s->size());
+  move(m_s->pos());
 
-  m_settingsDialog = new PumpaSettingsDialog(settings, this);
+  m_settingsDialog = new PumpaSettingsDialog(m_s, this);
   connect(m_settingsDialog, SIGNAL(settingsChanged()),
           this, SLOT(readSettings()));
   
@@ -94,7 +92,8 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
 //------------------------------------------------------------------------------
 
 PumpApp::~PumpApp() {
-  writeSettings();
+  m_s->size(size());
+  m_s->pos(pos());
 }
 
 //------------------------------------------------------------------------------
@@ -108,7 +107,7 @@ void PumpApp::startPumping() {
   m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
 
   show();
-  request("/api/user/"+m_userName, QAS_SELF_PROFILE);
+  request("/api/user/" + m_s->userName(), QAS_SELF_PROFILE);
   fetchAll();
 
   resetTimer();
@@ -129,22 +128,18 @@ void PumpApp::connectCollection(CollectionWidget* w) {
 
 void PumpApp::onClientRegistered(QString userName, QString siteUrl,
                                  QString clientId, QString clientSecret) {
-  m_userName = userName;
-  m_siteUrl = siteUrl;
-  m_clientId = clientId;
-  m_clientSecret = clientSecret;
-
-  writeSettings();
+  m_s->userName(userName);
+  m_s->siteUrl(siteUrl);
+  m_s->clientId(clientId);
+  m_s->clientSecret(clientSecret);
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
-  m_token = token;
-  m_tokenSecret = tokenSecret;
+  m_s->token(token);
+  m_s->tokenSecret(tokenSecret);
   syncOAuthInfo();
-
-  writeSettings();
 
   startPumping();
 }
@@ -152,8 +147,10 @@ void PumpApp::onAccessTokenReceived(QString token, QString tokenSecret) {
 //------------------------------------------------------------------------------
 
 bool PumpApp::haveOAuth() {
-  return !m_clientId.isEmpty() && !m_clientSecret.isEmpty() &&
-    !m_token.isEmpty() && !m_tokenSecret.isEmpty();
+  return !m_s->clientId().isEmpty() &&
+    !m_s->clientSecret().isEmpty() &&
+    !m_s->token().isEmpty() &&
+    !m_s->tokenSecret().isEmpty();
 }
 
 //------------------------------------------------------------------------------
@@ -169,7 +166,7 @@ void PumpApp::timerEvent(QTimerEvent* event) {
     return;
   m_timerCount++;
 
-  if (m_timerCount >= m_reloadTime) {
+  if (m_timerCount >= m_s->reloadTime()) {
     m_timerCount = 0;
     fetchAll();
   }
@@ -197,8 +194,9 @@ void PumpApp::refreshTimeLabels() {
 //------------------------------------------------------------------------------
 
 void PumpApp::syncOAuthInfo() {
-  FileDownloader::setOAuthInfo(m_siteUrl, m_clientId, m_clientSecret,
-                               m_token, m_tokenSecret);
+  FileDownloader::setOAuthInfo(m_s->siteUrl(), m_s->clientId(),
+                               m_s->clientSecret(),
+                               m_s->token(), m_s->tokenSecret());
 }
 
 //------------------------------------------------------------------------------
@@ -286,7 +284,6 @@ void PumpApp::createMenu() {
 //------------------------------------------------------------------------------
 
 void PumpApp::preferences() {
-  writeSettings();
   m_settingsDialog->exec();
 }
 
@@ -364,58 +361,6 @@ void PumpApp::reload() {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::writeSettings() {
-  QSettings& s = *settings;
-
-  QFile::setPermissions(s.fileName(), QFile::ReadOwner | QFile::WriteOwner);
-
-  s.beginGroup("General");
-  s.setValue("reload_time", m_reloadTime);
-  s.endGroup();
-
-  s.beginGroup("MainWindow");
-  s.setValue("size", size());
-  s.setValue("pos", pos());
-  s.endGroup();
-
-  s.beginGroup("Account");
-  s.setValue("site_url", m_siteUrl);
-  s.setValue("username", m_userName);
-  s.setValue("oauth_client_id", m_clientId);
-  s.setValue("oauth_client_secret", m_clientSecret);
-  s.setValue("oauth_token", m_token);
-  s.setValue("oauth_token_secret", m_tokenSecret);
-  s.endGroup();
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::readSettings() {
-  QSettings& s = *settings;
-
-  s.beginGroup("General");
-  m_reloadTime = s.value("reload_time", 1).toInt();
-  if (m_reloadTime < 1)
-    m_reloadTime = 1;
-  s.endGroup();
-
-  s.beginGroup("MainWindow");
-  resize(s.value("size", QSize(550, 500)).toSize());
-  move(s.value("pos", QPoint(0, 0)).toPoint());
-  s.endGroup();
-
-  s.beginGroup("Account");
-  m_siteUrl = siteUrlFixer(s.value("site_url", "").toString());
-  m_userName = s.value("username", "").toString();
-  m_clientId = s.value("oauth_client_id", "").toString();
-  m_clientSecret = s.value("oauth_client_secret", "").toString();
-  m_token = s.value("oauth_token", "").toString();
-  m_tokenSecret = s.value("oauth_token_secret", "").toString();
-  s.endGroup();
-}
-
-//------------------------------------------------------------------------------
-
 void PumpApp::fetchAll() {
   m_inboxWidget->fetchNewer();
   m_directMinorWidget->fetchNewer();
@@ -434,11 +379,11 @@ void PumpApp::loadOlder() {
 //------------------------------------------------------------------------------
 
 QString PumpApp::inboxEndpoint(QString path) {
-  if (m_siteUrl.isEmpty()) {
+  if (m_s->siteUrl().isEmpty()) {
     errorMessage("Site not configured yet!");
     return "";
   }
-  return m_siteUrl + "/api/user/"+m_userName+"/inbox/" + path;
+  return m_s->siteUrl() + "/api/user/" + m_s->userName() + "/inbox/" + path;
 }
 
 //------------------------------------------------------------------------------
@@ -514,7 +459,7 @@ void PumpApp::postReply(QASObject* replyToObj, QString content) {
 //------------------------------------------------------------------------------
 
 void PumpApp::feed(QString verb, QVariantMap object, int response_id) {
-  QString endpoint = "api/user/"+m_userName+"/feed";
+  QString endpoint = "api/user/" + m_s->userName() + "/feed";
 
   QVariantMap data;
   if (!verb.isEmpty()) {
@@ -533,10 +478,10 @@ void PumpApp::request(QString endpoint, int response_id,
   if (!endpoint.startsWith("http")) {
     if (endpoint[0] != '/')
       endpoint = '/' + endpoint;
-    endpoint = m_siteUrl + endpoint;
+    endpoint = m_s->siteUrl() + endpoint;
   }
 
-  if (!endpoint.startsWith(m_siteUrl)) {
+  if (!endpoint.startsWith(m_s->siteUrl())) {
     qDebug() << "[DEBUG] dropping request for" << endpoint;
     return;
   }
@@ -547,8 +492,8 @@ void PumpApp::request(QString endpoint, int response_id,
   QStringList epl = endpoint.split("?");
   oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, 
                          QUrl(epl[0]));
-  oaRequest->setConsumerKey(m_clientId);
-  oaRequest->setConsumerSecretKey(m_clientSecret);
+  oaRequest->setConsumerKey(m_s->clientId());
+  oaRequest->setConsumerSecretKey(m_s->clientSecret());
 
   // I have no idea why this is the only way that seems to
   // work. Incredibly frustrating and ugly :-/
@@ -562,8 +507,8 @@ void PumpApp::request(QString endpoint, int response_id,
     oaRequest->setAdditionalParameters(params);
   }
   
-  oaRequest->setToken(m_token);
-  oaRequest->setTokenSecret(m_tokenSecret);
+  oaRequest->setToken(m_s->token());
+  oaRequest->setTokenSecret(m_s->tokenSecret());
 
   oaRequest->setHttpMethod(method); 
 

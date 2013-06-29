@@ -21,12 +21,13 @@
 #define _PUMPASETTINGSDIALOG_H_
 
 #include <QtGui>
+#include "pumpasettings.h"
 
 class PumpaSettingsDialog : public QDialog {
   Q_OBJECT
 
 public:
-  PumpaSettingsDialog(QSettings* settings, QWidget* parent=0);
+  PumpaSettingsDialog(PumpaSettings* settings, QWidget* parent=0);
 
   static int comboIndexToFeedInt(int i) {
     return comboIndexConverter(i, false); 
@@ -38,7 +39,8 @@ public:
 signals:
   void settingsChanged();
 
-// private slots:
+private slots:
+  void onOKClicked();
 //   void on_buttonBox_accepted();
 
 protected:
@@ -50,7 +52,7 @@ private slots:
 private:
   static int comboIndexConverter(int i, bool backwards=false);
   void updateUI();
-  QSettings* s;
+  PumpaSettings* s;
 
   QLabel* m_currentAccountLabel;
   QPushButton* m_authButton;

@@ -23,7 +23,7 @@
 
 //------------------------------------------------------------------------------
 
-PumpaSettingsDialog::PumpaSettingsDialog(QSettings* settings,
+PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
                                          QWidget* parent):
   QDialog(parent),
   s(settings)
@@ -79,6 +79,7 @@ PumpaSettingsDialog::PumpaSettingsDialog(QSettings* settings,
   m_buttonBox->setOrientation(Qt::Horizontal);
   m_buttonBox->setStandardButtons(QDialogButtonBox::Ok);
   connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
+  connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(onOKClicked()));
   connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
   m_layout->addWidget(m_buttonBox);
 
@@ -109,8 +110,6 @@ int PumpaSettingsDialog::comboIndexConverter(int ci, bool backwards) {
                  << (FEED_DIRECT | FEED_MENTIONS)
                  << (FEED_DIRECT | FEED_MENTIONS | FEED_INBOX)
                  << (FEED_DIRECT | FEED_MENTIONS | FEED_INBOX | FEED_MEANWHILE);
-    // for (int i=0; i<comboToFeeds.size(); ++i) 
-    //   qDebug() << "comboToFeeds" << i << comboToFeeds[i];
   }
 
   if (backwards) {
@@ -124,40 +123,30 @@ int PumpaSettingsDialog::comboIndexConverter(int ci, bool backwards) {
 //------------------------------------------------------------------------------
 
 void PumpaSettingsDialog::updateUI() {
-  QString accountId = siteUrlToAccountId(s->value("username").toString(),
-                                         s->value("site_url").toString());
+  QString accountId = siteUrlToAccountId(s->userName(), s->siteUrl());
   m_currentAccountLabel->setText(QString("Currently logged in as %1.").
                                  arg(accountId));
   
-  m_updateTimeSpinBox->setValue(s->value("reload_time").toInt());
+  m_updateTimeSpinBox->setValue(s->reloadTime());
 
-  m_useIconCheckBox->setChecked(s->value("").toBool());
+  m_useIconCheckBox->setChecked(s->useTrayIcon());
 
   m_highlightComboBox->
-    setCurrentIndex(feedIntToComboIndex(s->value("").toInt()));
+    setCurrentIndex(feedIntToComboIndex(s->highlightFeeds()));
 
   m_popupComboBox->
-    setCurrentIndex(feedIntToComboIndex(s->value("").toInt()));
+    setCurrentIndex(feedIntToComboIndex(s->popupFeeds()));
 }
 
 //------------------------------------------------------------------------------
 
-// void YAICSSettingsDialog::on_buttonBox_accepted() {
-//   s->setReloadTime(updateTimeSpinBox->value());
-//   s->setUseTrayIcon(trayIconCheckBox->isChecked());
-//   s->setTextToFilter(textToFilterEdit->text());
-//   // useApiRepeat = apiRepeatCheckBox->isChecked();
-//   s->setPrependReplies(prependRepliesCheckBox->isChecked());
+void PumpaSettingsDialog::onOKClicked() {
+  qDebug() << "onOKClicked()";
+  s->reloadTime(m_updateTimeSpinBox->value());
+  s->useTrayIcon(m_useIconCheckBox->isChecked());
 
-//   s->setHomeNotify((YAICSSettings::notifyType)
-//                    homeNotifyComboBox->currentIndex());
-//   s->setMentionsNotify((YAICSSettings::notifyType)
-//                        mentionsNotifyComboBox->currentIndex());
+  s->highlightFeeds(comboIndexToFeedInt(m_highlightComboBox->currentIndex()));
+  s->popupFeeds(comboIndexToFeedInt(m_popupComboBox->currentIndex()));
 
-//   s->setAPIUrl(slashify(APIUrlEdit->text()));
-//   s->setUsername(usernameEdit->text());
-//   s->setPassword(passwordEdit->text());
-//   s->setIgnoreSSLWarnings(secureWarningCheckBox->isChecked());
-
-//   emit settingsChanged();
-// }
+  emit accepted();
+}

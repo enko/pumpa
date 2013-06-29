@@ -69,9 +69,9 @@ QString changePairedTags(QString text,
 
 QString siteUrlToAccountId(QString username, QString url) {
   if (url.startsWith("http://"))
-    url.remove(0, 6);
-  if (url.startsWith("https://"))
     url.remove(0, 7);
+  if (url.startsWith("https://"))
+    url.remove(0, 8);
 
   if (url.endsWith('/'))
     url.chop(1);

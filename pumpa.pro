@@ -59,7 +59,8 @@ OBJECT_HEADERS = pumpapp.h qactivitystreams.h collectionwidget.h	\
 	json.h messagewindow.h messageedit.h fancyhighlighter.h		\
 	qaspell.h shortactivitywidget.h activitywidget.h		\
 	objectwidget.h actorwidget.h filedownloader.h richtextlabel.h	\
-	oauthwizard.h tabwidget.h util.h pumpasettingsdialog.h
+	oauthwizard.h tabwidget.h util.h pumpasettingsdialog.h		\
+	pumpasettings.h
 
 HEADERS += $$OBJECT_HEADERS pumpa_defines.h
 SOURCES += main.cpp
