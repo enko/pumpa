@@ -62,7 +62,7 @@ private:
   QComboBox* m_highlightComboBox;
   QComboBox* m_popupComboBox;
 
-  QFormLayout* m_formLayout;
+  // QFormLayout* m_formLayout;
   QVBoxLayout* m_layout;
 };
 

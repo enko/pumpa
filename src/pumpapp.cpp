@@ -36,8 +36,6 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   move(m_s->pos());
 
   m_settingsDialog = new PumpaSettingsDialog(m_s, this);
-  connect(m_settingsDialog, SIGNAL(settingsChanged()),
-          this, SLOT(readSettings()));
   
   oaRequest = new KQOAuthRequest(this);
   oaManager = new KQOAuthManager(this);

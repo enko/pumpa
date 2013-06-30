@@ -30,12 +30,16 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
 {
   m_layout = new QVBoxLayout;
 
+  // Account
+  QGroupBox* accountGroupBox = new QGroupBox("Account");
+  QVBoxLayout* accountLayout = new QVBoxLayout;
+
   m_currentAccountLabel = new QLabel("Not logged in currently.", this);
-  m_layout->addWidget(m_currentAccountLabel);
+  accountLayout->addWidget(m_currentAccountLabel);
 
   m_authButton = new QPushButton("Change account", this);
   connect(m_authButton, SIGNAL(clicked()), this, SLOT(onAuthButtonClicked()));
-  m_layout->addWidget(m_authButton);
+  accountLayout->addWidget(m_authButton);
 
   QLabel* acctInfoLabel = 
     new QLabel("Clicking \"Change account\" will run the "
@@ -44,19 +48,31 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
                "credentials since Pumpa only supports one "
                "account at a time.");
   acctInfoLabel->setWordWrap(true);
-  m_layout->addWidget(acctInfoLabel);
+  accountLayout->addWidget(acctInfoLabel);
 
-  m_formLayout = new QFormLayout;
+  accountGroupBox->setLayout(accountLayout);
+  m_layout->addWidget(accountGroupBox);
+
+  // User interface
+  QGroupBox* uiGroupBox = new QGroupBox("Interface");
+  QFormLayout* uiLayout = new QFormLayout;
 
   m_updateTimeSpinBox = new QSpinBox(this);
   m_updateTimeSpinBox->setMinimum(1);
   m_updateTimeSpinBox->setMaximum(30);
 
-  m_formLayout->addRow("Update interval (in minutes):",
+  uiLayout->addRow("Update interval (in minutes):",
                        m_updateTimeSpinBox);
 
   m_useIconCheckBox = new QCheckBox("Use icon in system tray", this);
-  m_formLayout->addRow(m_useIconCheckBox);
+  uiLayout->addRow(m_useIconCheckBox);
+
+  uiGroupBox->setLayout(uiLayout);
+  m_layout->addWidget(uiGroupBox);
+  
+  // Notifications
+  QGroupBox* notifyGroupBox = new QGroupBox("Notifications");
+  QFormLayout* notifyLayout = new QFormLayout;
 
   QStringList timelineList;
   timelineList << "Never"
@@ -67,13 +83,14 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
 
   m_highlightComboBox = new QComboBox(this);
   m_highlightComboBox->addItems(timelineList);
-  m_formLayout->addRow("Highlight tray icon on:", m_highlightComboBox);
+  notifyLayout->addRow("Highlight tray icon on:", m_highlightComboBox);
 
   m_popupComboBox = new QComboBox(this);
   m_popupComboBox->addItems(timelineList);
-  m_formLayout->addRow("Popup notification on:", m_popupComboBox);
+  notifyLayout->addRow("Popup notification on:", m_popupComboBox);
   
-  m_layout->addLayout(m_formLayout);
+  notifyGroupBox->setLayout(notifyLayout);
+  m_layout->addWidget(notifyGroupBox);
 
   m_buttonBox = new QDialogButtonBox(this);
   m_buttonBox->setOrientation(Qt::Horizontal);
@@ -141,7 +158,6 @@ void PumpaSettingsDialog::updateUI() {
 //------------------------------------------------------------------------------
 
 void PumpaSettingsDialog::onOKClicked() {
-  qDebug() << "onOKClicked()";
   s->reloadTime(m_updateTimeSpinBox->value());
   s->useTrayIcon(m_useIconCheckBox->isChecked());
 
