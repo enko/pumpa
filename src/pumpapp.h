@@ -84,6 +84,8 @@ private slots:
 
   void startPumping();
 
+  void launchOAuthWizard();
+
 protected:
   void timerEvent(QTimerEvent*);
 

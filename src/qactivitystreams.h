@@ -60,6 +60,8 @@ protected:
   QASObject(QString id, QObject* parent);
 
 public:
+  static void clearCache();
+
   static QASObject* getObject(QVariantMap json, QObject* parent);
   static QASObject* getObject(QString id) { 
     return s_objects.contains(id) ? s_objects[id] : NULL;
@@ -139,6 +141,8 @@ private:
   QASActor(QString id, QObject* parent);
 
 public:
+  static void clearCache();
+
   static QASActor* getActor(QVariantMap json, QObject* parent);
   virtual void update(QVariantMap json);
 
@@ -159,6 +163,8 @@ class QASActivity : public QASAbstractObject {
   QASActivity(QString id, QObject* parent);
 
 public:
+  static void clearCache();
+
   static QASActivity* getActivity(QVariantMap json, QObject* parent);
   void update(QVariantMap json);
 
@@ -200,6 +206,8 @@ protected:
   QASObjectList(QString url, QObject* parent);
 
 public:
+  static void clearCache();
+
   static QASObjectList* getObjectList(QVariantMap json, QObject* parent, 
                                       int id=0);
   void update(QVariantMap json, bool older);
@@ -242,6 +250,8 @@ protected:
   QASActorList(QString url, QObject* parent);
 
 public:
+  static void clearCache();
+
   static QASActorList* getActorList(QVariantMap json, QObject* parent,
                                     int id=0);
 
@@ -267,6 +277,8 @@ protected:
   QASCollection(QString url, QObject* parent);
 
 public:
+  static void clearCache();
+
   static QASCollection* initCollection(QString url, QObject* parent);
   static QASCollection* getCollection(QVariantMap json, QObject* parent,
                                       int id);
@@ -299,5 +311,7 @@ private:
 
   static QMap<QString, QASCollection*> s_collections;
 };
+
+void resetActivityStreams();
 
 #endif /* _QACTIVITYSTREAMS_H_ */

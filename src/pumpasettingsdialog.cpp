@@ -106,7 +106,8 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
 //------------------------------------------------------------------------------
 
 void PumpaSettingsDialog::onAuthButtonClicked() {
-  qDebug() << "clicked";
+  accept();
+  emit newAccount();
 }
 
 //------------------------------------------------------------------------------

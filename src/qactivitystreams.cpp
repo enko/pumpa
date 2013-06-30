@@ -36,6 +36,29 @@ QMap<QString, QASObjectList*> QASObjectList::s_objectLists;
 QMap<QString, QASActorList*> QASActorList::s_actorLists;
 QMap<QString, QASCollection*> QASCollection::s_collections;
 
+template <class T> void deleteMap(QMap<QString, T> map) {
+  typename QMap<QString, T>::iterator i;
+  for (i = map.begin(); i != map.end(); ++i)
+    delete i.value();
+  map.clear();
+}
+
+void QASActor::clearCache() { deleteMap<QASActor*>(s_actors); }
+void QASObject::clearCache() { deleteMap<QASObject*>(s_objects); }
+void QASActivity::clearCache() { deleteMap<QASActivity*>(s_activities); }
+void QASObjectList::clearCache() { deleteMap<QASObjectList*>(s_objectLists); }
+void QASActorList::clearCache() { deleteMap<QASActorList*>(s_actorLists); }
+void QASCollection::clearCache() { deleteMap<QASCollection*>(s_collections); }
+
+void resetActivityStreams() {
+  QASActor::clearCache();
+  QASObject::clearCache();
+  QASActivity::clearCache();
+  QASObjectList::clearCache();
+  QASActorList::clearCache();
+  QASCollection::clearCache();
+}
+
 //------------------------------------------------------------------------------
 
 qint64 sortIntByDateTime(QDateTime dt) {

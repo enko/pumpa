@@ -37,7 +37,7 @@ public:
   }
 
 signals:
-  void settingsChanged();
+  void newAccount();
 
 private slots:
   void onOKClicked();

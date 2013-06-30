@@ -36,6 +36,8 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   move(m_s->pos());
 
   m_settingsDialog = new PumpaSettingsDialog(m_s, this);
+  connect(m_settingsDialog, SIGNAL(newAccount()),
+          this, SLOT(launchOAuthWizard()));
   
   oaRequest = new KQOAuthRequest(this);
   oaManager = new KQOAuthManager(this);
@@ -74,16 +76,9 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
 
   m_timerId = -1;
 
-  if (!haveOAuth()) {
-    m_wiz = new OAuthWizard(this);
-    connect(m_wiz, SIGNAL(clientRegistered(QString, QString, QString, QString)),
-            this, SLOT(onClientRegistered(QString, QString, QString, QString)));
-    connect(m_wiz, SIGNAL(accessTokenReceived(QString, QString)),
-            this, SLOT(onAccessTokenReceived(QString, QString)));
-    connect(m_wiz, SIGNAL(rejected()), this, SLOT(exit()));
-    connect(m_wiz, SIGNAL(accepted()), this, SLOT(show()));
-    m_wiz->show();
-  } else
+  if (!haveOAuth())
+    launchOAuthWizard();
+  else
     startPumping();
 }
 
@@ -96,9 +91,25 @@ PumpApp::~PumpApp() {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::startPumping() {
-  // Setup endpoints for our timeline widgets
+void PumpApp::launchOAuthWizard() {
+  if (!m_wiz) {
+    m_wiz = new OAuthWizard(this);
+    connect(m_wiz, SIGNAL(clientRegistered(QString, QString, QString, QString)),
+            this, SLOT(onClientRegistered(QString, QString, QString, QString)));
+    connect(m_wiz, SIGNAL(accessTokenReceived(QString, QString)),
+            this, SLOT(onAccessTokenReceived(QString, QString)));
+    connect(m_wiz, SIGNAL(rejected()), this, SLOT(exit()));
+    connect(m_wiz, SIGNAL(accepted()), this, SLOT(show()));
+  }
+  m_wiz->show();
+}
 
+//------------------------------------------------------------------------------
+
+void PumpApp::startPumping() {
+  resetActivityStreams();
+
+  // Setup endpoints for our timeline widgets
   m_inboxWidget->setEndpoint(inboxEndpoint("major"));
   m_inboxMinorWidget->setEndpoint(inboxEndpoint("minor"));
   m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"));
