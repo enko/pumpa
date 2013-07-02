@@ -251,7 +251,7 @@ void PumpApp::notifyMessage(QString msg) {
 //------------------------------------------------------------------------------
 
 void PumpApp::timelineHighlighted(int feed) {
-  if (feed & m_s->highlightFeeds())
+  if ((feed & m_s->highlightFeeds()) && m_trayIcon)
     m_trayIcon->setIcon(QIcon(":/images/pumpa_glow.png"));
 
   if (feed & m_s->popupFeeds())
@@ -292,7 +292,7 @@ bool PumpApp::sendNotification(QString summary, QString text) {
   }
 #endif
 
-  if (QSystemTrayIcon::supportsMessages()) {
+  if (QSystemTrayIcon::supportsMessages() && m_trayIcon) {
     m_trayIcon->showMessage(CLIENT_FANCY_NAME, summary+" "+text);
     return true;
   }
