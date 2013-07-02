@@ -547,6 +547,8 @@ QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent,
 //------------------------------------------------------------------------------
 
 void QASObjectList::addObject(QASObject* obj) {
+  if (m_items.contains(obj))
+    return;
   m_items.append(obj);
   m_totalItems++;
   emit changed();

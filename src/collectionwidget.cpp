@@ -46,12 +46,15 @@ CollectionWidget::CollectionWidget(QWidget* parent, bool shortDisplay) :
 //------------------------------------------------------------------------------
 
 void CollectionWidget::setEndpoint(QString endpoint) {
-  // if (m_collection != NULL) {
-  //   m_collection->deleteLater();
+  QLayoutItem* item;
+  while ((item = m_itemLayout->takeAt(0)) != 0) {
+    if (dynamic_cast<QWidgetItem*>(item)) {
+      QWidget* w = item->widget();
+      delete w;
+    }
+    delete item;
+  }
 
-  //   qDebug() << "[WARNING]: trying to set collection object again!";
-  //   return;
-  // }
   m_firstTime = true;
   m_collection = QASCollection::initCollection(endpoint,
                                                parent()->parent()->parent());
