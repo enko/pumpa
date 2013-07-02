@@ -51,7 +51,6 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
   accountLayout->addWidget(acctInfoLabel);
 
   accountGroupBox->setLayout(accountLayout);
-  m_layout->addWidget(accountGroupBox);
 
   // User interface
   QGroupBox* uiGroupBox = new QGroupBox("Interface");
@@ -68,7 +67,6 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
   uiLayout->addRow(m_useIconCheckBox);
 
   uiGroupBox->setLayout(uiLayout);
-  m_layout->addWidget(uiGroupBox);
   
   // Notifications
   QGroupBox* notifyGroupBox = new QGroupBox("Notifications");
@@ -90,7 +88,6 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
   notifyLayout->addRow("Popup notification on:", m_popupComboBox);
   
   notifyGroupBox->setLayout(notifyLayout);
-  m_layout->addWidget(notifyGroupBox);
 
   m_buttonBox = new QDialogButtonBox(this);
   m_buttonBox->setOrientation(Qt::Horizontal);
@@ -98,6 +95,11 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
   connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
   connect(m_buttonBox, SIGNAL(accepted()), this, SLOT(onOKClicked()));
   connect(m_buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+
+  // Dialog layout
+  m_layout->addWidget(uiGroupBox);
+  m_layout->addWidget(notifyGroupBox);
+  m_layout->addWidget(accountGroupBox);
   m_layout->addWidget(m_buttonBox);
 
   setLayout(m_layout);
