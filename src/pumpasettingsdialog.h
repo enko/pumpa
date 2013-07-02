@@ -20,7 +20,16 @@
 #ifndef _PUMPASETTINGSDIALOG_H_
 #define _PUMPASETTINGSDIALOG_H_
 
-#include <QtGui>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QFormLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QSpinBox>
+#include <QCheckBox>
+#include <QComboBox>
 #include "pumpasettings.h"
 
 class PumpaSettingsDialog : public QDialog {
