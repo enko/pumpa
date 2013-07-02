@@ -29,6 +29,11 @@
 #include <QMenu>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QSystemTrayIcon>
+
+#ifdef USE_DBUS
+#include <QDBusInterface>
+#endif
 
 #include "QtKOAuth"
 
@@ -55,6 +60,10 @@ signals:
   void userAuthorizationStarted();
                     
 private slots:
+  void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
+  void updateTrayIcon();
+  void timelineHighlighted(int);
+
   void onLike(QASObject* obj);
   void onShare(QASObject* obj);
   void postNote(QString note);
@@ -88,8 +97,17 @@ private slots:
 
 protected:
   void timerEvent(QTimerEvent*);
+  virtual bool event(QEvent* e) {
+    if (e->type() == QEvent::WindowActivate)
+      resetNotifications();
+    return QMainWindow::event(e);
+  }
 
 private:
+  void resetNotifications();
+
+  void createTrayIcon();
+
   void connectCollection(CollectionWidget* w);
 
   bool haveOAuth();
@@ -104,6 +122,8 @@ private:
   QString inboxEndpoint(QString path);
 
   void feed(QString verb, QVariantMap object, int response_id);
+
+  bool sendNotification(QString summary, QString text);
   
   PumpaSettingsDialog* m_settingsDialog;
   PumpaSettings* m_s;
@@ -138,9 +158,18 @@ private:
   QASActor* m_selfActor;
 
   OAuthWizard* m_wiz;
+
+  QSystemTrayIcon* m_trayIcon;
+  QMenu* m_trayIconMenu;
+
   int m_timerId;
   int m_timerCount;
   int m_requests;
+
+  QSignalMapper* m_notifyMap;
+#ifdef USE_DBUS
+  QDBusInterface* m_dbus;
+#endif
 };
 
 #endif /* _PUMPAPP_H_ */

@@ -1,6 +1,7 @@
 <RCC>
 <qresource>
   <file>images/pumpa.png</file>
+  <file>images/pumpa_glow.png</file>
   <file>images/default.png</file>
   <file>images/broken_image.png</file>
 </qresource>

@@ -84,3 +84,10 @@ void PumpaSettings::setValue(QString name, QVariant value, QString group) {
 }
 
 //------------------------------------------------------------------------------
+
+void PumpaSettings::useTrayIcon(bool b) { 
+  bool old = useTrayIcon();
+  setValue("use_tray_icon", b); 
+  if (old != b)
+    emit trayIconChanged();
+}

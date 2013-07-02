@@ -29,6 +29,7 @@
 PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
   QMainWindow(parent),
   m_wiz(NULL),
+  m_trayIcon(NULL),
   m_requests(0)
 {
   m_s = new PumpaSettings(settingsFile, this);
@@ -46,6 +47,22 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
 
   createActions();
   createMenu();
+
+#ifdef USE_DBUS
+  m_dbus = new QDBusInterface("org.freedesktop.Notifications",
+                              "/org/freedesktop/Notifications",
+                              "org.freedesktop.Notifications");
+  if (!m_dbus->isValid()) {
+    qDebug() << "Unable to to connect to org.freedesktop.Notifications "
+      "dbus service.";
+    m_dbus = NULL;
+  }
+#endif
+
+  updateTrayIcon();
+  connect(m_s, SIGNAL(trayIconChanged()), this, SLOT(updateTrayIcon()));
+
+  m_notifyMap = new QSignalMapper(this);
 
   m_inboxWidget = new CollectionWidget(this);
   connectCollection(m_inboxWidget);
@@ -67,8 +84,16 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget->addTab(m_directMajorWidget, "&direct");
   m_tabWidget->addTab(m_inboxMinorWidget, "mean&while");
 
+  m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
+  m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);
+  m_notifyMap->setMapping(m_directMajorWidget, FEED_DIRECT);
+  m_notifyMap->setMapping(m_inboxMinorWidget, FEED_MEANWHILE);
+
+  connect(m_notifyMap, SIGNAL(mapped(int)),
+          this, SLOT(timelineHighlighted(int)));
+
   setWindowTitle(CLIENT_FANCY_NAME);
-  setWindowIcon(QIcon(":/images/pumpa.png"));
+  setWindowIcon(QIcon(CLIENT_ICON));
   setCentralWidget(m_tabWidget);
 
   // oaRequest->setEnableDebugOutput(true);
@@ -131,6 +156,7 @@ void PumpApp::connectCollection(CollectionWidget* w) {
           this, SLOT(statusMessage(const QString&)));
   connect(w, SIGNAL(like(QASObject*)), this, SLOT(onLike(QASObject*)));
   connect(w, SIGNAL(share(QASObject*)), this, SLOT(onShare(QASObject*)));
+  connect(w, SIGNAL(highlightMe()), m_notifyMap, SLOT(map()));
 }
 
 //------------------------------------------------------------------------------
@@ -166,6 +192,7 @@ bool PumpApp::haveOAuth() {
 
 void PumpApp::tabSelected(int index) {
   m_tabWidget->deHighlightTab(index);
+  resetNotifications();
 }
 
 //------------------------------------------------------------------------------
@@ -223,9 +250,105 @@ void PumpApp::notifyMessage(QString msg) {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::timelineHighlighted(int feed) {
+  if (feed & m_s->highlightFeeds())
+    m_trayIcon->setIcon(QIcon(":/images/pumpa_glow.png"));
+
+  if (feed & m_s->popupFeeds())
+    sendNotification(CLIENT_FANCY_NAME, "New messages.");
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::resetNotifications() {
+  m_trayIcon->setIcon(QIcon(CLIENT_ICON));
+  m_tabWidget->deHighlightTab();
+}
+
+//------------------------------------------------------------------------------
+
+bool PumpApp::sendNotification(QString summary, QString text) {
+#ifdef USE_DBUS
+  if (m_dbus && m_dbus->isValid()) {
+
+    // https://developer.gnome.org/notification-spec/
+    QList<QVariant> args;
+    args.append(CLIENT_NAME);       // Application Name
+    args.append(0123U);         // Replaces ID (0U)
+    args.append(QString());     // Notification Icon
+    args.append(summary);       // Summary
+    args.append(text);          // Body
+    args.append(QStringList()); // Actions
+
+    QVariantMap hints;
+    // for hints to make icon, see
+    // https://dev.visucore.com/bitcoin/doxygen/notificator_8cpp_source.html
+    args.append(hints);
+    args.append(3000);
+
+    m_dbus->callWithArgumentList(QDBus::NoBlock, "Notify", args);
+    return true;
+  }
+#endif
+
+  if (QSystemTrayIcon::supportsMessages()) {
+    m_trayIcon->showMessage(CLIENT_FANCY_NAME, summary+" "+text);
+    return true;
+  }
+  
+  qDebug() << "[NOTIFY]" << summary << text;
+  return false;
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::errorMessage(QString msg) {
   statusMessage("Error: " + msg);
   qDebug() << "[ERROR]:" << msg;
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::updateTrayIcon() {
+  bool useTray = m_s->useTrayIcon() && QSystemTrayIcon::isSystemTrayAvailable();
+
+  if (useTray) {
+    qApp->setQuitOnLastWindowClosed(false);
+    if (!m_trayIcon)
+      createTrayIcon();
+    else
+      m_trayIcon->show();
+  } else {
+    qApp->setQuitOnLastWindowClosed(true);
+    if (m_trayIcon)
+      m_trayIcon->hide();
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::createTrayIcon() {
+  m_trayIconMenu = new QMenu(this);
+  m_trayIconMenu->addAction(newNoteAction);
+  m_trayIconMenu->addAction(newPictureAction);
+  m_trayIconMenu->addSeparator();
+  m_trayIconMenu->addAction(exitAction);
+  
+  m_trayIcon = new QSystemTrayIcon(QIcon(CLIENT_ICON));
+  connect(m_trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+          this, SLOT(trayIconActivated(QSystemTrayIcon::ActivationReason)));
+  m_trayIcon->setContextMenu(m_trayIconMenu);
+  m_trayIcon->setToolTip(CLIENT_FANCY_NAME);
+  m_trayIcon->show();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::trayIconActivated(QSystemTrayIcon::ActivationReason reason) {
+  if (reason == QSystemTrayIcon::Trigger) {
+    m_trayIcon->setIcon(QIcon(CLIENT_ICON));
+    setVisible(!isVisible());
+  }
 }
 
 //------------------------------------------------------------------------------

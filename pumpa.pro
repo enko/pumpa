@@ -28,6 +28,13 @@ QT += core gui network
 # Enable for gdb debug info
 CONFIG += debug
 
+
+unix: {
+  message("Enabling dbus")
+  QT += dbus
+  DEFINES += USE_DBUS
+}
+
 # Additions for Qt 4
 lessThan(QT_MAJOR_VERSION, 5) {
   message("Configuring for Qt 4")

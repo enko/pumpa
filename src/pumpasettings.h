@@ -83,13 +83,16 @@ public:
 
   void reloadTime(int i) { setValue("reload_time", i); }
 
-  void useTrayIcon(bool b) { setValue("use_tray_icon", b); }
+  void useTrayIcon(bool b);
 
   void highlightFeeds(int i) { setValue("highlight_feeds", i); }
   void popupFeeds(int i) { setValue("popup_feeds", i); }
 
   void size(QSize s) { setValue("size", s, "MainWindow"); }
   void pos(QPoint p) { setValue("pos", p, "MainWindow"); }
+
+signals:
+  void trayIconChanged();
 
 private:
   QVariant getValue(QString name, QVariant defaultValue=QVariant(),
