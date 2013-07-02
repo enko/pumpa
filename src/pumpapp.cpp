@@ -261,7 +261,8 @@ void PumpApp::timelineHighlighted(int feed) {
 //------------------------------------------------------------------------------
 
 void PumpApp::resetNotifications() {
-  m_trayIcon->setIcon(QIcon(CLIENT_ICON));
+  if (m_trayIcon)
+    m_trayIcon->setIcon(QIcon(CLIENT_ICON));
   m_tabWidget->deHighlightTab();
 }
 
