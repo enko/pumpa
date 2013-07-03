@@ -69,9 +69,15 @@ OBJECT_HEADERS = pumpapp.h qactivitystreams.h collectionwidget.h	\
 	oauthwizard.h tabwidget.h util.h pumpasettingsdialog.h		\
 	pumpasettings.h
 
-HEADERS += $$OBJECT_HEADERS pumpa_defines.h
+SUNDOWN_HEADERS = sundown/markdown.h sundown/html.h sundown/buffer.h
+
+SUNDOWN_SOURCES = sundown/autolink.c sundown/buffer.c		\
+	sundown/houdini_href_e.c sundown/houdini_html_e.c	\
+	sundown/html.c sundown/markdown.c sundown/stack.c
+
+HEADERS += $$OBJECT_HEADERS $$SUNDOWN_HEADERS pumpa_defines.h
 SOURCES += main.cpp
-SOURCES += $$replace(OBJECT_HEADERS, \\.h, .cpp)
+SOURCES += $$replace(OBJECT_HEADERS, \\.h, .cpp) $$SUNDOWN_SOURCES
 
 
 ######################################################################

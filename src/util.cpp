@@ -21,6 +21,34 @@
 
 #include <QRegExp>
 
+#include "sundown/markdown.h"
+#include "sundown/html.h"
+#include "sundown/buffer.h"
+
+//------------------------------------------------------------------------------
+
+QString markDown(QString text) {
+  struct sd_callbacks callbacks;
+  struct html_renderopt options;
+  sdhtml_renderer(&callbacks, &options, 0);
+
+  struct sd_markdown* markdown = sd_markdown_new(0, 16, &callbacks, &options);
+
+  struct buf* ob = bufnew(64);
+  // QByteArray ba = text.toLocal8Bit();
+  QByteArray ba = text.toUtf8();
+
+  sd_markdown_render(ob, (const unsigned char*)ba.constData(), ba.size(),
+                     markdown);
+  sd_markdown_free(markdown);
+
+  // QString ret = QString::fromLocal8Bit((char*)ob->data, ob->size);
+  QString ret = QString::fromUtf8((char*)ob->data, ob->size);
+  bufrelease(ob);
+
+  return ret;
+}
+
 //------------------------------------------------------------------------------
 
 QString siteUrlFixer(QString url) {
@@ -78,3 +106,4 @@ QString siteUrlToAccountId(QString username, QString url) {
  
   return username + "@" + url;
 }
+

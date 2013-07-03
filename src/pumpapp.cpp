@@ -553,22 +553,24 @@ void PumpApp::onShare(QASObject* obj) {
 
 QString PumpApp::addTextMarkup(QString text) {
   QString oldText = text;
-
-  text.replace("<", "&lt;");
-  text.replace(">", "&gt;");
-
-  text = linkifyUrls(text);
-  text.replace("\n", "<br/>");
   
-  text = changePairedTags(text, "\\*\\*", "\\*\\*",
-                             "<strong>", "</strong>");
-  text = changePairedTags(text, "\\*", "\\*", "<em>", "</em>");
+  text = markDown(text);
 
-  text = changePairedTags(text, "__", "__", "<strong>", "</strong>");
-  text = changePairedTags(text, "_", "_", "<em>", "</em>");
+  // text.replace("<", "&lt;");
+  // text.replace(">", "&gt;");
 
-  text = changePairedTags(text, "``", "``", "<pre>", "</pre>", "`");
-  text = changePairedTags(text, "`", "`", "<code>", "</code>");
+  // text = linkifyUrls(text);
+  // text.replace("\n", "<br/>");
+  
+  // text = changePairedTags(text, "\\*\\*", "\\*\\*",
+  //                            "<strong>", "</strong>");
+  // text = changePairedTags(text, "\\*", "\\*", "<em>", "</em>");
+
+  // text = changePairedTags(text, "__", "__", "<strong>", "</strong>");
+  // text = changePairedTags(text, "_", "_", "<em>", "</em>");
+
+  // text = changePairedTags(text, "``", "``", "<pre>", "</pre>", "`");
+  // text = changePairedTags(text, "`", "`", "<code>", "</code>");
 
   qDebug() << "[DEBUG]: addTextMarkup:" << oldText << "=>" << text;
   

@@ -20,6 +20,18 @@
 #include <QApplication>
 
 #include "pumpapp.h"
+#include "util.h"
+
+//------------------------------------------------------------------------------
+
+int testMarkDown(QString str) {
+  if (str.isEmpty())
+    str = QString("Hello *world*!\n\nThis is unicode: ") + QChar(0x267A) +
+      QString(" and straight HTML: <code>foo</code>.");
+    
+  qDebug() << markDown(str);
+  return 0;
+}
 
 //------------------------------------------------------------------------------
 
@@ -38,6 +50,8 @@ int main(int argc, char** argv) {
     QString arg(argv[1]);
     if (arg == "test") 
       settingsFile = "pumpa-test.conf";
+    else if (arg == "testmarkdown")
+      return testMarkDown(argc > 2 ? argv[2] : "");
     else if (arg == "testmarkup")
       return testMarkup(argv[2]);
     else if (arg == "testfeedint") {

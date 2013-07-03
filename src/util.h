@@ -55,4 +55,6 @@ QString changePairedTags(QString text,
 */
 QString siteUrlToAccountId(QString username, QString url);
 
+QString markDown(QString text);
+
 #endif /* _UTIL_H_ */
