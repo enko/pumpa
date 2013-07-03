@@ -20,10 +20,14 @@
 #include "messagewindow.h"
 #include "pumpa_defines.h"
 
+#include <QFormLayout>
+
 //------------------------------------------------------------------------------
 
-MessageWindow::MessageWindow(QASObject* obj, QWidget* parent) :
-  QDialog(parent), m_obj(obj)
+MessageWindow::MessageWindow(QASObject* obj, const PumpaSettings* s,
+                             QWidget* parent) :
+  QDialog(parent), m_toComboBox(NULL), m_ccComboBox(NULL),
+  m_obj(obj), m_s(s)
 {
   setMinimumSize(QSize(400,400));
 
@@ -42,12 +46,34 @@ MessageWindow::MessageWindow(QASObject* obj, QWidget* parent) :
   infoLayout->addStretch();
   infoLayout->addWidget(markupLabel);
 
+  QFormLayout* addressLayout = NULL;
+  if (m_obj == NULL) {
+    QStringList addressItems;
+    addressItems << ""
+                 << "Public"
+                 << "Followers";
+
+    m_toComboBox = new QComboBox(this);
+    m_toComboBox->addItems(addressItems);
+    m_toComboBox->setCurrentIndex(m_s->defaultToAddress());
+
+    m_ccComboBox = new QComboBox(this);
+    m_ccComboBox->addItems(addressItems);
+    m_ccComboBox->setCurrentIndex(2);
+
+    addressLayout = new QFormLayout;
+    addressLayout->addRow("To:", m_toComboBox);
+    addressLayout->addRow("Cc:", m_ccComboBox);
+  }
+
   textEdit = new MessageEdit(this);
 
   connect(textEdit, SIGNAL(ready()), this, SLOT(accept()));
 
   layout = new QVBoxLayout;
   layout->addLayout(infoLayout);
+  if (addressLayout)
+    layout->addLayout(addressLayout);
   layout->addWidget(textEdit);
 
   cancelButton = new QPushButton("Cancel");
@@ -83,10 +109,13 @@ void MessageWindow::showEvent(QShowEvent*) {
 void MessageWindow::accept() {
   QString msg = textEdit->toPlainText();
 
-  if (m_obj == NULL)
-    emit sendMessage(msg);
-  else
+  if (m_obj == NULL) {
+    int to = m_toComboBox->currentIndex();
+    int cc = m_ccComboBox->currentIndex();
+    emit sendMessage(msg, to, cc);
+  } else {
     emit sendReply(m_obj, msg);
+  }
 
   QDialog::accept();
 }

@@ -410,7 +410,9 @@ QASActivity::QASActivity(QString id, QObject* parent) :
   QASAbstractObject(parent),
   m_id(id),
   m_object(NULL),
-  m_actor(NULL)
+  m_actor(NULL),
+  m_to(NULL),
+  m_cc(NULL)
 {
 #if DEBUG >= 1
   qDebug() << "new Activity" << m_id;
@@ -458,6 +460,12 @@ void QASActivity::update(QVariantMap json) {
   if (m_verb == "share" && m_object && m_actor) 
     m_object->addShare(m_actor);
 
+  if (json.contains("to"))
+    m_to = QASObjectList::getObjectList(json["to"].toList(), parent());
+
+  if (json.contains("cc"))
+    m_cc = QASObjectList::getObjectList(json["cc"].toList(), parent());
+
   if (ch)
     emit changed();
 }
@@ -474,6 +482,18 @@ QASActivity* QASActivity::getActivity(QVariantMap json, QObject* parent) {
 
   act->update(json);
   return act;
+}
+
+//------------------------------------------------------------------------------
+
+bool QASActivity::hasTo() const { 
+  return m_to && m_to->size(); 
+}
+
+//------------------------------------------------------------------------------
+
+bool QASActivity::hasCc() const { 
+  return m_cc && m_cc->size(); 
 }
 
 //------------------------------------------------------------------------------
@@ -533,15 +553,27 @@ void QASObjectList::update(QVariantMap json, bool) {
 QASObjectList* QASObjectList::getObjectList(QVariantMap json, QObject* parent,
                                             int id) {
   QString url = json["url"].toString();
-  if (url.isEmpty())
-    return NULL;
+  // if (url.isEmpty())
+  //   return NULL;
 
   QASObjectList* ol = s_objectLists.contains(url) ? s_objectLists[url] :
     new QASObjectList(url, parent);
-  s_objectLists.insert(url, ol);
+  if (!url.isEmpty())
+    s_objectLists.insert(url, ol);
 
   ol->update(json, id & QAS_OLDER);
   return ol;
+}
+
+//------------------------------------------------------------------------------
+
+QASObjectList* QASObjectList::getObjectList(QVariantList json, QObject* parent,
+                                            int id) {
+  QVariantMap jmap;
+  jmap["totalItems"] = json.size();
+  jmap["items"] = json;
+
+  return getObjectList(jmap, parent, id);
 }
 
 //------------------------------------------------------------------------------

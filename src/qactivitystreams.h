@@ -181,6 +181,12 @@ public:
   QDateTime published() const { return m_published; }
   QString url() const { return m_url; }
 
+  bool hasTo() const;
+  bool hasCc() const;
+
+  QASObjectList* to() const { return m_to; }
+  QASObjectList* cc() const { return m_cc; }
+
 private:
   QString m_id;
   QString m_url;
@@ -193,6 +199,9 @@ private:
 
   QASObject* m_object;
   QASActor* m_actor;
+  
+  QASObjectList* m_to;
+  QASObjectList* m_cc;
 
   static QMap<QString, QASActivity*> s_activities;
 };
@@ -209,6 +218,8 @@ public:
   static void clearCache();
 
   static QASObjectList* getObjectList(QVariantMap json, QObject* parent, 
+                                      int id=0);
+  static QASObjectList* getObjectList(QVariantList json, QObject* parent, 
                                       int id=0);
   void update(QVariantMap json, bool older);
 

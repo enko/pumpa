@@ -67,7 +67,7 @@ private slots:
 
   void onLike(QASObject* obj);
   void onShare(QASObject* obj);
-  void postNote(QString note);
+  void postNote(QString note, int to, int cc);
   void postReply(QASObject* replyToObj, QString content);
   void errorMessage(QString msg);
   void notifyMessage(QString msg);
@@ -109,6 +109,9 @@ protected:
   }
 
 private:
+  QString apiUrl(QString endpoint);
+  void addRecipient(QVariantMap& data, QString name, int to);
+
   void resetNotifications();
 
   void createTrayIcon();
@@ -128,7 +131,8 @@ private:
   void fetchAll();
   QString inboxEndpoint(QString path);
 
-  void feed(QString verb, QVariantMap object, int response_id);
+  void feed(QString verb, QVariantMap object, int response_id,
+            int to=RECIPIENT_EMPTY, int cc=RECIPIENT_EMPTY);
 
   bool sendNotification(QString summary, QString text);
   

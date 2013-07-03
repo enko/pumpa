@@ -33,6 +33,12 @@
 #define FEED_DIRECT           2
 #define FEED_MEANWHILE        1
 
+#define RECIPIENT_EMPTY       0
+#define RECIPIENT_PUBLIC      1
+#define RECIPIENT_FOLLOWERS   2
+
+#define PUBLIC_RECIPIENT_ID   "http://activityschema.org/collection/public"
+
 //------------------------------------------------------------------------------
 
 // First byte is used to tell the slot receiving the network reply how

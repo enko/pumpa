@@ -70,6 +70,7 @@ private:
   QDialogButtonBox* m_buttonBox;
   QComboBox* m_highlightComboBox;
   QComboBox* m_popupComboBox;
+  QComboBox* m_defaultToComboBox;
 
   // QFormLayout* m_formLayout;
   QVBoxLayout* m_layout;

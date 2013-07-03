@@ -259,6 +259,32 @@ void ActivityWidget::updateShareButton(bool /*wait*/) {
 
 //------------------------------------------------------------------------------
 
+QString ActivityWidget::recipientsToString(QASObjectList* rec) {
+  if (!rec)
+    return "";
+
+  QStringList ret;
+
+  for (size_t i=0; i<rec->size(); ++i) {
+    QASObject* r = rec->at(i);
+    if (r->type() == "collection" && r->id() == PUBLIC_RECIPIENT_ID) {
+      ret << "Public";
+    } else {
+      QString name = r->displayName();
+      QString url = r->url();
+
+      if (url.isEmpty())
+        ret << name;
+      else
+        ret << QString("<a href=\"%1\">%2</a>").arg(url).arg(name);
+    }
+  }
+
+  return ret.join(", ");
+}
+
+//------------------------------------------------------------------------------
+
 void ActivityWidget::updateInfoText() {
   const QASObject* noteObj = m_activity->object();
   const QASActor* author = effectiveAuthor();
@@ -274,6 +300,12 @@ void ActivityWidget::updateInfoText() {
   QString generatorName = m_activity->generatorName();
   if (!generatorName.isEmpty() && !share)
     text += " via " + generatorName;
+
+  if (m_activity->hasTo())
+    text += " To: " + recipientsToString(m_activity->to());
+
+  if (m_activity->hasCc())
+    text += " CC: " + recipientsToString(m_activity->cc());
 
   QASObject* irtObj = noteObj->inReplyTo();
 

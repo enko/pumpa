@@ -490,9 +490,9 @@ void PumpApp::newNote(QASObject* obj) {
     qDebug() << "[DEBUG] Opening reply window to" << obj->type() << obj->id();
   }
 
-  MessageWindow* w = new MessageWindow(obj, this);
-  connect(w, SIGNAL(sendMessage(QString)),
-          this, SLOT(postNote(QString)));
+  MessageWindow* w = new MessageWindow(obj, m_s, this);
+  connect(w, SIGNAL(sendMessage(QString, int, int)),
+          this, SLOT(postNote(QString, int, int)));
   connect(w, SIGNAL(sendReply(QASObject*, QString)),
           this, SLOT(postReply(QASObject*, QString)));
   w->show();
@@ -577,7 +577,7 @@ QString PumpApp::addTextMarkup(QString text) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::postNote(QString content) {
+void PumpApp::postNote(QString content, int to, int cc) {
   if (content.isEmpty())
     return;
 
@@ -585,7 +585,7 @@ void PumpApp::postNote(QString content) {
   obj["objectType"] = "note";
   obj["content"] = addTextMarkup(content);
 
-  feed("post", obj, QAS_OBJECT | QAS_REFRESH);
+  feed("post", obj, QAS_OBJECT | QAS_REFRESH, to, cc);
 }
 
 //------------------------------------------------------------------------------
@@ -608,7 +608,27 @@ void PumpApp::postReply(QASObject* replyToObj, QString content) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::feed(QString verb, QVariantMap object, int response_id) {
+void PumpApp::addRecipient(QVariantMap& data, QString name, int to) {
+  if (to == RECIPIENT_EMPTY)
+    return;
+
+  QVariantList recList;
+
+  QVariantMap rec;
+  rec["objectType"] = "collection";
+  if (to == RECIPIENT_PUBLIC)
+    rec["id"] = PUBLIC_RECIPIENT_ID;
+  else if (to == RECIPIENT_FOLLOWERS)
+    rec["id"] = apiUrl("api/user/" + m_s->userName() + "/followers");
+
+  recList.append(rec);
+
+  data[name] = recList;
+}
+//------------------------------------------------------------------------------
+
+void PumpApp::feed(QString verb, QVariantMap object, int response_id,
+                   int to, int cc) {
   QString endpoint = "api/user/" + m_s->userName() + "/feed";
 
   QVariantMap data;
@@ -617,7 +637,22 @@ void PumpApp::feed(QString verb, QVariantMap object, int response_id) {
     data["object"] = object;
   }
 
+  addRecipient(data, "to", to);
+  addRecipient(data, "cc", cc);
+
   request(endpoint, response_id, KQOAuthRequest::POST, data);
+}
+
+//------------------------------------------------------------------------------
+
+QString PumpApp::apiUrl(QString endpoint) {
+  QString ret = endpoint;
+  if (!ret.startsWith("http")) {
+    if (ret[0] != '/')
+      ret = '/' + ret;
+    ret = m_s->siteUrl() + ret;
+  }
+  return ret;
 }
 
 //------------------------------------------------------------------------------
@@ -625,11 +660,7 @@ void PumpApp::feed(QString verb, QVariantMap object, int response_id) {
 void PumpApp::request(QString endpoint, int response_id,
                       KQOAuthRequest::RequestHttpMethod method,
                       QVariantMap data) {
-  if (!endpoint.startsWith("http")) {
-    if (endpoint[0] != '/')
-      endpoint = '/' + endpoint;
-    endpoint = m_s->siteUrl() + endpoint;
-  }
+  endpoint = apiUrl(endpoint);
 
   if (!endpoint.startsWith(m_s->siteUrl())) {
     qDebug() << "[DEBUG] dropping request for" << endpoint;

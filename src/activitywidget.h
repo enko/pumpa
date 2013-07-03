@@ -63,6 +63,7 @@ signals:
   void linkHovered(const QString&);
 
 private:
+  QString recipientsToString(QASObjectList* rec);
   QString processText(QString old_text, bool getImages=false);
   QASActor* effectiveAuthor();
   void updateInfoText();

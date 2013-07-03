@@ -69,6 +69,8 @@ public:
     return getValue("pos", QPoint(0, 0), "MainWindow").toPoint();
   }
 
+  int defaultToAddress() const { return getValue("default_to", 1).toInt(); }
+
   // setters
   void siteUrl(QString s) { setValue("site_url", s, "Account"); }
   void userName(QString s) { setValue("username", s, "Account"); }
@@ -90,6 +92,8 @@ public:
 
   void size(QSize s) { setValue("size", s, "MainWindow"); }
   void pos(QPoint p) { setValue("pos", p, "MainWindow"); }
+
+  void defaultToAddress(int i) { setValue("default_to", i); }
 
 signals:
   void trayIconChanged();

@@ -63,6 +63,15 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
   uiLayout->addRow("Update interval (in minutes):",
                        m_updateTimeSpinBox);
 
+  QStringList addressItems;
+  addressItems << ""
+               << "Public"
+               << "Followers";
+
+  m_defaultToComboBox = new QComboBox(this);
+  m_defaultToComboBox->addItems(addressItems);
+  uiLayout->addRow("Default recipient:", m_defaultToComboBox);
+
   m_useIconCheckBox = new QCheckBox("Use icon in system tray", this);
   uiLayout->addRow(m_useIconCheckBox);
 
@@ -156,6 +165,8 @@ void PumpaSettingsDialog::updateUI() {
 
   m_popupComboBox->
     setCurrentIndex(feedIntToComboIndex(s->popupFeeds()));
+
+  m_defaultToComboBox->setCurrentIndex(s->defaultToAddress());
 }
 
 //------------------------------------------------------------------------------
@@ -167,5 +178,6 @@ void PumpaSettingsDialog::onOKClicked() {
   s->highlightFeeds(comboIndexToFeedInt(m_highlightComboBox->currentIndex()));
   s->popupFeeds(comboIndexToFeedInt(m_popupComboBox->currentIndex()));
 
+  s->defaultToAddress(m_defaultToComboBox->currentIndex());
   emit accepted();
 }
