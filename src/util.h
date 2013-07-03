@@ -39,7 +39,8 @@ QString siteUrlFixer(QString url);
    Finds things that look like URLs and changes them into a href
    links.  
 */
-QString linkifyUrls(QString text);
+QString linkifyUrls(QString text, QString before=".*", QString after=".*");
+
 
 /* 
    Finds things delimited by 'begin' and 'end' and changes them to be

@@ -553,13 +553,13 @@ void PumpApp::onShare(QASObject* obj) {
 
 QString PumpApp::addTextMarkup(QString text) {
   QString oldText = text;
-  
+
+  text.replace("<", "&lt;");
+  text.replace(">", "&gt;");
+
   text = markDown(text);
 
-  // text.replace("<", "&lt;");
-  // text.replace(">", "&gt;");
-
-  // text = linkifyUrls(text);
+  text = linkifyUrls(text, "[^>\"]", "[^<\"]");
   // text.replace("\n", "<br/>");
   
   // text = changePairedTags(text, "\\*\\*", "\\*\\*",
