@@ -333,6 +333,7 @@ void PumpApp::createTrayIcon() {
   m_trayIconMenu->addAction(newNoteAction);
   m_trayIconMenu->addAction(newPictureAction);
   m_trayIconMenu->addSeparator();
+  m_trayIconMenu->addAction(m_showHideAction);
   m_trayIconMenu->addAction(exitAction);
   
   m_trayIcon = new QSystemTrayIcon(QIcon(CLIENT_ICON));
@@ -348,8 +349,21 @@ void PumpApp::createTrayIcon() {
 void PumpApp::trayIconActivated(QSystemTrayIcon::ActivationReason reason) {
   if (reason == QSystemTrayIcon::Trigger) {
     m_trayIcon->setIcon(QIcon(CLIENT_ICON));
-    setVisible(!isVisible());
+    toggleVisible();
   }
+}
+
+//------------------------------------------------------------------------------
+
+QString PumpApp::showHideText(bool visible) {
+  return QString("%1 &Window").arg(visible ? "Hide" : "Show" );
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::toggleVisible() {
+  setVisible(!isVisible());
+  m_showHideAction->setText(showHideText());
 }
 
 //------------------------------------------------------------------------------
@@ -390,6 +404,9 @@ void PumpApp::createActions() {
   newPictureAction->setShortcut(tr("Ctrl+P"));
   newPictureAction->setEnabled(false);
   connect(newPictureAction, SIGNAL(triggered()), this, SLOT(newPicture()));
+
+  m_showHideAction = new QAction(showHideText(true), this);
+  connect(m_showHideAction, SIGNAL(triggered()), this, SLOT(toggleVisible()));
 }
 
 //------------------------------------------------------------------------------

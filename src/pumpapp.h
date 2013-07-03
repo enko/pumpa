@@ -62,6 +62,7 @@ signals:
 private slots:
   void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
   void updateTrayIcon();
+  void toggleVisible();
   void timelineHighlighted(int);
 
   void onLike(QASObject* obj);
@@ -102,11 +103,17 @@ protected:
       resetNotifications();
     return QMainWindow::event(e);
   }
+  void closeEvent(QCloseEvent* e) {
+    m_showHideAction->setText(showHideText(false));
+    QMainWindow::closeEvent(e);
+  }
 
 private:
   void resetNotifications();
 
   void createTrayIcon();
+  QString showHideText(bool);
+  QString showHideText() { return showHideText(isVisible()); }
 
   void connectCollection(CollectionWidget* w);
 
@@ -161,6 +168,7 @@ private:
 
   QSystemTrayIcon* m_trayIcon;
   QMenu* m_trayIconMenu;
+  QAction* m_showHideAction;
 
   int m_timerId;
   int m_timerCount;
