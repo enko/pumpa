@@ -1,10 +1,10 @@
-# Pumpa v0.3
+# Pumpa v0.4
 
 Greetings, fellow pumpkins!
 
-Pumpa is a simple (and yet very unfinished) [pump.io][1] client
-written in C++ and Qt.  Some parts have been cherry picked from my old
-StatusNet client, yaics (<http://gitorious.org/yaics>).
+Pumpa is a simple [pump.io][1] client written in C++ and Qt.  Some
+parts have been cherry picked from my old StatusNet client, yaics
+(<http://gitorious.org/yaics>).
 
 Pumpa is licensed under the GNU GPL 3.0 (or later).  Please send bug
 reports and feature suggestions to me via e-mail <mats@sjoberg.fi> or
@@ -12,6 +12,9 @@ to my pump.io account [sazius@io.saz.im](https://io.saz.im/sazius).
 
 The [kQOAuth library][2] is copyrighted by [Johan Paul][3] and
 licensed under LGPL 2.1.
+
+The [sundown Markdown library][8] is copyrighted by Natacha Porté,
+Vicent Marti and others, and [permissively licensed][9].
 
 The current (temporary?) Pumpa logo is from the
 ["Fruit and Veggie Inventory"][4] entry to the
@@ -24,14 +27,15 @@ Oh, and "pumpa" just means pumpkin in Swedish :-)
 [1]: http://pump.io/
 [2]: https://github.com/kypeli/kQOAuth
 [3]: http://www.johanpaul.com/
-[3]: http://opengameart.org/content/fruit-and-veggie-inventory
-[4]: http://lpc.opengameart.org/
-
+[4]: http://opengameart.org/content/fruit-and-veggie-inventory
+[5]: http://lpc.opengameart.org/
+[8]: https://github.com/vmg/sundown
+[9]: https://github.com/vmg/sundown#license
 
 ## Build dependencies
   
 Pumpa should build with Qt 4.8 or Qt 5.0 or newer. If you are using Qt
-4, you will also need the [QJson library][4].
+4, you will also need the [QJson library][6].
 
 For example on Debian 7.0 "wheezy" the following command should
 install everything needed to build the code:
@@ -42,7 +46,7 @@ If you want spell checking install the aspell library as well:
 
     aptitude install libaspell-dev
 
-[4]: http://qjson.sourceforge.net/
+[6]: http://qjson.sourceforge.net/
 
 ## Building
 
@@ -76,38 +80,23 @@ appear that you need to copy & paste back into pumpa.
 
 ## Markup
 
-When you are posting a new note or comment a very limited Markdown-inspired syntax is available:
+When you are posting a new note or comment you can use [Markdown
+syntax][7], with the exception that inline HTML is **not**
+allowed. This is because otherwise it would be very easy to add broken
+HTML which will be very messy...
 
-* Surround with * or _ to make an *emphasis*.
-
-* Surround with ** or __ to make a **strong** statement.
-
-* Surround with a back-tick (`` ` ``) for `monospaced text` or two back-ticks
-
-        for pre-formatted
-        text 
-          like 
-             this...
-
-    **Known bug:** your "pre" text can't contain a back-tick... :-)
-
+[7]: http://daringfireball.net/projects/markdown/syntax
 
 ## Missing features
 
-There are a lot of missing features still.  This list contains some of
-them, that I almost certainly intend to implement once I get around to
-it (not necessarily in order of importance):
+There are still several missing features.  This list contains some of
+them, not necessarily in order of importance:
 
-* Notification system
-* Add a GUI preferences dialog
-* Add minimise to tray icon
-* Show To: and Cc: fields of notes
-* Add ability to see older notes/activities
-* Sharing of notes
 * Ability to post images
-* Images posted as image notes work fine, but images included in
-  `<img>` tags in regular notes do not work yet... not sure what to do
-  about that...
+* Better display of comments' context
+* Liking of comments
+* Ability to post to a particular user or user list
+* Possibly a WYSIWYG post editor (as an option)
 
 Feel free to suggest other features, however my intention is to keep
 Pumpa as simple as possible, so I might not be interested in
