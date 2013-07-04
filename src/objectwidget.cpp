@@ -92,9 +92,10 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
     m_layout->addWidget(m_infoLabel);
   }
 
-  updateLikes();
+  // updateLikes();
 
-  updateShares();
+  // updateShares();
+  onChanged();
   
   setLayout(m_layout);
 
@@ -106,6 +107,8 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
 void ObjectWidget::onChanged() {
   updateLikes();
   updateShares();
+  // setText(processText(m_object()->content(), true));
+  setText(m_object->content());
 }
 
 //------------------------------------------------------------------------------

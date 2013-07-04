@@ -274,7 +274,7 @@ void QASObject::update(QVariantMap json) {
 
   if (json.contains("inReplyTo")) {
     m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
-    connectSignals(m_inReplyTo, true, false);
+    connectSignals(m_inReplyTo, true, true);
   }
 
   if (json.contains("author")) {

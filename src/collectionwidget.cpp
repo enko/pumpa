@@ -19,6 +19,7 @@
 
 #include "collectionwidget.h"
 #include "pumpa_defines.h"
+#include "newactivitywidget.h"
 
 #include <QDebug>
 
@@ -113,28 +114,35 @@ void CollectionWidget::update(bool older) {
     QASObject* obj = activity->object();
     QString verb = activity->verb();
     
-    bool full = verb == "post" ||
-      (verb == "share" && !m_shown_objects.contains(obj));
+    // bool full = verb == "post" ||
+    //   (verb == "share" && !m_shown_objects.contains(obj));
+    // bool full = false;
 
-    if (!full) {
-      ShortActivityWidget* aw = new ShortActivityWidget(activity, this);
-      connect(aw, SIGNAL(linkHovered(const QString&)),
-              this,  SIGNAL(linkHovered(const QString&)));
+    NewActivityWidget* aw = new NewActivityWidget(activity, this);
+    connect(aw, SIGNAL(linkHovered(const QString&)),
+            this,  SIGNAL(linkHovered(const QString&)));
+    
+    m_itemLayout->insertWidget(li++, aw);
+
+    // if (!full) {
+    //   ShortActivityWidget* aw = new ShortActivityWidget(activity, this);
+    //   connect(aw, SIGNAL(linkHovered(const QString&)),
+    //           this,  SIGNAL(linkHovered(const QString&)));
       
-      m_itemLayout->insertWidget(li++, aw);
-    } else {
-      ActivityWidget* aw = new ActivityWidget(activity, this);
-      connect(aw, SIGNAL(newReply(QASObject*)),
-              this, SIGNAL(newReply(QASObject*)));
-      connect(aw, SIGNAL(linkHovered(const QString&)),
-              this,  SIGNAL(linkHovered(const QString&)));
-      connect(aw, SIGNAL(like(QASObject*)), this, SIGNAL(like(QASObject*)));
-      connect(aw, SIGNAL(share(QASObject*)), this, SIGNAL(share(QASObject*)));
+    //   m_itemLayout->insertWidget(li++, aw);
+    // } else {
+    //   ActivityWidget* aw = new ActivityWidget(activity, this);
+    //   connect(aw, SIGNAL(newReply(QASObject*)),
+    //           this, SIGNAL(newReply(QASObject*)));
+    //   connect(aw, SIGNAL(linkHovered(const QString&)),
+    //           this,  SIGNAL(linkHovered(const QString&)));
+    //   connect(aw, SIGNAL(like(QASObject*)), this, SIGNAL(like(QASObject*)));
+    //   connect(aw, SIGNAL(share(QASObject*)), this, SIGNAL(share(QASObject*)));
 
-      aw->updateText();
+    //   aw->updateText();
 
-      m_itemLayout->insertWidget(li++, aw);
-    }
+    //   m_itemLayout->insertWidget(li++, aw);
+    // }
     
     m_shown_objects.insert(obj);
 
