@@ -59,7 +59,8 @@ int main(int argc, char** argv) {
       return 0;
     }
     else if (arg == "autotestfeedint") {
-      int (*f)(int) = PumpaSettingsDialog::feedIntToComboIndex;
+      int (*f)(int) __attribute__ unused =
+        PumpaSettingsDialog::feedIntToComboIndex;
       Q_ASSERT(f(0) == 0);
       Q_ASSERT(f(1) == 0);
       Q_ASSERT(f(2) == 1);
@@ -76,7 +77,8 @@ int main(int argc, char** argv) {
       return 0;
     }
     else if (arg == "autotestcomboindex") {
-      int (*f)(int) = PumpaSettingsDialog::comboIndexToFeedInt;
+      int (*f)(int) __attribute__ unused =
+        PumpaSettingsDialog::comboIndexToFeedInt;
       Q_ASSERT(f(0) == 0);
       Q_ASSERT(f(1) == 2);
       Q_ASSERT(f(2) == 6);
