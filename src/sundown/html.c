@@ -25,6 +25,8 @@
 
 #include "houdini.h"
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 #define USE_XHTML(opt) (opt->flags & HTML_USE_XHTML)
 
 int

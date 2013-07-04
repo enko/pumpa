@@ -25,6 +25,8 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 #if defined(_WIN32)
 #define strncasecmp	_strnicmp
 #endif
