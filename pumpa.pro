@@ -25,9 +25,8 @@ OBJECTS_DIR = obj
 
 QT += core gui network
 
-# Enable for gdb debug info
-CONFIG += debug
-
+# To enable for gdb debug info, uncomment this
+# CONFIG += debug
 
 unix: {
   message("Enabling dbus")
@@ -49,7 +48,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 }
 
 # Optional spell checking support with libaspell
-exists( /usr/lib/libaspell* ) {
+exists( /usr/include/aspell.h ) {
   message("Using aspell")
   LIBS += -laspell
   DEFINES += USE_ASPELL
