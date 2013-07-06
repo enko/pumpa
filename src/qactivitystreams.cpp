@@ -29,7 +29,7 @@
 
 //------------------------------------------------------------------------------
 
-QMap<QString, QASActor*> QASActor::s_actors;
+// QMap<QString, QASActor*> QASActor::s_actors;
 QMap<QString, QASObject*> QASObject::s_objects;
 QMap<QString, QASActivity*> QASActivity::s_activities;
 QMap<QString, QASObjectList*> QASObjectList::s_objectLists;
@@ -43,7 +43,7 @@ template <class T> void deleteMap(QMap<QString, T> map) {
   map.clear();
 }
 
-void QASActor::clearCache() { deleteMap<QASActor*>(s_actors); }
+// void QASActor::clearCache() { deleteMap<QASActor*>(s_actors); }
 void QASObject::clearCache() { deleteMap<QASObject*>(s_objects); }
 void QASActivity::clearCache() { deleteMap<QASActivity*>(s_activities); }
 void QASObjectList::clearCache() { deleteMap<QASObjectList*>(s_objectLists); }
@@ -51,7 +51,7 @@ void QASActorList::clearCache() { deleteMap<QASActorList*>(s_actorLists); }
 void QASCollection::clearCache() { deleteMap<QASCollection*>(s_collections); }
 
 void resetActivityStreams() {
-  QASActor::clearCache();
+  // QASActor::clearCache();
   QASObject::clearCache();
   QASActivity::clearCache();
   QASObjectList::clearCache();
@@ -200,6 +200,8 @@ void QASActor::update(QVariantMap json) {
 #endif
   bool ch = false;
 
+  m_author = NULL;
+
   updateVar(json, m_url, "url", ch); 
   updateVar(json, m_displayName, "displayName", ch);
 
@@ -218,9 +220,9 @@ QASActor* QASActor::getActor(QVariantMap json, QObject* parent) {
   QString id = json["id"].toString();
   Q_ASSERT_X(!id.isEmpty(), "getActor", serializeJsonC(json));
 
-  QASActor* act = s_actors.contains(id) ?  s_actors[id] :
-    new QASActor(id, parent);
-  s_actors.insert(id, act);
+  QASActor* act = s_objects.contains(id) ?
+    qobject_cast<QASActor*>(s_objects[id]) : new QASActor(id, parent);
+  s_objects.insert(id, act);
 
   act->update(json);
   return act;
@@ -306,6 +308,9 @@ void QASObject::update(QVariantMap json) {
 QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
   QString id = json["id"].toString();
   Q_ASSERT_X(!id.isEmpty(), "getObject", serializeJsonC(json));
+
+  if (json["objectType"] == "person")
+    return QASActor::getActor(json, parent);
 
   QASObject* obj = s_objects.contains(id) ?  s_objects[id] :
     new QASObject(id, parent);

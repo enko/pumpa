@@ -128,7 +128,7 @@ protected:
   QASActorList* m_likes;
   QASActorList* m_shares;
 
-private:
+protected:
   static QMap<QString, QASObject*> s_objects;
 };
 
@@ -151,7 +151,7 @@ public:
   void setYou() { m_isYou = true; }
 
 private:
-  static QMap<QString, QASActor*> s_actors;
+  // static QMap<QString, QASActor*> s_actors;
   bool m_isYou;
 };
 

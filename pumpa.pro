@@ -63,7 +63,7 @@ VPATH       += src
 
 OBJECT_HEADERS = pumpapp.h qactivitystreams.h collectionwidget.h	\
 	json.h messagewindow.h messageedit.h fancyhighlighter.h		\
-	qaspell.h shortactivitywidget.h activitywidget.h		\
+	qaspell.h shortactivitywidget.h 		\
 	objectwidget.h actorwidget.h filedownloader.h richtextlabel.h	\
 	oauthwizard.h tabwidget.h util.h pumpasettingsdialog.h		\
 	pumpasettings.h newactivitywidget.h

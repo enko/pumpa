@@ -38,6 +38,8 @@ class NewActivityWidget : public AbstractActivityWidget {
 public:
   NewActivityWidget(QASActivity* a, QWidget* parent=0);
 
+  void refreshTimeLabels();
+
 public slots:
   virtual void onObjectChanged();
 
@@ -48,9 +50,7 @@ private:
   void updateText();
 
   RichTextLabel* m_textLabel;
-  // ActorWidget* m_actorWidget;
-  // QHBoxLayout* m_acrossLayout;
-  QVBoxLayout* m_layout;
+  ActorWidget* m_actorWidget;
   ObjectWidget* m_objectWidget;
 };
 

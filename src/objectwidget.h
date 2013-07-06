@@ -24,10 +24,14 @@
 #include <QWidget>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QPushButton>
+#include <QToolButton>
 
 #include "qactivitystreams.h"
 #include "filedownloader.h"
 #include "richtextlabel.h"
+
+#define MAX_WORD_LENGTH       40
 
 //------------------------------------------------------------------------------
 
@@ -59,15 +63,31 @@ public:
 
 signals:
   void linkHovered(const QString&);
+  void like(QASObject*);
+  void share(QASObject*);
+  void newReply(QASObject*);
 
 private slots:
   void onChanged();
   void updateImage();
   void imageClicked();
+  void onHasMoreClicked();
+
+  void favourite();
+  void repeat();
+  void reply();
 
 private:
   void updateLikes();
   void updateShares();
+
+  QString recipientsToString(QASObjectList* rec);
+  QString processText(QString old_text, bool getImages=false);
+
+  void addHasMoreButton(QASObjectList* ol, int li);
+  void updateFavourButton(bool wait = false);
+  void updateShareButton(bool wait = false);
+  void addObjectList(QASObjectList* ol);
 
   QString m_imageUrl;
   QString m_localFile;
@@ -79,8 +99,18 @@ private:
   RichTextLabel* m_likesLabel;
   RichTextLabel* m_sharesLabel;
   QLabel* m_titleLabel;
+  QPushButton* m_hasMoreButton;
+
+  QToolButton* m_favourButton;
+  QToolButton* m_shareButton;
+  QToolButton* m_commentButton;
+
+  QHBoxLayout* m_buttonLayout;
 
   QASObject* m_object;
+
+  QList<QASObject*> m_repliesList;
+  QSet<QString> m_repliesMap;
 };
 
 #endif /* _OBJECTWIDGET_H_ */

@@ -29,29 +29,31 @@ NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
   QASObject* obj = m_activity->object();
 
   m_textLabel = new RichTextLabel(this);
-  // m_actorWidget = new ActorWidget(m_activity->actor(), this, true);
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
   updateText();
 
+  QASActor* actor = qobject_cast<QASActor*>(obj);
+  if (!actor)
+    actor = obj->author();
+  m_actorWidget = new ActorWidget(actor, this);
+
   m_objectWidget = new ObjectWidget(obj, this);
   connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
-
   connect(obj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
           Qt::UniqueConnection);
 
+  QHBoxLayout* acrossLayout = new QHBoxLayout;
+  acrossLayout->setSpacing(10);
+  acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignTop);
+  acrossLayout->addWidget(m_objectWidget, 0, Qt::AlignTop); 
 
-  // QHBoxLayout* m_acrossLayout = new QHBoxLayout;
-  // m_acrossLayout->setSpacing(10);
-  // m_acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignTop);
-  // m_acrossLayout->addWidget(m_textLabel, 0, Qt::AlignTop); 
+  QVBoxLayout* layout = new QVBoxLayout;
+  layout->addWidget(m_textLabel);
+  layout->addLayout(acrossLayout);
 
-  m_layout = new QVBoxLayout;
-  m_layout->addWidget(m_textLabel);
-  m_layout->addWidget(m_objectWidget);
-
-  setLayout(m_layout);
+  setLayout(layout);
 }
 
 //------------------------------------------------------------------------------
@@ -76,5 +78,11 @@ void NewActivityWidget::updateText() {
 //------------------------------------------------------------------------------
 
 void NewActivityWidget::onObjectChanged() {
+  updateText();
+}
+
+//------------------------------------------------------------------------------
+
+void NewActivityWidget::refreshTimeLabels() {
   updateText();
 }

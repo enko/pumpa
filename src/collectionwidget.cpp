@@ -85,7 +85,7 @@ void CollectionWidget::refreshTimeLabels() {
   for (int i=0; i<m_itemLayout->count(); i++) {
     QLayoutItem* const li = m_itemLayout->itemAt(i);
     if (dynamic_cast<QWidgetItem*>(li)) {
-      ActivityWidget* aw = qobject_cast<ActivityWidget*>(li->widget());
+      NewActivityWidget* aw = qobject_cast<NewActivityWidget*>(li->widget());
       if (aw)
         aw->refreshTimeLabels();
     }

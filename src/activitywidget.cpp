@@ -203,8 +203,8 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
 
   m_rightLayout = new QVBoxLayout;
   m_rightLayout->setContentsMargins(0, 0, 0, 0);
-  m_rightLayout->addWidget(m_infoLabel);
-  m_rightLayout->addWidget(m_objectWidget);
+  m_rightLayout->addWidget(m_infoLabel, 0, Qt::AlignTop);
+  m_rightLayout->addWidget(m_objectWidget, 0, Qt::AlignTop);
   m_rightLayout->addLayout(m_buttonLayout);
 
   connect(noteObj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
