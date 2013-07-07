@@ -45,33 +45,6 @@ QString actorNames(QASActorList* alist) {
 
 //------------------------------------------------------------------------------
 
-QString splitLongWords(QString text) {
-  QRegExp rx("(^|\\s)([^\\s<>\"]{40,})(\\s|$)");
-  int pos = 0;
-  while ((pos = rx.indexIn(text, pos)) != -1) {
-    int len = rx.matchedLength();
-    QString word = rx.cap(2);
-    QString newText = rx.cap(1);
-
-    int wpos = 0;
-    while (true) {
-      newText += word.mid(wpos, 5);
-      wpos += 5;
-      if (wpos >= word.length())
-        break;
-      else
-        newText += "&shy;";
-    }
-    // qDebug() << "[DEBUG] splitLongWords:" << word << "=>" << newText;
-
-    text.replace(pos, len, newText);
-    pos += newText.count();
-  }
-  return text;
-}
-
-//------------------------------------------------------------------------------
-
 QString ObjectWidget::processText(QString old_text, bool getImages) {
   if (s_allowedTags.isEmpty()) {
     s_allowedTags 
@@ -125,7 +98,7 @@ QString ObjectWidget::processText(QString old_text, bool getImages) {
           qDebug() << "[DEBUG] processText: img" << imgSrc;
           
           FileDownloader* fd = FileDownloader::get(imgSrc, true);
-          connect(fd, SIGNAL(fileReady()), this, SLOT(onObjectChanged()),
+          connect(fd, SIGNAL(fileReady()), this, SLOT(onChanged()),
                   Qt::UniqueConnection);
           if (fd->ready())
             imagePlaceholder = 
@@ -149,9 +122,6 @@ QString ObjectWidget::processText(QString old_text, bool getImages) {
   while (text.endsWith("<br>"))
     text.chop(4);
 
-  // qDebug() << "processText:" << old_text;
-  // qDebug() << "          ->" << text;
-  // return splitLongWords(text);
   return text;
 }
 
@@ -192,32 +162,40 @@ void ImageLabel::mousePressEvent(QMouseEvent* event) {
 
 //------------------------------------------------------------------------------
 
-ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
+ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool childWidget) :
   QFrame(parent),
   m_infoLabel(NULL),
   m_likesLabel(NULL),
   m_sharesLabel(NULL),
   m_titleLabel(NULL),
   m_hasMoreButton(NULL),
-  m_object(obj)
+  m_shareButton(NULL),
+  m_commentButton(NULL),
+  m_object(obj),
+  m_childWidget(childWidget)
 {
-  // setLineWidth(1);
-  // setFrameStyle(QFrame::Box);
+  const QString objType = m_object->type();
+
+  if (m_childWidget) {
+    setLineWidth(1);
+    setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
+  }
+
   m_layout = new QVBoxLayout(this);
   m_layout->setContentsMargins(0, 0, 0, 0);
 
-  if (!obj->displayName().isEmpty()) {
-    m_titleLabel = new QLabel("<b>" + obj->displayName() + "</b>");
+  if (!m_object->displayName().isEmpty()) {
+    m_titleLabel = new QLabel("<b>" + m_object->displayName() + "</b>");
     m_layout->addWidget(m_titleLabel);
   }
 
-  if (obj->type() == "image") {
+  if (objType == "image") {
     m_imageLabel = new ImageLabel(this);
-    if (!obj->fullImageUrl().isEmpty()) {
+    if (!m_object->fullImageUrl().isEmpty()) {
       connect(m_imageLabel, SIGNAL(clicked()), this, SLOT(imageClicked()));
       m_imageLabel->setCursor(Qt::PointingHandCursor);
     }
-    m_imageUrl = obj->imageUrl();
+    m_imageUrl = m_object->imageUrl();
     updateImage();
 
     m_layout->addWidget(m_imageLabel);
@@ -228,53 +206,44 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
           this,  SIGNAL(linkHovered(const QString&)));
   m_layout->addWidget(m_textLabel, 0, Qt::AlignTop);
 
-  // if (obj->type() == "comment") {
-  //   m_infoLabel = new RichTextLabel(this);
-  //   connect(m_infoLabel, SIGNAL(linkHovered(const QString&)),
-  //           this, SIGNAL(linkHovered(const QString&)));
-
-  //   m_layout->addWidget(m_infoLabel, 0, Qt::AlignTop);
+  // if (m_childWidget) {
+  m_infoLabel = new RichTextLabel(this);
+  connect(m_infoLabel, SIGNAL(linkHovered(const QString&)),
+          this, SIGNAL(linkHovered(const QString&)));
+  
+  m_layout->addWidget(m_infoLabel, 0, Qt::AlignTop);
   // }
+
+  m_buttonLayout = new QHBoxLayout;
 
   m_favourButton = new QToolButton();
   m_favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
   m_favourButton->setFocusPolicy(Qt::NoFocus);
-  updateFavourButton();
   connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
-
-  m_shareButton = new QToolButton();
-  m_shareButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  m_shareButton->setFocusPolicy(Qt::NoFocus);
-  updateShareButton();
-  connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
-
-  m_commentButton = new QToolButton();
-  m_commentButton->setText("comment");
-  m_commentButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  m_commentButton->setFocusPolicy(Qt::NoFocus);
-  connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
-
-  m_buttonLayout = new QHBoxLayout;
   m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
-  m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
-  m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
-  m_buttonLayout->addStretch();
 
-  m_layout->addLayout(m_buttonLayout);
+  if (!m_childWidget) {
+    m_shareButton = new QToolButton();
+    m_shareButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    m_shareButton->setFocusPolicy(Qt::NoFocus);
+    connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
+    m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
 
-  QASObjectList* ol = m_object->replies();
-  if (ol) {
-    connect(ol, SIGNAL(changed()), this, SLOT(onChanged()),
-            Qt::UniqueConnection);
-    
-    if (m_object->numReplies() > 0)
-      addObjectList(ol);
+    m_commentButton = new QToolButton();
+    m_commentButton->setText("comment");
+    m_commentButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    m_commentButton->setFocusPolicy(Qt::NoFocus);
+    connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
+    m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
   }
 
-  // updateLikes();
+  m_buttonLayout->addStretch();
+  m_layout->addLayout(m_buttonLayout);
 
-  // updateShares();
+  m_commentsLayout = new QVBoxLayout;
   onChanged();
+
+  m_layout->addLayout(m_commentsLayout);
   
   setLayout(m_layout);
 
@@ -286,11 +255,28 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
 void ObjectWidget::onChanged() {
   updateLikes();
   updateShares();
-  // setText(processText(m_object()->content(), true));
-  setText(m_object->content());
 
+  updateFavourButton();
+  updateShareButton();
+
+  setText(processText(m_object->content(), true));
+
+  QString infoStr = QString("<a href=\"%2\">%1</a>").
+    arg(relativeFuzzyTime(m_object->published())).
+    arg(m_object->url());
+
+  QASActor* author = m_object->author();
+  if (author)
+    infoStr = QString("<a href=\"%2\">%1</a> at ").
+      arg(author->displayName()).
+      arg(author->url()) + infoStr;
+
+  setInfo(infoStr);
   if (m_object->numReplies() > 0) {
     QASObjectList* ol = m_object->replies();
+    if (ol) 
+      connect(ol, SIGNAL(changed()), this, SLOT(onChanged()),
+              Qt::UniqueConnection);
     addObjectList(ol);
   }
 }
@@ -314,6 +300,9 @@ void ObjectWidget::setInfo(QString text) {
 //------------------------------------------------------------------------------
 
 void ObjectWidget::updateFavourButton(bool wait) {
+  if (!m_favourButton)
+    return;
+
   QString text = m_object->liked() ? "unlike" : "like";
   if (wait)
     text = "...";
@@ -323,6 +312,9 @@ void ObjectWidget::updateFavourButton(bool wait) {
 //------------------------------------------------------------------------------
 
 void ObjectWidget::updateShareButton(bool /*wait*/) {
+  if (!m_shareButton)
+    return;
+
   m_shareButton->setText("share");
 }
 
@@ -415,7 +407,7 @@ void ObjectWidget::imageClicked() {
 //------------------------------------------------------------------------------
 
 void ObjectWidget::addObjectList(QASObjectList* ol) {
-  int li = 3; // index where to insert next widget in the layout
+  int li = 0; // index where to insert next widget in the layout
   int li_before = li;
   if (m_hasMoreButton != NULL)
     li++;
@@ -450,28 +442,19 @@ void ObjectWidget::addObjectList(QASObjectList* ol) {
     QASActor* author = replyObj->author();
 
     ActorWidget* aw = new ActorWidget(author, this, true);
-    ObjectWidget* ow = new ObjectWidget(replyObj, this);
+    ObjectWidget* ow = new ObjectWidget(replyObj, this, true);
 
-    ow->setLineWidth(1);
-    ow->setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
-    
-    QString content = processText(replyObj->content(), false);
-
-    ow->setText(content);
-    ow->setInfo(QString("<a href=\"%2\">%1</a> at <a href=\"%4\">%3</a>").
-                arg(author->displayName()).
-                arg(author->url()).
-                arg(relativeFuzzyTime(replyObj->published())).
-                arg(replyObj->url()));
     connect(ow, SIGNAL(linkHovered(const QString&)),
             this, SIGNAL(linkHovered(const QString&)));
+    connect(ow, SIGNAL(like(QASObject*)), 
+            this, SIGNAL(like(QASObject*)));
 
     QHBoxLayout* replyLayout = new QHBoxLayout;
     replyLayout->setContentsMargins(0, 0, 0, 0);
     replyLayout->addWidget(aw, 0, Qt::AlignTop);
     replyLayout->addWidget(ow, 0, Qt::AlignTop);
     
-    m_layout->insertLayout(li + i, replyLayout);
+    m_commentsLayout->insertLayout(li + i, replyLayout);
     m_repliesList.insert(i, replyObj);
     m_repliesMap.insert(replyId);
   }
@@ -482,7 +465,7 @@ void ObjectWidget::addObjectList(QASObjectList* ol) {
     //          << ol->totalItems();
     addHasMoreButton(ol, li_before);
   } else if (m_hasMoreButton != NULL) {
-    m_layout->removeWidget(m_hasMoreButton);
+    m_commentsLayout->removeWidget(m_hasMoreButton);
     delete m_hasMoreButton;
     m_hasMoreButton = NULL;
   }
@@ -496,7 +479,7 @@ void ObjectWidget::addHasMoreButton(QASObjectList* ol, int li) {
   if (m_hasMoreButton == NULL) {
     m_hasMoreButton = new QPushButton(this);
     m_hasMoreButton->setFocusPolicy(Qt::NoFocus);
-    m_layout->insertWidget(li, m_hasMoreButton);
+    m_commentsLayout->insertWidget(li, m_hasMoreButton);
     connect(m_hasMoreButton, SIGNAL(clicked()), 
             this, SLOT(onHasMoreClicked()));
   }

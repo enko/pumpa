@@ -18,6 +18,7 @@
 */
 
 #include "newactivitywidget.h"
+#include "pumpa_defines.h"
 
 #include <QDebug>
 
@@ -41,6 +42,13 @@ NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
   m_objectWidget = new ObjectWidget(obj, this);
   connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
+  connect(m_objectWidget, SIGNAL(newReply(QASObject*)),
+          this,  SIGNAL(newReply(QASObject*)));
+  connect(m_objectWidget, SIGNAL(like(QASObject*)),
+          this,  SIGNAL(like(QASObject*)));
+  connect(m_objectWidget, SIGNAL(share(QASObject*)),
+          this,  SIGNAL(share(QASObject*)));
+
   connect(obj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
           Qt::UniqueConnection);
 
@@ -59,7 +67,7 @@ NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
 //------------------------------------------------------------------------------
 
 void NewActivityWidget::updateText() {
-  QString content = m_activity->content();
+  QString text = m_activity->content();
   // QASObject* obj = m_activity->object();
   // QString objContent = obj->content();
   // if (!objContent.isEmpty()) {
@@ -72,7 +80,20 @@ void NewActivityWidget::updateText() {
   //     content += author->displayName() + ": ";
   //   content += "\"" + objContent + " ...\"";
   // }
-  m_textLabel->setText(content);
+
+  bool share = (m_activity->verb() == "share");
+
+  QString generatorName = m_activity->generatorName();
+  if (!generatorName.isEmpty() && !share)
+    text += " via " + generatorName;
+
+  if (m_activity->hasTo())
+    text += " To: " + recipientsToString(m_activity->to());
+
+  if (m_activity->hasCc())
+    text += " CC: " + recipientsToString(m_activity->cc());
+
+  m_textLabel->setText(text);
 }
  
 //------------------------------------------------------------------------------
@@ -85,4 +106,30 @@ void NewActivityWidget::onObjectChanged() {
 
 void NewActivityWidget::refreshTimeLabels() {
   updateText();
+}
+
+//------------------------------------------------------------------------------
+
+QString NewActivityWidget::recipientsToString(QASObjectList* rec) {
+  if (!rec)
+    return "";
+
+  QStringList ret;
+
+  for (size_t i=0; i<rec->size(); ++i) {
+    QASObject* r = rec->at(i);
+    if (r->type() == "collection" && r->id() == PUBLIC_RECIPIENT_ID) {
+      ret << "Public";
+    } else {
+      QString name = r->displayName();
+      QString url = r->url();
+
+      if (url.isEmpty())
+        ret << name;
+      else
+        ret << QString("<a href=\"%1\">%2</a>").arg(url).arg(name);
+    }
+  }
+
+  return ret.join(", ");
 }

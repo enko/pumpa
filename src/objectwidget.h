@@ -54,7 +54,7 @@ class ObjectWidget : public QFrame {
   Q_OBJECT
 
 public:
-  ObjectWidget(QASObject* obj, QWidget* parent = 0);
+  ObjectWidget(QASObject* obj, QWidget* parent = 0, bool childWidget=false);
 
   QASObject* object() const { return m_object; }
 
@@ -106,11 +106,14 @@ private:
   QToolButton* m_commentButton;
 
   QHBoxLayout* m_buttonLayout;
+  QVBoxLayout* m_commentsLayout;
 
   QASObject* m_object;
 
   QList<QASObject*> m_repliesList;
   QSet<QString> m_repliesMap;
+
+  bool m_childWidget;
 };
 
 #endif /* _OBJECTWIDGET_H_ */

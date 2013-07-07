@@ -121,6 +121,12 @@ void CollectionWidget::update(bool older) {
     NewActivityWidget* aw = new NewActivityWidget(activity, this);
     connect(aw, SIGNAL(linkHovered(const QString&)),
             this,  SIGNAL(linkHovered(const QString&)));
+    connect(aw, SIGNAL(newReply(QASObject*)),
+            this,  SIGNAL(newReply(QASObject*)));
+    connect(aw, SIGNAL(like(QASObject*)),
+            this,  SIGNAL(like(QASObject*)));
+    connect(aw, SIGNAL(share(QASObject*)),
+            this,  SIGNAL(share(QASObject*)));
     
     m_itemLayout->insertWidget(li++, aw);
 

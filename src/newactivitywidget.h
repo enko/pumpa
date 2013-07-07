@@ -45,9 +45,13 @@ public slots:
 
 signals:
   void linkHovered(const QString&);
+  void newReply(QASObject*);
+  void like(QASObject*);
+  void share(QASObject*);
 
 private:
   void updateText();
+  QString recipientsToString(QASObjectList* rec);
 
   RichTextLabel* m_textLabel;
   ActorWidget* m_actorWidget;
