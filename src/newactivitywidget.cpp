@@ -25,7 +25,9 @@
 //------------------------------------------------------------------------------
 
 NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
-  AbstractActivityWidget(a, parent)
+  AbstractActivityWidget(a, parent),
+  m_shortObjectWidget(NULL),
+  m_irtObjectWidget(NULL)
 {
   const QString verb = m_activity->verb();
   QASObject* obj = m_activity->object();
@@ -36,15 +38,6 @@ NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
   m_textLabel = new RichTextLabel(this);
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
-
-  bool smallAvatar = false;
-  if (objType == "person")
-    smallAvatar = true;
-
-  QASActor* actor = qobject_cast<QASActor*>(obj);
-  if (!actor)
-    actor = obj->author();
-  m_actorWidget = new ActorWidget(actor, this, smallAvatar);
 
   m_objectWidget = new ObjectWidget(obj, this);
   connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
@@ -59,43 +52,59 @@ NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
   connect(obj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
           Qt::UniqueConnection);
 
-  QHBoxLayout* acrossLayout = new QHBoxLayout;
-  acrossLayout->setSpacing(10);
-  acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignTop);
-  acrossLayout->addWidget(m_objectWidget, 0, Qt::AlignTop); 
+  QVBoxLayout* layout = new QVBoxLayout;
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->addWidget(m_textLabel, 0, Qt::AlignTop);
 
-  m_showObjectButton = new QPushButton("more", this);
-  m_showObjectButton->setMaximumWidth(64);
-  m_showObjectButton->setFocusPolicy(Qt::NoFocus);
-  connect(m_showObjectButton, SIGNAL(clicked()), this, SLOT(showObject()));
+  if (!m_showObject) {
+    m_shortObjectWidget = new ShortObjectWidget(obj, this);
+    connect(m_shortObjectWidget, SIGNAL(moreClicked()),
+            this, SLOT(showObject()));
+    layout->addWidget(m_shortObjectWidget);
+  }  
 
-  m_excerptLabel = new RichTextLabel(this);
-  
-  QHBoxLayout* buttonLayout = new QHBoxLayout;
-  buttonLayout->setSpacing(10);
-  buttonLayout->addWidget(m_showObjectButton, 0, Qt::AlignTop);
-  buttonLayout->addWidget(m_excerptLabel, 0, Qt::AlignTop);
-  // buttonLayout->addStretch();
+  qDebug() << "objType" << objType;
+  if (objType == "comment") {
+    QASObject* irtObj = obj->inReplyTo();
+    if (irtObj) {
+      qDebug() << "HERE" << irtObj << irtObj->url();
+      if (!irtObj->url().isEmpty()) {
+        m_irtObjectWidget = new ShortObjectWidget(irtObj, this);
+        layout->addWidget(m_irtObjectWidget, 0, Qt::AlignTop);
+      } else {
+        irtObj->refresh();
+      }
+    }
+  }
+  layout->addWidget(m_objectWidget, 0, Qt::AlignTop);
+  layout->addWidget(new QLabel("<hr />"));
 
   updateText();
   updateShowObject();
-
-  QVBoxLayout* layout = new QVBoxLayout;
-  layout->setContentsMargins(0, 0, 0, 0);
-  layout->addWidget(m_textLabel);
-  layout->addLayout(buttonLayout);
-  layout->addLayout(acrossLayout);
-  layout->addWidget(new QLabel("<hr />"));
 
   setLayout(layout);
 }
 
 //------------------------------------------------------------------------------
 
+void NewActivityWidget::onObjectChanged() {
+  updateText();
+}
+
+//------------------------------------------------------------------------------
+
+void NewActivityWidget::refreshTimeLabels() {
+  updateText();
+}
+
+//------------------------------------------------------------------------------
+
 void NewActivityWidget::updateShowObject() {
-  m_showObjectButton->setVisible(!m_showObject);
-  m_excerptLabel->setVisible(!m_showObject);
-  m_actorWidget->setVisible(m_showObject);
+  // m_showObjectButton->setVisible(!m_showObject);
+  // m_excerptLabel->setVisible(!m_showObject);
+  // m_actorWidget->setVisible(m_showObject);
+  if (m_shortObjectWidget)
+    m_shortObjectWidget->setVisible(!m_showObject);
   m_objectWidget->setVisible(m_showObject);
 }
 
@@ -128,35 +137,23 @@ void NewActivityWidget::updateText() {
   m_textLabel->setText(text);
 
   // excerpt
-  if (!m_showObject) {
-  QASObject* obj = m_activity->object();
-  QString objContent = obj->content();
-  if (!objContent.isEmpty()) {
-    objContent.replace(QRegExp("<[^>]*>"), " ");
-    objContent = objContent.section(QRegExp("\\s+"), 0, 10,
-                                    QString::SectionSkipEmpty);
-    QASActor* author = obj->author();
-    QString content;
-    if (author && !author->displayName().isEmpty())
-      content += author->displayName() + ": ";
-    content += "\"" + objContent + " ...\"";
-    m_excerptLabel->setText(content);
-  }
-  }
+  // if (!m_showObject) {
+  // QASObject* obj = m_activity->object();
+  // QString objContent = obj->content();
+  // if (!objContent.isEmpty()) {
+  //   objContent.replace(QRegExp("<[^>]*>"), " ");
+  //   objContent = objContent.section(QRegExp("\\s+"), 0, 10,
+  //                                   QString::SectionSkipEmpty);
+  //   QASActor* author = obj->author();
+  //   QString content;
+  //   if (author && !author->displayName().isEmpty())
+  //     content += author->displayName() + ": ";
+  //   content += "\"" + objContent + " ...\"";
+  //   m_excerptLabel->setText(content);
+  // }
+  // }
 }
  
-//------------------------------------------------------------------------------
-
-void NewActivityWidget::onObjectChanged() {
-  updateText();
-}
-
-//------------------------------------------------------------------------------
-
-void NewActivityWidget::refreshTimeLabels() {
-  updateText();
-}
-
 //------------------------------------------------------------------------------
 
 QString NewActivityWidget::recipientsToString(QASObjectList* rec) {

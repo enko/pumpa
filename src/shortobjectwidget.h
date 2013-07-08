@@ -17,57 +17,36 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _NEWACTIVITYWIDGET_H_
-#define _NEWACTIVITYWIDGET_H_
+#ifndef _SHORTOBJECTWIDGET_H_
+#define _SHORTOBJECTWIDGET_H_
 
 #include <QFrame>
 #include <QWidget>
-#include <QHBoxLayout>
-#include <QPushButton>
 
 #include "qactivitystreams.h"
 #include "richtextlabel.h"
-#include "shortactivitywidget.h"
-#include "objectwidget.h"
-#include "shortobjectwidget.h"
 
 //------------------------------------------------------------------------------
 
-class NewActivityWidget : public AbstractActivityWidget {
+class ShortObjectWidget : public QFrame {
   Q_OBJECT
 
 public:
-  NewActivityWidget(QASActivity* a, QWidget* parent=0);
+  ShortObjectWidget(QASObject* obj, QWidget* parent = 0);
 
-  void refreshTimeLabels();
-
-public slots:
-  virtual void onObjectChanged();
+  QASObject* object() const { return m_object; }
 
 signals:
-  void linkHovered(const QString&);
-  void newReply(QASObject*);
-  void like(QASObject*);
-  void share(QASObject*);
+  void moreClicked();
 
 private slots:
-  void showObject();
+  void onChanged();
 
 private:
-  void updateShowObject();
   void updateText();
-  QString recipientsToString(QASObjectList* rec);
 
   RichTextLabel* m_textLabel;
-  ActorWidget* m_actorWidget;
-  ObjectWidget* m_objectWidget;
-  ShortObjectWidget* m_shortObjectWidget;
-  ShortObjectWidget* m_irtObjectWidget;
-
-  // QPushButton* m_showObjectButton;
-  // RichTextLabel* m_excerptLabel;
-
-  bool m_showObject;
+  QASObject* m_object;
 };
 
-#endif /* _NEWACTIVITYWIDGET_H_ */
+#endif /* _SHORTOBJECTWIDGET_H_ */

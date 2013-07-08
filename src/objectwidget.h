@@ -28,10 +28,8 @@
 #include <QToolButton>
 
 #include "qactivitystreams.h"
-#include "filedownloader.h"
+// #include "filedownloader.h"
 #include "richtextlabel.h"
-
-#define MAX_WORD_LENGTH       40
 
 //------------------------------------------------------------------------------
 
@@ -58,9 +56,6 @@ public:
 
   QASObject* object() const { return m_object; }
 
-  void setText(QString text);
-  void setInfo(QString text);
-
 signals:
   void linkHovered(const QString&);
   void like(QASObject*);
@@ -78,6 +73,9 @@ private slots:
   void reply();
 
 private:
+  void setText(QString text);
+  void setInfo(QString text);
+
   void updateLikes();
   void updateShares();
 
@@ -94,7 +92,7 @@ private:
 
   RichTextLabel* m_textLabel;
   ImageLabel* m_imageLabel;
-  QVBoxLayout* m_layout;
+
   RichTextLabel* m_infoLabel;
   RichTextLabel* m_likesLabel;
   RichTextLabel* m_sharesLabel;

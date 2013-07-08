@@ -554,7 +554,7 @@ void PumpApp::onShare(QASObject* obj) {
 QString PumpApp::addTextMarkup(QString text) {
   QString oldText = text;
 
-  text.replace(QRegExp("<([^>]+)>"), "&lt;\\1&gt;");
+  text.replace(QRegExp(HTML_TAG_REGEX), "&lt;\\1&gt;");
 
   text = markDown(text);
 

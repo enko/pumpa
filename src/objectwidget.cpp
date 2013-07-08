@@ -50,7 +50,7 @@ QString ObjectWidget::processText(QString old_text, bool getImages) {
     s_allowedTags 
       << "br" << "p" << "b" << "i" << "blockquote" << "div"
       << "code" << "h1" << "h2" << "h3" << "h4" << "h5"
-      << "em" << "ol" << "li" << "ul" << "strong";
+      << "em" << "ol" << "li" << "ul" << "hr" << "strong";
     s_allowedTags << "pre";
     s_allowedTags << "a";
     s_allowedTags << "img";
@@ -183,8 +183,9 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool childWidget) :
     setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
   }
 
-  m_layout = new QVBoxLayout;
-  m_layout->setContentsMargins(0, 0, 0, 0);
+
+  QVBoxLayout* rightLayout = new QVBoxLayout;
+  rightLayout->setContentsMargins(0, 0, 0, 0);
 
   m_contentLayout = new QVBoxLayout;
   m_contentLayout->setContentsMargins(0, 0, 0, 0);
@@ -246,11 +247,21 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool childWidget) :
   m_commentsLayout = new QVBoxLayout;
   onChanged();
 
-  m_layout->addLayout(m_contentLayout);
-  m_layout->addLayout(m_buttonLayout);
-  m_layout->addLayout(m_commentsLayout);
+  rightLayout->addLayout(m_contentLayout);
+  rightLayout->addLayout(m_buttonLayout);
+  rightLayout->addLayout(m_commentsLayout);
+
+  QASActor* actor = qobject_cast<QASActor*>(m_object);
+  if (!actor)
+    actor = m_object->author();
+  ActorWidget* actorWidget = new ActorWidget(actor, this, m_childWidget);
+
+  QHBoxLayout* acrossLayout = new QHBoxLayout;
+  acrossLayout->setSpacing(10);
+  acrossLayout->addWidget(actorWidget, 0, Qt::AlignTop);
+  acrossLayout->addLayout(rightLayout);
   
-  setLayout(m_layout);
+  setLayout(acrossLayout);
 
   connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
 }
@@ -444,9 +455,9 @@ void ObjectWidget::addObjectList(QASObjectList* ol) {
     if (i < m_repliesList.size() && m_repliesList[i]->id() == replyId)
       continue;
 
-    QASActor* author = replyObj->author();
+    // QASActor* author = replyObj->author();
 
-    ActorWidget* aw = new ActorWidget(author, this, true);
+    // ActorWidget* aw = new ActorWidget(author, this, true);
     ObjectWidget* ow = new ObjectWidget(replyObj, this, true);
 
     connect(ow, SIGNAL(linkHovered(const QString&)),
@@ -456,12 +467,13 @@ void ObjectWidget::addObjectList(QASObjectList* ol) {
     connect(ow, SIGNAL(share(QASObject*)), 
             this, SIGNAL(share(QASObject*)));
 
-    QHBoxLayout* replyLayout = new QHBoxLayout;
-    replyLayout->setContentsMargins(0, 0, 0, 0);
-    replyLayout->addWidget(aw, 0, Qt::AlignTop);
-    replyLayout->addWidget(ow, 0, Qt::AlignTop);
+    // QHBoxLayout* replyLayout = new QHBoxLayout;
+    // replyLayout->setContentsMargins(0, 0, 0, 0);
+    // replyLayout->addWidget(aw, 0, Qt::AlignTop);
+    // replyLayout->addWidget(ow, 0, Qt::AlignTop);
     
-    m_commentsLayout->insertLayout(li + i, replyLayout);
+    //    m_commentsLayout->insertLayout(li + i, replyLayout);
+    m_commentsLayout->insertWidget(li + i, ow);
     m_repliesList.insert(i, replyObj);
     m_repliesMap.insert(replyId);
   }

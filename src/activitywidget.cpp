@@ -28,33 +28,6 @@ QSet<QString> s_allowedTags;
 
 //------------------------------------------------------------------------------
 
-QString splitLongWords(QString text) {
-  QRegExp rx("(^|\\s)([^\\s<>\"]{40,})(\\s|$)");
-  int pos = 0;
-  while ((pos = rx.indexIn(text, pos)) != -1) {
-    int len = rx.matchedLength();
-    QString word = rx.cap(2);
-    QString newText = rx.cap(1);
-
-    int wpos = 0;
-    while (true) {
-      newText += word.mid(wpos, 5);
-      wpos += 5;
-      if (wpos >= word.length())
-        break;
-      else
-        newText += "&shy;";
-    }
-    // qDebug() << "[DEBUG] splitLongWords:" << word << "=>" << newText;
-
-    text.replace(pos, len, newText);
-    pos += newText.count();
-  }
-  return text;
-}
-
-//------------------------------------------------------------------------------
-
 QString ActivityWidget::processText(QString old_text, bool getImages) {
   if (s_allowedTags.isEmpty()) {
     s_allowedTags 
