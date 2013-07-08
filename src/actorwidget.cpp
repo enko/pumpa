@@ -36,6 +36,16 @@ ActorWidget::ActorWidget(QASActor* a, QWidget* parent, bool small) :
 
 //------------------------------------------------------------------------------
 
+void ActorWidget::setActor(QASActor* a) {
+  if (m_actor == a)
+    return;
+
+  m_actor = a;
+  onImageChanged();
+}
+
+//------------------------------------------------------------------------------
+
 void ActorWidget::onImageChanged() {
   m_url = m_actor ? m_actor->imageUrl() : "";
   updatePixmap();

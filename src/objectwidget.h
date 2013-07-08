@@ -26,10 +26,11 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QToolButton>
+#include <QStackedLayout>
 
 #include "qactivitystreams.h"
-// #include "filedownloader.h"
 #include "richtextlabel.h"
+#include "shortobjectwidget.h"
 
 //------------------------------------------------------------------------------
 
@@ -114,5 +115,33 @@ private:
 
   bool m_childWidget;
 };
+
+class WrappedObjectWidget : public QFrame {
+  Q_OBJECT
+
+public:
+  WrappedObjectWidget(QASObject* obj, QWidget* parent = 0,
+                      bool shortWidget=false);
+
+signals:
+  void linkHovered(const QString&);
+  void like(QASObject*);
+  void share(QASObject*);
+  void newReply(QASObject*);
+  void moreClicked();
+                          
+private slots:
+  void showMore();
+
+private:
+  ObjectWidget* m_objectWidget;
+  ShortObjectWidget* m_shortObjectWidget;
+
+  QVBoxLayout* m_layout;
+
+  QASObject* m_object;
+  bool m_short;
+};
+  
 
 #endif /* _OBJECTWIDGET_H_ */

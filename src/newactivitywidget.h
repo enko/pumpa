@@ -51,23 +51,16 @@ signals:
   void share(QASObject*);
 
 private slots:
-  void showObject();
+  void hideOriginalObject();
 
 private:
-  void updateShowObject();
   void updateText();
   QString recipientsToString(QASObjectList* rec);
 
   RichTextLabel* m_textLabel;
   ActorWidget* m_actorWidget;
-  ObjectWidget* m_objectWidget;
-  ShortObjectWidget* m_shortObjectWidget;
-  ShortObjectWidget* m_irtObjectWidget;
-
-  // QPushButton* m_showObjectButton;
-  // RichTextLabel* m_excerptLabel;
-
-  bool m_showObject;
+  WrappedObjectWidget* m_objectWidget;
+  WrappedObjectWidget* m_irtObjectWidget;
 };
 
 #endif /* _NEWACTIVITYWIDGET_H_ */

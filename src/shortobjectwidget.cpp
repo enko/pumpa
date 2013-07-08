@@ -18,7 +18,6 @@
 */
 
 #include "shortobjectwidget.h"
-#include "actorwidget.h"
 #include "util.h"
 
 #include <QVBoxLayout>
@@ -28,14 +27,15 @@
 
 ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
   QFrame(parent),
-  m_object(obj)
+  m_object(obj),
+  m_actor(NULL)
 {
+  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+
   m_textLabel = new RichTextLabel(this);
 
-  QASActor* actor = qobject_cast<QASActor*>(m_object);
-  if (!actor)
-    actor = m_object->author();
-  ActorWidget* actorWidget = new ActorWidget(actor, this, true);
+  m_actorWidget = new ActorWidget(NULL, this, true);
+  updateAvatar();
 
   QToolButton* moreButton = new QToolButton(this);
   moreButton->setText("+");
@@ -44,16 +44,25 @@ ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
   connect(moreButton, SIGNAL(clicked()), this, SIGNAL(moreClicked()));
 
   QHBoxLayout* acrossLayout = new QHBoxLayout;
-  acrossLayout->setSpacing(10);
-  acrossLayout->addWidget(actorWidget, 0, Qt::AlignTop);
-  acrossLayout->addWidget(m_textLabel, 0, Qt::AlignTop);
-  acrossLayout->addWidget(moreButton, 0, Qt::AlignTop);
+  // acrossLayout->setSpacing(10);
+  acrossLayout->setContentsMargins(0, 0, 0, 0);
+  acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignVCenter);
+  acrossLayout->addWidget(m_textLabel, 0, Qt::AlignVCenter);
+  acrossLayout->addWidget(moreButton, 0, Qt::AlignVCenter);
 
   updateText();
   
   setLayout(acrossLayout);
 
-  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+}
+
+//------------------------------------------------------------------------------
+
+void ShortObjectWidget::updateAvatar() {
+  QASActor* m_actor = qobject_cast<QASActor*>(m_object);
+  if (!m_actor)
+    m_actor = m_object->author();
+  m_actorWidget->setActor(m_actor);
 }
 
 //------------------------------------------------------------------------------
@@ -79,5 +88,6 @@ void ShortObjectWidget::updateText() {
 //------------------------------------------------------------------------------
 
 void ShortObjectWidget::onChanged() {
+  updateAvatar();
   updateText();
 }

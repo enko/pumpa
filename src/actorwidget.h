@@ -32,6 +32,7 @@ class ActorWidget : public QLabel {
   Q_OBJECT
 public:
   ActorWidget(QASActor* a, QWidget* parent = 0, bool small=false);
+  void setActor(QASActor* a);
 
 public slots:
   void onImageChanged();

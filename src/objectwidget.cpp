@@ -95,7 +95,7 @@ QString ObjectWidget::processText(QString old_text, bool getImages) {
         int spos = rxi.indexIn(inside);
         if (spos != -1) {
           QString imgSrc = rxi.cap(1);
-          qDebug() << "[DEBUG] processText: img" << imgSrc;
+          // qDebug() << "[DEBUG] processText: img" << imgSrc;
           
           FileDownloader* fd = FileDownloader::get(imgSrc, true);
           connect(fd, SIGNAL(fileReady()), this, SLOT(onChanged()),
@@ -111,7 +111,8 @@ QString ObjectWidget::processText(QString old_text, bool getImages) {
     } else if (s_allowedTags.contains(tag)) {
       pos += len;
     } else { // drop all other HTML tags
-      qDebug() << "[DEBUG] processText: dropping unsupported tag" << tag;
+      if (tag != "span") 
+        qDebug() << "[DEBUG] processText: dropping unsupported tag" << tag;
       text.remove(pos, len);
     }
   }
@@ -532,3 +533,48 @@ void ObjectWidget::repeat() {
 void ObjectWidget::reply() {
   emit newReply(m_object);
 }
+
+//------------------------------------------------------------------------------
+
+WrappedObjectWidget::WrappedObjectWidget(QASObject* obj, QWidget* parent,
+                                         bool shortWidget) : 
+  QFrame(parent),
+  m_short(shortWidget)
+{
+  m_layout = new QVBoxLayout;
+  m_layout->setContentsMargins(0, 0, 0, 0);
+  m_layout->setSpacing(0);
+
+  m_objectWidget = new ObjectWidget(obj, parent);
+  connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
+          this, SIGNAL(linkHovered(const QString&)));
+  connect(m_objectWidget, SIGNAL(like(QASObject*)),
+          this, SIGNAL(like(QASObject*)));
+  connect(m_objectWidget, SIGNAL(share(QASObject*)),
+          this, SIGNAL(share(QASObject*)));
+  connect(m_objectWidget, SIGNAL(newReply(QASObject*)),
+          this, SIGNAL(newReply(QASObject*)));
+  m_layout->addWidget(m_objectWidget);
+
+  if (m_short) {
+    m_shortObjectWidget = new ShortObjectWidget(obj, parent);
+    connect(m_shortObjectWidget, SIGNAL(moreClicked()),
+            this, SLOT(showMore()));
+    m_objectWidget->setVisible(false);
+    m_layout->addWidget(m_shortObjectWidget);
+  }
+  
+  setLayout(m_layout);
+}
+
+//------------------------------------------------------------------------------
+
+void WrappedObjectWidget::showMore() {
+  if (!m_short || !m_shortObjectWidget)
+    return;
+  m_short = false;
+  m_shortObjectWidget->setVisible(false);
+  m_objectWidget->setVisible(true);
+  emit moreClicked();
+}
+  

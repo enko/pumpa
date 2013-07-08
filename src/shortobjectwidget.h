@@ -25,6 +25,7 @@
 
 #include "qactivitystreams.h"
 #include "richtextlabel.h"
+#include "actorwidget.h"
 
 //------------------------------------------------------------------------------
 
@@ -44,9 +45,12 @@ private slots:
 
 private:
   void updateText();
+  void updateAvatar();
 
   RichTextLabel* m_textLabel;
+  ActorWidget* m_actorWidget;
   QASObject* m_object;
+  QASActor* m_actor;
 };
 
 #endif /* _SHORTOBJECTWIDGET_H_ */

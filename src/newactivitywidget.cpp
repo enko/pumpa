@@ -26,20 +26,19 @@
 
 NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
   AbstractActivityWidget(a, parent),
-  m_shortObjectWidget(NULL),
   m_irtObjectWidget(NULL)
 {
   const QString verb = m_activity->verb();
   QASObject* obj = m_activity->object();
   QString objType = obj->type();
 
-  m_showObject = (verb == "post" || objType == "person");
+  bool showObject = (verb == "post" || objType == "person");
 
   m_textLabel = new RichTextLabel(this);
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
 
-  m_objectWidget = new ObjectWidget(obj, this);
+  m_objectWidget = new WrappedObjectWidget(obj, this, !showObject);
   connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
   connect(m_objectWidget, SIGNAL(newReply(QASObject*)),
@@ -56,31 +55,21 @@ NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
   layout->setContentsMargins(0, 0, 0, 0);
   layout->addWidget(m_textLabel, 0, Qt::AlignTop);
 
-  if (!m_showObject) {
-    m_shortObjectWidget = new ShortObjectWidget(obj, this);
-    connect(m_shortObjectWidget, SIGNAL(moreClicked()),
-            this, SLOT(showObject()));
-    layout->addWidget(m_shortObjectWidget);
-  }  
-
-  qDebug() << "objType" << objType;
   if (objType == "comment") {
     QASObject* irtObj = obj->inReplyTo();
     if (irtObj) {
-      qDebug() << "HERE" << irtObj << irtObj->url();
-      if (!irtObj->url().isEmpty()) {
-        m_irtObjectWidget = new ShortObjectWidget(irtObj, this);
-        layout->addWidget(m_irtObjectWidget, 0, Qt::AlignTop);
-      } else {
+      m_irtObjectWidget = new WrappedObjectWidget(irtObj, this, true);
+      connect(m_irtObjectWidget, SIGNAL(moreClicked()),
+              this, SLOT(hideOriginalObject()));
+      layout->addWidget(m_irtObjectWidget, 0, Qt::AlignTop);
+      if (irtObj->url().isEmpty())
         irtObj->refresh();
-      }
     }
   }
   layout->addWidget(m_objectWidget, 0, Qt::AlignTop);
   layout->addWidget(new QLabel("<hr />"));
 
   updateText();
-  updateShowObject();
 
   setLayout(layout);
 }
@@ -99,20 +88,11 @@ void NewActivityWidget::refreshTimeLabels() {
 
 //------------------------------------------------------------------------------
 
-void NewActivityWidget::updateShowObject() {
-  // m_showObjectButton->setVisible(!m_showObject);
-  // m_excerptLabel->setVisible(!m_showObject);
-  // m_actorWidget->setVisible(m_showObject);
-  if (m_shortObjectWidget)
-    m_shortObjectWidget->setVisible(!m_showObject);
-  m_objectWidget->setVisible(m_showObject);
-}
+void NewActivityWidget::hideOriginalObject() {
+  if (!m_irtObjectWidget)
+    return;
 
-//------------------------------------------------------------------------------
-
-void NewActivityWidget::showObject() {
-  m_showObject = true;
-  updateShowObject();
+  m_objectWidget->setVisible(false);
 }
 
 //------------------------------------------------------------------------------
@@ -135,23 +115,6 @@ void NewActivityWidget::updateText() {
   }
 
   m_textLabel->setText(text);
-
-  // excerpt
-  // if (!m_showObject) {
-  // QASObject* obj = m_activity->object();
-  // QString objContent = obj->content();
-  // if (!objContent.isEmpty()) {
-  //   objContent.replace(QRegExp("<[^>]*>"), " ");
-  //   objContent = objContent.section(QRegExp("\\s+"), 0, 10,
-  //                                   QString::SectionSkipEmpty);
-  //   QASActor* author = obj->author();
-  //   QString content;
-  //   if (author && !author->displayName().isEmpty())
-  //     content += author->displayName() + ": ";
-  //   content += "\"" + objContent + " ...\"";
-  //   m_excerptLabel->setText(content);
-  // }
-  // }
 }
  
 //------------------------------------------------------------------------------
