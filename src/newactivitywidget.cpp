@@ -27,17 +27,24 @@
 NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
   AbstractActivityWidget(a, parent)
 {
+  const QString verb = m_activity->verb();
   QASObject* obj = m_activity->object();
+  QString objType = obj->type();
+
+  m_showObject = (verb == "post" || objType == "person");
 
   m_textLabel = new RichTextLabel(this);
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
-  updateText();
+
+  bool smallAvatar = false;
+  if (objType == "person")
+    smallAvatar = true;
 
   QASActor* actor = qobject_cast<QASActor*>(obj);
   if (!actor)
     actor = obj->author();
-  m_actorWidget = new ActorWidget(actor, this);
+  m_actorWidget = new ActorWidget(actor, this, smallAvatar);
 
   m_objectWidget = new ObjectWidget(obj, this);
   connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
@@ -57,43 +64,85 @@ NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
   acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignTop);
   acrossLayout->addWidget(m_objectWidget, 0, Qt::AlignTop); 
 
+  m_showObjectButton = new QPushButton("more", this);
+  m_showObjectButton->setMaximumWidth(64);
+  m_showObjectButton->setFocusPolicy(Qt::NoFocus);
+  connect(m_showObjectButton, SIGNAL(clicked()), this, SLOT(showObject()));
+
+  m_excerptLabel = new RichTextLabel(this);
+  
+  QHBoxLayout* buttonLayout = new QHBoxLayout;
+  buttonLayout->setSpacing(10);
+  buttonLayout->addWidget(m_showObjectButton, 0, Qt::AlignTop);
+  buttonLayout->addWidget(m_excerptLabel, 0, Qt::AlignTop);
+  // buttonLayout->addStretch();
+
+  updateText();
+  updateShowObject();
+
   QVBoxLayout* layout = new QVBoxLayout;
+  layout->setContentsMargins(0, 0, 0, 0);
   layout->addWidget(m_textLabel);
+  layout->addLayout(buttonLayout);
   layout->addLayout(acrossLayout);
+  layout->addWidget(new QLabel("<hr />"));
 
   setLayout(layout);
 }
 
 //------------------------------------------------------------------------------
 
-void NewActivityWidget::updateText() {
-  QString text = m_activity->content();
-  // QASObject* obj = m_activity->object();
-  // QString objContent = obj->content();
-  // if (!objContent.isEmpty()) {
-  //   objContent.replace(QRegExp("<[^>]*>"), " ");
-  //   objContent = objContent.section(QRegExp("\\s+"), 0, 10,
-  //                                   QString::SectionSkipEmpty);
-  //   QASActor* author = obj->author();
-  //   content += "<br />";
-  //   if (author && !author->displayName().isEmpty())
-  //     content += author->displayName() + ": ";
-  //   content += "\"" + objContent + " ...\"";
-  // }
+void NewActivityWidget::updateShowObject() {
+  m_showObjectButton->setVisible(!m_showObject);
+  m_excerptLabel->setVisible(!m_showObject);
+  m_actorWidget->setVisible(m_showObject);
+  m_objectWidget->setVisible(m_showObject);
+}
 
-  bool share = (m_activity->verb() == "share");
+//------------------------------------------------------------------------------
+
+void NewActivityWidget::showObject() {
+  m_showObject = true;
+  updateShowObject();
+}
+
+//------------------------------------------------------------------------------
+
+void NewActivityWidget::updateText() {
+  QString verb = m_activity->verb();
+  QString text = m_activity->content();
+  QString objType = m_activity->object()->type();
 
   QString generatorName = m_activity->generatorName();
-  if (!generatorName.isEmpty() && !share)
+  if (!generatorName.isEmpty() && (verb != "share"))
     text += " via " + generatorName;
 
-  if (m_activity->hasTo())
-    text += " To: " + recipientsToString(m_activity->to());
-
-  if (m_activity->hasCc())
-    text += " CC: " + recipientsToString(m_activity->cc());
+  if (verb == "post" && objType == "note") {
+    if (m_activity->hasTo())
+      text += " To: " + recipientsToString(m_activity->to());
+    
+    if (m_activity->hasCc())
+      text += " CC: " + recipientsToString(m_activity->cc());
+  }
 
   m_textLabel->setText(text);
+
+  // excerpt
+  if (!m_showObject) {
+  QASObject* obj = m_activity->object();
+  QString objContent = obj->content();
+  if (!objContent.isEmpty()) {
+    objContent.replace(QRegExp("<[^>]*>"), " ");
+    objContent = objContent.section(QRegExp("\\s+"), 0, 10,
+                                    QString::SectionSkipEmpty);
+    QASActor* author = obj->author();
+    QString content;
+    if (author && !author->displayName().isEmpty())
+      content += author->displayName() + ": ";
+    content += "\"" + objContent + " ...\"";
+    m_excerptLabel->setText(content);
+  }
+  }
 }
  
 //------------------------------------------------------------------------------

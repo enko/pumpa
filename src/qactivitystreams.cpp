@@ -204,6 +204,7 @@ void QASActor::update(QVariantMap json) {
 
   updateVar(json, m_url, "url", ch); 
   updateVar(json, m_displayName, "displayName", ch);
+  updateVar(json, m_objectType, "objectType", ch);
 
   if (json.contains("image")) {
     QVariantMap im = json["image"].toMap();

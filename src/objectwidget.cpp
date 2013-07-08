@@ -169,6 +169,7 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool childWidget) :
   m_sharesLabel(NULL),
   m_titleLabel(NULL),
   m_hasMoreButton(NULL),
+  m_favourButton(NULL),
   m_shareButton(NULL),
   m_commentButton(NULL),
   m_object(obj),
@@ -176,17 +177,21 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool childWidget) :
 {
   const QString objType = m_object->type();
 
-  if (m_childWidget) {
+  if (objType == "comment") {
+    // setStyleSheet( "border-width: 5px; border-top-style: none; border-right-style: none; border-bottom-style: none; border-left-style: solid; border-color: darkgray; ");
     setLineWidth(1);
     setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
   }
 
-  m_layout = new QVBoxLayout(this);
+  m_layout = new QVBoxLayout;
   m_layout->setContentsMargins(0, 0, 0, 0);
+
+  m_contentLayout = new QVBoxLayout;
+  m_contentLayout->setContentsMargins(0, 0, 0, 0);
 
   if (!m_object->displayName().isEmpty()) {
     m_titleLabel = new QLabel("<b>" + m_object->displayName() + "</b>");
-    m_layout->addWidget(m_titleLabel);
+    m_contentLayout->addWidget(m_titleLabel);
   }
 
   if (objType == "image") {
@@ -198,51 +203,51 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool childWidget) :
     m_imageUrl = m_object->imageUrl();
     updateImage();
 
-    m_layout->addWidget(m_imageLabel);
+    m_contentLayout->addWidget(m_imageLabel);
   }
 
   m_textLabel = new RichTextLabel(this);
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
-  m_layout->addWidget(m_textLabel, 0, Qt::AlignTop);
+  m_contentLayout->addWidget(m_textLabel, 0, Qt::AlignTop);
 
-  // if (m_childWidget) {
   m_infoLabel = new RichTextLabel(this);
   connect(m_infoLabel, SIGNAL(linkHovered(const QString&)),
           this, SIGNAL(linkHovered(const QString&)));
-  
-  m_layout->addWidget(m_infoLabel, 0, Qt::AlignTop);
-  // }
+  m_contentLayout->addWidget(m_infoLabel, 0, Qt::AlignTop);
 
   m_buttonLayout = new QHBoxLayout;
 
-  m_favourButton = new QToolButton();
-  m_favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  m_favourButton->setFocusPolicy(Qt::NoFocus);
-  connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
-  m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
+  if (objType == "note" || objType == "comment") {
+    m_favourButton = new QToolButton();
+    m_favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    m_favourButton->setFocusPolicy(Qt::NoFocus);
+    connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
+    m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
 
-  if (!m_childWidget) {
     m_shareButton = new QToolButton();
     m_shareButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
     m_shareButton->setFocusPolicy(Qt::NoFocus);
     connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
     m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
 
-    m_commentButton = new QToolButton();
-    m_commentButton->setText("comment");
-    m_commentButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    m_commentButton->setFocusPolicy(Qt::NoFocus);
-    connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
-    m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
+    if (!m_childWidget) {
+      m_commentButton = new QToolButton();
+      m_commentButton->setText("comment");
+      m_commentButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+      m_commentButton->setFocusPolicy(Qt::NoFocus);
+      connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
+      m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
+    }
   }
 
   m_buttonLayout->addStretch();
-  m_layout->addLayout(m_buttonLayout);
 
   m_commentsLayout = new QVBoxLayout;
   onChanged();
 
+  m_layout->addLayout(m_contentLayout);
+  m_layout->addLayout(m_buttonLayout);
   m_layout->addLayout(m_commentsLayout);
   
   setLayout(m_layout);
@@ -334,7 +339,7 @@ void ObjectWidget::updateLikes() {
 
   if (nl <= 0) {
     if (m_likesLabel != NULL) {
-      m_layout->removeWidget(m_likesLabel);
+      m_contentLayout->removeWidget(m_likesLabel);
       delete m_likesLabel;
       m_likesLabel = NULL;
     }
@@ -348,7 +353,7 @@ void ObjectWidget::updateLikes() {
     m_likesLabel = new RichTextLabel(this);
     connect(m_likesLabel, SIGNAL(linkHovered(const QString&)),
             this,  SIGNAL(linkHovered(const QString&)));
-    m_layout->addWidget(m_likesLabel);
+    m_contentLayout->addWidget(m_likesLabel);
   }
 
   text = actorNames(likes);
@@ -364,7 +369,7 @@ void ObjectWidget::updateShares() {
   size_t ns = m_object->numShares();
   if (!ns) {
     if (m_sharesLabel != NULL) {
-      m_layout->removeWidget(m_sharesLabel);
+      m_contentLayout->removeWidget(m_sharesLabel);
       delete m_sharesLabel;
       m_sharesLabel = NULL;
     }
@@ -375,7 +380,7 @@ void ObjectWidget::updateShares() {
     m_sharesLabel = new RichTextLabel(this);
     connect(m_sharesLabel, SIGNAL(linkHovered(const QString&)),
             this,  SIGNAL(linkHovered(const QString&)));
-    m_layout->addWidget(m_sharesLabel);
+    m_contentLayout->addWidget(m_sharesLabel);
   }
 
   QString text;
@@ -448,6 +453,8 @@ void ObjectWidget::addObjectList(QASObjectList* ol) {
             this, SIGNAL(linkHovered(const QString&)));
     connect(ow, SIGNAL(like(QASObject*)), 
             this, SIGNAL(like(QASObject*)));
+    connect(ow, SIGNAL(share(QASObject*)), 
+            this, SIGNAL(share(QASObject*)));
 
     QHBoxLayout* replyLayout = new QHBoxLayout;
     replyLayout->setContentsMargins(0, 0, 0, 0);

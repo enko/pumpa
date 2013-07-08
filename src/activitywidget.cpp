@@ -286,28 +286,31 @@ QString ActivityWidget::recipientsToString(QASObjectList* rec) {
 //------------------------------------------------------------------------------
 
 void ActivityWidget::updateInfoText() {
-  const QASObject* noteObj = m_activity->object();
+  const QASObject* obj = m_activity->object();
   const QASActor* author = effectiveAuthor();
   
   bool share = (m_activity->verb() == "share");
+  QString objType = obj->type();
 
   QString text = QString("<a href=\"%2\">%1</a> at <a href=\"%4\">%3</a>").
     arg(author->displayName()).
     arg(author->url()).
-    arg(relativeFuzzyTime(noteObj->published())).
-    arg(noteObj->url());
+    arg(relativeFuzzyTime(obj->published())).
+    arg(obj->url());
 
   QString generatorName = m_activity->generatorName();
   if (!generatorName.isEmpty() && !share)
     text += " via " + generatorName;
 
-  if (m_activity->hasTo())
-    text += " To: " + recipientsToString(m_activity->to());
+  if (objType == "note") {
+    if (m_activity->hasTo())
+      text += " To: " + recipientsToString(m_activity->to());
 
-  if (m_activity->hasCc())
-    text += " CC: " + recipientsToString(m_activity->cc());
+    if (m_activity->hasCc())
+      text += " CC: " + recipientsToString(m_activity->cc());
+  }
 
-  QASObject* irtObj = noteObj->inReplyTo();
+  QASObject* irtObj = obj->inReplyTo();
 
   if (irtObj) {
     text += " in reply to a ";
@@ -366,9 +369,9 @@ void ActivityWidget::onObjectChanged() {
   updateFavourButton();
   updateShareButton();
 
-  const QASObject* noteObj = m_activity->object();
-  if (noteObj->numReplies() > 0) {
-    QASObjectList* ol = noteObj->replies();
+  const QASObject* obj = m_activity->object();
+  if (obj->numReplies() > 0) {
+    QASObjectList* ol = obj->replies();
     addObjectList(ol);
   }
 }

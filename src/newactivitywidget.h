@@ -20,12 +20,12 @@
 #ifndef _NEWACTIVITYWIDGET_H_
 #define _NEWACTIVITYWIDGET_H_
 
-#include <QHBoxLayout>
 #include <QFrame>
 #include <QWidget>
+#include <QHBoxLayout>
+#include <QPushButton>
 
 #include "qactivitystreams.h"
-// #include "actorwidget.h"
 #include "richtextlabel.h"
 #include "shortactivitywidget.h"
 #include "objectwidget.h"
@@ -49,13 +49,22 @@ signals:
   void like(QASObject*);
   void share(QASObject*);
 
+private slots:
+  void showObject();
+
 private:
+  void updateShowObject();
   void updateText();
   QString recipientsToString(QASObjectList* rec);
 
   RichTextLabel* m_textLabel;
   ActorWidget* m_actorWidget;
   ObjectWidget* m_objectWidget;
+
+  QPushButton* m_showObjectButton;
+  RichTextLabel* m_excerptLabel;
+
+  bool m_showObject;
 };
 
 #endif /* _NEWACTIVITYWIDGET_H_ */

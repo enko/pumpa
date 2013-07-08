@@ -105,6 +105,7 @@ private:
   QToolButton* m_shareButton;
   QToolButton* m_commentButton;
 
+  QVBoxLayout* m_contentLayout;
   QHBoxLayout* m_buttonLayout;
   QVBoxLayout* m_commentsLayout;
 
