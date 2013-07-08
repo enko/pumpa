@@ -220,7 +220,7 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool childWidget) :
 
   m_buttonLayout = new QHBoxLayout;
 
-  if (objType == "note" || objType == "comment") {
+  if (objType == "note" || objType == "comment" || objType == "image") {
     m_favourButton = new QToolButton();
     m_favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
     m_favourButton->setFocusPolicy(Qt::NoFocus);
