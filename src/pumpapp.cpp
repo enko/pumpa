@@ -556,6 +556,8 @@ void PumpApp::onShare(QASObject* obj) {
 QString PumpApp::addTextMarkup(QString text) {
   QString oldText = text;
 
+  qDebug() << "\n[DEBUG] MARKUP\n" << text;
+
   // Remove any inline HTML tags
   // text.replace(QRegExp(HTML_TAG_REGEX), "&lt;\\1&gt;");
   QRegExp rx(HTML_TAG_REGEX);
@@ -573,10 +575,16 @@ QString PumpApp::addTextMarkup(QString text) {
       pos += newText.length();
     }
   }
+  qDebug() << "\n[DEBUG] MARKUP (clean inline HTML)\n" << text;
 
   text = markDown(text);
 
-  text = linkifyUrls(text, "[^>\"]", "[^<\"]");
+  qDebug() << "\n[DEBUG] MARKUP (apply Markdown)\n" << text;
+
+  text = linkifyUrls(text);
+
+  qDebug() << "\n[DEBUG] MARKUP (linkify plain URLs)\n" << text;
+
   // text.replace("\n", "<br/>");
   
   // text = changePairedTags(text, "\\*\\*", "\\*\\*",
@@ -588,8 +596,6 @@ QString PumpApp::addTextMarkup(QString text) {
 
   // text = changePairedTags(text, "``", "``", "<pre>", "</pre>", "`");
   // text = changePairedTags(text, "`", "`", "<code>", "</code>");
-
-  qDebug() << "[DEBUG]: addTextMarkup:" << oldText << "=>" << text;
   
   return text;
 }

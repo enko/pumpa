@@ -63,14 +63,16 @@ QString siteUrlFixer(QString url) {
 
 //------------------------------------------------------------------------------
 
-QString linkifyUrls(QString text, QString before, QString after) {
-  QRegExp rx(QString("(%2)%1(%3)").arg(URL_REGEX).arg(before).arg(after));
+QString linkifyUrls(QString text) {
+  QRegExp rx(QString("(\\s+)%1").arg(URL_REGEX_STRICT));
 
   int pos = 0;
   while ((pos = rx.indexIn(text, pos)) != -1) {
     int len = rx.matchedLength();
-    QString newText = QString("%2<a href=\"%1\">%1</a>%3").arg(rx.cap(2)).
-      arg(rx.cap(1)).arg(rx.cap(rx.captureCount()));
+    QString before = rx.cap(1);
+    QString url = rx.cap(2);
+    QString newText = QString("%2<a href=\"%1\">%1</a>").arg(url).
+      arg(before);
 
     text.replace(pos, len, newText);
     pos += newText.count();
