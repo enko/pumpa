@@ -123,6 +123,8 @@ public:
   WrappedObjectWidget(QASObject* obj, QWidget* parent = 0,
                       bool shortWidget=false);
 
+  QASObject* object() const { return m_object; }
+
 signals:
   void linkHovered(const QString&);
   void like(QASObject*);
@@ -132,6 +134,7 @@ signals:
                           
 private slots:
   void showMore();
+  void onChanged();
 
 private:
   ObjectWidget* m_objectWidget;

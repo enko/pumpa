@@ -539,13 +539,16 @@ void ObjectWidget::reply() {
 WrappedObjectWidget::WrappedObjectWidget(QASObject* obj, QWidget* parent,
                                          bool shortWidget) : 
   QFrame(parent),
+  m_object(obj),
   m_short(shortWidget)
 {
+  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+
   m_layout = new QVBoxLayout;
   m_layout->setContentsMargins(0, 0, 0, 0);
   m_layout->setSpacing(0);
 
-  m_objectWidget = new ObjectWidget(obj, parent);
+  m_objectWidget = new ObjectWidget(m_object, parent);
   connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
           this, SIGNAL(linkHovered(const QString&)));
   connect(m_objectWidget, SIGNAL(like(QASObject*)),
@@ -557,7 +560,7 @@ WrappedObjectWidget::WrappedObjectWidget(QASObject* obj, QWidget* parent,
   m_layout->addWidget(m_objectWidget);
 
   if (m_short) {
-    m_shortObjectWidget = new ShortObjectWidget(obj, parent);
+    m_shortObjectWidget = new ShortObjectWidget(m_object, parent);
     connect(m_shortObjectWidget, SIGNAL(moreClicked()),
             this, SLOT(showMore()));
     m_objectWidget->setVisible(false);
@@ -578,3 +581,8 @@ void WrappedObjectWidget::showMore() {
   emit moreClicked();
 }
   
+//------------------------------------------------------------------------------
+
+void WrappedObjectWidget::onChanged() {
+  setVisible(!m_object->url().isEmpty());
+}

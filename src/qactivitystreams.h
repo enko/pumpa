@@ -238,6 +238,10 @@ public:
     return m_items[i];
   }
 
+  bool contains(QASObject* obj) const {
+    return m_items.contains(obj);
+  }
+
 signals:
   void changed();
 

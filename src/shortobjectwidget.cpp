@@ -68,19 +68,23 @@ void ShortObjectWidget::updateAvatar() {
 //------------------------------------------------------------------------------
 
 void ShortObjectWidget::updateText() {
-  QString text = m_object->displayName();
-  if (text.isEmpty()) {
-    text = m_object->content();
-    if (!text.isEmpty()) {
-      text.replace(QRegExp(HTML_TAG_REGEX), " ");
-      text = text.section(QRegExp("\\s+"), 0, 8, QString::SectionSkipEmpty) +
+  QString content = m_object->displayName();
+  if (content.isEmpty()) {
+    content = m_object->content();
+    if (!content.isEmpty()) {
+      content.replace(QRegExp(HTML_TAG_REGEX), " ");
+      content = content.section(QRegExp("\\s+"), 0, 8,
+                                QString::SectionSkipEmpty) +
         " ...";
     }
   }
 
+  QString text;
   QASActor* author = m_object->author();
   if (author && !author->displayName().isEmpty())
-    text = author->displayName() + ": \"" + text + "\"";
+    text = author->displayName();
+  if (!content.isEmpty())
+    text += " \"" + content + "\"";
 
   m_textLabel->setText(text);
 }

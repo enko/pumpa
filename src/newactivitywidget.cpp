@@ -62,8 +62,10 @@ NewActivityWidget::NewActivityWidget(QASActivity* a, QWidget* parent) :
       connect(m_irtObjectWidget, SIGNAL(moreClicked()),
               this, SLOT(hideOriginalObject()));
       layout->addWidget(m_irtObjectWidget, 0, Qt::AlignTop);
-      if (irtObj->url().isEmpty())
+      if (irtObj->url().isEmpty()) {
+        m_irtObjectWidget->setVisible(false);
         irtObj->refresh();
+      }
     }
   }
   layout->addWidget(m_objectWidget, 0, Qt::AlignTop);
@@ -92,7 +94,10 @@ void NewActivityWidget::hideOriginalObject() {
   if (!m_irtObjectWidget)
     return;
 
-  m_objectWidget->setVisible(false);
+  QASObject* obj = m_activity->object();
+  QASObjectList* replies = m_irtObjectWidget->object()->replies();
+  if (replies && replies->contains(obj))
+    m_objectWidget->setVisible(false);
 }
 
 //------------------------------------------------------------------------------
