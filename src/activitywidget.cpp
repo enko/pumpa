@@ -48,6 +48,8 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
           this,  SIGNAL(like(QASObject*)));
   connect(m_objectWidget, SIGNAL(share(QASObject*)),
           this,  SIGNAL(share(QASObject*)));
+  connect(m_objectWidget, SIGNAL(moreClicked()),
+          this, SLOT(onMoreClicked()));
 
   connect(obj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
           Qt::UniqueConnection);
@@ -63,9 +65,12 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
       connect(m_irtObjectWidget, SIGNAL(moreClicked()),
               this, SLOT(hideOriginalObject()));
       layout->addWidget(m_irtObjectWidget, 0, Qt::AlignTop);
+
       if (irtObj->url().isEmpty()) {
         m_irtObjectWidget->setVisible(false);
         irtObj->refresh();
+      } else if (!showObject) {
+        m_irtObjectWidget->setVisible(false);
       }
     }
   }
@@ -99,6 +104,15 @@ void ActivityWidget::hideOriginalObject() {
   QASObjectList* replies = m_irtObjectWidget->object()->replies();
   if (replies && replies->contains(obj))
     m_objectWidget->setVisible(false);
+}
+
+//------------------------------------------------------------------------------
+
+void ActivityWidget::onMoreClicked() {
+  if (!m_irtObjectWidget)
+    return;
+
+  m_irtObjectWidget->setVisible(true);
 }
 
 //------------------------------------------------------------------------------

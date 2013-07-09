@@ -52,6 +52,7 @@ signals:
 
 private slots:
   void hideOriginalObject();
+  void onMoreClicked();
 
 private:
   void updateText();
