@@ -36,7 +36,7 @@ QMap<QString, QASObjectList*> QASObjectList::s_objectLists;
 QMap<QString, QASActorList*> QASActorList::s_actorLists;
 QMap<QString, QASCollection*> QASCollection::s_collections;
 
-template <class T> void deleteMap(QMap<QString, T> map) {
+template <class T> void deleteMap(QMap<QString, T>& map) {
   typename QMap<QString, T>::iterator i;
   for (i = map.begin(); i != map.end(); ++i)
     delete i.value();

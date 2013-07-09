@@ -287,8 +287,9 @@ void OAuthWizard::getOAuthAccess() {
 
 //------------------------------------------------------------------------------
 
-void OAuthWizard::onTemporaryTokenReceived(QString /*token*/,
+void OAuthWizard::onTemporaryTokenReceived(QString token,
                                            QString /*tokenSecret*/) {
+  setField("token", token);
   QUrl userAuthURL(m_server+"/oauth/authorize");
   if (m_oam->lastError() == KQOAuthManager::NoError)
     m_oam->getUserAuthorization(userAuthURL);
