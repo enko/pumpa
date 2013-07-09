@@ -22,105 +22,16 @@
 
 #include <QFrame>
 #include <QWidget>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QToolButton>
-#include <QStackedLayout>
 
 #include "qactivitystreams.h"
-#include "richtextlabel.h"
 #include "shortobjectwidget.h"
-
-//------------------------------------------------------------------------------
-
-class ImageLabel : public QLabel {
-  Q_OBJECT
-  
-public:
-  ImageLabel(QWidget* parent=0);
-
-signals:
-  void clicked();
-
-protected:
-  virtual void mousePressEvent(QMouseEvent*);
-};
-
-//------------------------------------------------------------------------------
+#include "fullobjectwidget.h"
 
 class ObjectWidget : public QFrame {
   Q_OBJECT
 
 public:
-  ObjectWidget(QASObject* obj, QWidget* parent = 0, bool childWidget=false);
-
-  QASObject* object() const { return m_object; }
-
-signals:
-  void linkHovered(const QString&);
-  void like(QASObject*);
-  void share(QASObject*);
-  void newReply(QASObject*);
-
-private slots:
-  void onChanged();
-  void updateImage();
-  void imageClicked();
-  void onHasMoreClicked();
-
-  void favourite();
-  void repeat();
-  void reply();
-
-private:
-  void setText(QString text);
-  void setInfo(QString text);
-
-  void updateLikes();
-  void updateShares();
-
-  QString recipientsToString(QASObjectList* rec);
-  QString processText(QString old_text, bool getImages=false);
-
-  void addHasMoreButton(QASObjectList* ol, int li);
-  void updateFavourButton(bool wait = false);
-  void updateShareButton(bool wait = false);
-  void addObjectList(QASObjectList* ol);
-
-  QString m_imageUrl;
-  QString m_localFile;
-
-  RichTextLabel* m_textLabel;
-  ImageLabel* m_imageLabel;
-
-  RichTextLabel* m_infoLabel;
-  RichTextLabel* m_likesLabel;
-  RichTextLabel* m_sharesLabel;
-  QLabel* m_titleLabel;
-  QPushButton* m_hasMoreButton;
-
-  QToolButton* m_favourButton;
-  QToolButton* m_shareButton;
-  QToolButton* m_commentButton;
-
-  QVBoxLayout* m_contentLayout;
-  QHBoxLayout* m_buttonLayout;
-  QVBoxLayout* m_commentsLayout;
-
-  QASObject* m_object;
-
-  QList<QASObject*> m_repliesList;
-  QSet<QString> m_repliesMap;
-
-  bool m_childWidget;
-};
-
-class WrappedObjectWidget : public QFrame {
-  Q_OBJECT
-
-public:
-  WrappedObjectWidget(QASObject* obj, QWidget* parent = 0,
+  ObjectWidget(QASObject* obj, QWidget* parent = 0,
                       bool shortWidget=false);
 
   QASObject* object() const { return m_object; }
@@ -137,7 +48,7 @@ private slots:
   void onChanged();
 
 private:
-  ObjectWidget* m_objectWidget;
+  FullObjectWidget* m_objectWidget;
   ShortObjectWidget* m_shortObjectWidget;
 
   QVBoxLayout* m_layout;

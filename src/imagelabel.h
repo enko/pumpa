@@ -17,55 +17,26 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _COLLECTIONWIDGET_H_
-#define _COLLECTIONWIDGET_H_
-
-#include "qactivitystreams.h"
+#ifndef _IMAGELABEL_H_
+#define _IMAGELABEL_H_
 
 #include <QLabel>
 #include <QWidget>
-#include <QScrollBar>
 #include <QMouseEvent>
-#include <QScrollArea>
-#include <QVBoxLayout>
 
 //------------------------------------------------------------------------------
 
-class CollectionWidget : public QScrollArea {
+class ImageLabel : public QLabel {
   Q_OBJECT
-
+  
 public:
-  CollectionWidget(QWidget* parent, bool shortDisplay=false);
-  void setEndpoint(QString endpoint);
-  void fetchNewer();
-  void fetchOlder();
-  void refreshTimeLabels();
+  ImageLabel(QWidget* parent=0);
 
 signals:
-  void highlightMe();  
-  void request(QString, int);
-  void newReply(QASObject*);
-  void linkHovered(const QString&);
-  void like(QASObject*);
-  void share(QASObject*);
+  void clicked();
 
 protected:
-  void keyPressEvent(QKeyEvent* event);
-
-private slots:
-  void update(bool older);
-
-private:
-  QVBoxLayout* m_itemLayout;
-  QWidget* m_listContainer;
-  QSet<QASActivity*> m_activity_set;
-  
-  bool m_firstTime;
-  bool m_shortDisplay;
-
-  QSet<QASObject*> m_shown_objects;
-
-  QASCollection* m_collection;
+  virtual void mousePressEvent(QMouseEvent*);
 };
 
-#endif /* _COLLECTIONWIDGET_H_ */
+#endif /* _IMAGELABEL_H_ */

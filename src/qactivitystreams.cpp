@@ -679,6 +679,21 @@ void QASActorList::refresh() {
 
 //------------------------------------------------------------------------------
 
+QString QASActorList::actorNames() const {
+  QString text;
+  for (size_t i=0; i<size(); i++) {
+    QASActor* a = at(i);
+    text += QString("<a href=\"%1\">%2</a>")
+      .arg(a->url())
+      .arg(a->displayNameOrYou());
+    if (i != size()-1)
+      text += ", ";
+  }
+  return text;
+}
+
+//------------------------------------------------------------------------------
+
 QASCollection::QASCollection(QString url, QObject* parent) :
   QASAbstractObject(parent),
   m_url(url),

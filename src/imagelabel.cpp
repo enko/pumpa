@@ -17,51 +17,19 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SHORTACTIVITYWIDGET_H_
-#define _SHORTACTIVITYWIDGET_H_
-
-#include <QHBoxLayout>
-#include <QFrame>
-#include <QWidget>
-
-#include "qactivitystreams.h"
-#include "actorwidget.h"
-#include "richtextlabel.h"
+#include "imagelabel.h"
 
 //------------------------------------------------------------------------------
 
-class AbstractActivityWidget : public QFrame {
-  Q_OBJECT
-
-public:
-  AbstractActivityWidget(QASActivity* a, QWidget* parent=0);
-
-  virtual QString getId() const { return m_activity->id(); }
-
-protected:
-  QASActivity* m_activity;
-};
+ImageLabel::ImageLabel(QWidget* parent) : QLabel(parent) {
+  setMaximumSize(320, 320);
+  setFocusPolicy(Qt::NoFocus);
+}
 
 //------------------------------------------------------------------------------
 
-class ShortActivityWidget : public AbstractActivityWidget {
-  Q_OBJECT
+void ImageLabel::mousePressEvent(QMouseEvent* event) {
+  QLabel::mousePressEvent(event);
+  emit clicked();
+}
 
-public:
-  ShortActivityWidget(QASActivity* a, QWidget* parent=0);
-
-public slots:
-  virtual void onObjectChanged();
-
-signals:
-  void linkHovered(const QString&);
-
-private:
-  void updateText();
-
-  RichTextLabel* m_textLabel;
-  ActorWidget* m_actorWidget;
-  QHBoxLayout* m_acrossLayout;
-};
-
-#endif /* _SHORTACTIVITYWIDGET_H_ */

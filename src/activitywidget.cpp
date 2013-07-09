@@ -19,217 +19,110 @@
 
 #include "activitywidget.h"
 #include "pumpa_defines.h"
-#include "util.h"
 
 #include <QDebug>
-#include <QRegExp>
-
-QSet<QString> s_allowedTags;
-
-//------------------------------------------------------------------------------
-
-QString ActivityWidget::processText(QString old_text, bool getImages) {
-  if (s_allowedTags.isEmpty()) {
-    s_allowedTags 
-      << "br" << "p" << "b" << "i" << "blockquote" << "div"
-      << "code" << "h1" << "h2" << "h3" << "h4" << "h5"
-      << "em" << "ol" << "li" << "ul" << "strong";
-    s_allowedTags << "pre";
-    s_allowedTags << "a";
-    s_allowedTags << "img";
-  }
-  
-  QString text = old_text.trimmed();
-  int pos;
-
-  // Shorten links that are too long, this is OK, since you can still
-  // click the link.
-  QRegExp rxa("<a\\s[^>]*href=([^>\\s]+)[^>]*>([^<]*)</a>");
-  pos = 0;
-  while ((pos = rxa.indexIn(text, pos)) != -1) {
-    int len = rxa.matchedLength();
-    QString url = rxa.cap(1);
-    QString linkText = rxa.cap(2);
-
-    if ((linkText.startsWith("http://") || linkText.startsWith("https://")) &&
-        linkText.length() > MAX_WORD_LENGTH) {
-      linkText = linkText.left(MAX_WORD_LENGTH-3) + "...";
-      QString newText = QString("<a href=%1>%2</a>").arg(url).arg(linkText);
-      text.replace(pos, len, newText);
-      pos += newText.length();
-    } else
-      pos += len;
-  }
-
-  // Detect single HTML tags for filtering.
-  QRegExp rx("<(\\/?)([a-zA-Z0-9]+)([^>]*)>");
-  pos = 0;
-  while ((pos = rx.indexIn(text, pos)) != -1) {
-    int len = rx.matchedLength();
-    QString slash = rx.cap(1);
-    QString tag = rx.cap(2);
-    QString inside = rx.cap(3);
-
-    if (tag == "img") { // Replace img's with placeholder
-      QString imagePlaceholder = "[image]";
-
-      if (getImages) {
-        QRegExp rxi("\\s+src=\"?(" URL_REGEX ")\"?");
-        int spos = rxi.indexIn(inside);
-        if (spos != -1) {
-          QString imgSrc = rxi.cap(1);
-          qDebug() << "[DEBUG] processText: img" << imgSrc;
-          
-          FileDownloader* fd = FileDownloader::get(imgSrc, true);
-          connect(fd, SIGNAL(fileReady()), this, SLOT(onObjectChanged()),
-                  Qt::UniqueConnection);
-          if (fd->ready())
-            imagePlaceholder = 
-              QString("<img src=\"%1\" />").arg(fd->fileName());
-        }
-      }
-      text.replace(pos, len, imagePlaceholder);
-      pos += imagePlaceholder.length();
-      // qDebug() << "[DEBUG] processText: removing image";
-    } else if (s_allowedTags.contains(tag)) {
-      pos += len;
-    } else { // drop all other HTML tags
-      qDebug() << "[DEBUG] processText: dropping unsupported tag" << tag;
-      text.remove(pos, len);
-    }
-  }
-
-  text.replace("< ", "&lt; ");
-
-  // remove trailing <br>:s
-  while (text.endsWith("<br>"))
-    text.chop(4);
-
-  // qDebug() << "processText:" << old_text;
-  // qDebug() << "          ->" << text;
-  // return splitLongWords(text);
-  return text;
-}
-
-//------------------------------------------------------------------------------
-
-QString relativeFuzzyTime(QDateTime sTime) {
-  QString dateStr = sTime.toString("ddd d MMMM yyyy");
-
-  int secs = sTime.secsTo(QDateTime::currentDateTime().toUTC());
-  if (secs < 0)
-    secs = 0;
-  int mins = qRound((float)secs/60);
-  int hours = qRound((float)secs/60/60);
-    
-  if (secs < 60) { 
-    dateStr = QString("a few seconds ago");
-  } else if (mins < 60) {
-    dateStr = QString("%1 minute%2 ago").arg(mins).arg(mins==1?"":"s");
-  } else if (hours < 24) {
-    dateStr = QString("%1 hour%2 ago").arg(hours).arg(hours==1?"":"s");
-  }
-  return dateStr;
-}
 
 //------------------------------------------------------------------------------
 
 ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
-  AbstractActivityWidget(a, parent),  m_hasMoreButton(NULL)
+  QFrame(parent),
+  m_irtObjectWidget(NULL),
+  m_activity(a)
 {
-  QASObject* noteObj = a->object();
+  const QString verb = m_activity->verb();
+  QASObject* obj = m_activity->object();
+  QString objType = obj->type();
 
-  m_infoLabel = new RichTextLabel(this);
-  m_objectWidget = new ObjectWidget(noteObj, this);
-  m_actorWidget = new ActorWidget(effectiveAuthor(), this);
+  bool showObject = (verb == "post" || objType == "person");
 
-  connect(m_infoLabel, SIGNAL(linkHovered(const QString&)),
+  m_textLabel = new RichTextLabel(this);
+  connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
+
+  m_objectWidget = new ObjectWidget(obj, this, !showObject);
   connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
+  connect(m_objectWidget, SIGNAL(newReply(QASObject*)),
+          this,  SIGNAL(newReply(QASObject*)));
+  connect(m_objectWidget, SIGNAL(like(QASObject*)),
+          this,  SIGNAL(like(QASObject*)));
+  connect(m_objectWidget, SIGNAL(share(QASObject*)),
+          this,  SIGNAL(share(QASObject*)));
 
-  // updateText();
-
-  m_favourButton = new QToolButton();
-  m_favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  m_favourButton->setFocusPolicy(Qt::NoFocus);
-  updateFavourButton();
-  connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
-
-  m_shareButton = new QToolButton();
-  m_shareButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  m_shareButton->setFocusPolicy(Qt::NoFocus);
-  updateShareButton();
-  connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
-
-  m_commentButton = new QToolButton();
-  m_commentButton->setText("comment");
-  m_commentButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  m_commentButton->setFocusPolicy(Qt::NoFocus);
-  connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
-
-  m_buttonLayout = new QHBoxLayout;
-  m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
-  m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
-  m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
-  m_buttonLayout->addStretch();
-
-  m_rightLayout = new QVBoxLayout;
-  m_rightLayout->setContentsMargins(0, 0, 0, 0);
-  m_rightLayout->addWidget(m_infoLabel, 0, Qt::AlignTop);
-  m_rightLayout->addWidget(m_objectWidget, 0, Qt::AlignTop);
-  m_rightLayout->addLayout(m_buttonLayout);
-
-  connect(noteObj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
+  connect(obj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
           Qt::UniqueConnection);
 
-  QASObjectList* ol = noteObj->replies();
-  if (ol) {
-    connect(ol, SIGNAL(changed()), this, SLOT(onObjectChanged()),
-            Qt::UniqueConnection);
+  QVBoxLayout* layout = new QVBoxLayout;
+  layout->setContentsMargins(0, 0, 0, 0);
+  layout->addWidget(m_textLabel, 0, Qt::AlignTop);
+
+  if (objType == "comment") {
+    QASObject* irtObj = obj->inReplyTo();
+    if (irtObj) {
+      m_irtObjectWidget = new ObjectWidget(irtObj, this, true);
+      connect(m_irtObjectWidget, SIGNAL(moreClicked()),
+              this, SLOT(hideOriginalObject()));
+      layout->addWidget(m_irtObjectWidget, 0, Qt::AlignTop);
+      if (irtObj->url().isEmpty()) {
+        m_irtObjectWidget->setVisible(false);
+        irtObj->refresh();
+      }
+    }
+  }
+  layout->addWidget(m_objectWidget, 0, Qt::AlignTop);
+  layout->addWidget(new QLabel("<hr />"));
+
+  updateText();
+
+  setLayout(layout);
+}
+
+//------------------------------------------------------------------------------
+
+void ActivityWidget::onObjectChanged() {
+  updateText();
+}
+
+//------------------------------------------------------------------------------
+
+void ActivityWidget::refreshTimeLabels() {
+  updateText();
+}
+
+//------------------------------------------------------------------------------
+
+void ActivityWidget::hideOriginalObject() {
+  if (!m_irtObjectWidget)
+    return;
+
+  QASObject* obj = m_activity->object();
+  QASObjectList* replies = m_irtObjectWidget->object()->replies();
+  if (replies && replies->contains(obj))
+    m_objectWidget->setVisible(false);
+}
+
+//------------------------------------------------------------------------------
+
+void ActivityWidget::updateText() {
+  QString verb = m_activity->verb();
+  QString text = m_activity->content();
+  QString objType = m_activity->object()->type();
+
+  QString generatorName = m_activity->generatorName();
+  if (!generatorName.isEmpty() && (verb != "share"))
+    text += " via " + generatorName;
+
+  if (verb == "post" && objType == "note") {
+    if (m_activity->hasTo())
+      text += " To: " + recipientsToString(m_activity->to());
     
-    if (noteObj->numReplies() > 0)
-      addObjectList(ol);
+    if (m_activity->hasCc())
+      text += " CC: " + recipientsToString(m_activity->cc());
   }
 
-  QHBoxLayout* m_acrossLayout = new QHBoxLayout;
-  m_acrossLayout->setSpacing(10);
-  m_acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignTop);
-  m_acrossLayout->addLayout(m_rightLayout, 0); 
-
-  setLayout(m_acrossLayout);
+  m_textLabel->setText(text);
 }
-
-//------------------------------------------------------------------------------
-
-QASActor* ActivityWidget::effectiveAuthor() {
-  QASActor* author = m_activity->object()->author();
-  return author ? author : m_activity->actor();
-}
-
-//------------------------------------------------------------------------------
-
-// void ActivityWidget::mousePressEvent(QMouseEvent* e) {
-//   emit clickedStatus(msg->getId());
-//   QFrame::mousePressEvent(e);
-// }
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::updateFavourButton(bool wait) {
-  const QASObject* noteObj = m_activity->object();
-  QString text = noteObj->liked() ? "unlike" : "like";
-  if (wait)
-    text = "...";
-  m_favourButton->setText(text);
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::updateShareButton(bool /*wait*/) {
-  m_shareButton->setText("share");
-}
-
+ 
 //------------------------------------------------------------------------------
 
 QString ActivityWidget::recipientsToString(QASObjectList* rec) {
@@ -254,196 +147,4 @@ QString ActivityWidget::recipientsToString(QASObjectList* rec) {
   }
 
   return ret.join(", ");
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::updateInfoText() {
-  const QASObject* obj = m_activity->object();
-  const QASActor* author = effectiveAuthor();
-  
-  bool share = (m_activity->verb() == "share");
-  QString objType = obj->type();
-
-  QString text = QString("<a href=\"%2\">%1</a> at <a href=\"%4\">%3</a>").
-    arg(author->displayName()).
-    arg(author->url()).
-    arg(relativeFuzzyTime(obj->published())).
-    arg(obj->url());
-
-  QString generatorName = m_activity->generatorName();
-  if (!generatorName.isEmpty() && !share)
-    text += " via " + generatorName;
-
-  if (objType == "note") {
-    if (m_activity->hasTo())
-      text += " To: " + recipientsToString(m_activity->to());
-
-    if (m_activity->hasCc())
-      text += " CC: " + recipientsToString(m_activity->cc());
-  }
-
-  QASObject* irtObj = obj->inReplyTo();
-
-  if (irtObj) {
-    text += " in reply to a ";
-    if (!irtObj->url().isEmpty()) {
-      text += "<a href=\"" + irtObj->url() + "\">note</a>";
-    } else {
-      text += "note";
-      irtObj->refresh();
-    }
-  }
-
-  if (share)
-    text += " (shared by " + m_activity->actor()->displayName() + ")";
-
-  m_infoLabel->setText(text);
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::updateText() {
-  updateInfoText();
-
-  m_objectWidget->setText(processText(m_activity->object()->content(), true));
-}  
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::refreshTimeLabels() {
-  updateInfoText();
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::favourite() {
-  updateFavourButton(true);
-  emit like(m_activity->object());
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::repeat() {
-  updateShareButton(true);
-  emit share(m_activity->object());
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::reply() {
-  emit newReply(m_activity->object());
-}
- 
-//------------------------------------------------------------------------------
-
-void ActivityWidget::onObjectChanged() {
-  updateText();
-  updateFavourButton();
-  updateShareButton();
-
-  const QASObject* obj = m_activity->object();
-  if (obj->numReplies() > 0) {
-    QASObjectList* ol = obj->replies();
-    addObjectList(ol);
-  }
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::addObjectList(QASObjectList* ol) {
-  int li = 3; // index where to insert next widget in the layout
-  int li_before = li;
-  if (m_hasMoreButton != NULL)
-    li++;
-
-  /*
-    For now we sort by time, or more accurately by whatever number the
-    QASObject::sortInt() returns. Higher number is newer, goes further
-    down the list.
-  
-    Comments' lists returned by the pump API are with newest at the
-    top, so we start from the end, and can assume that the next one is
-    always newer.
-  */
-
-  int i = 0; // index into m_repliesList
-  for (size_t j=0; j<ol->size(); j++) {
-    QASObject* replyObj = ol->at(ol->size()-j-1);
-    QString replyId = replyObj->id();
-    qint64 sortInt = replyObj->sortInt();
-
-    while (i < m_repliesList.size() &&
-           m_repliesList[i]->id() != replyId &&
-           m_repliesList[i]->sortInt() < sortInt)
-      i++;
-
-    if (m_repliesMap.contains(replyId))
-      continue;
-
-    if (i < m_repliesList.size() && m_repliesList[i]->id() == replyId)
-      continue;
-
-    QASActor* author = replyObj->author();
-
-    ActorWidget* aw = new ActorWidget(author, this, true);
-    ObjectWidget* ow = new ObjectWidget(replyObj, this);
-
-    ow->setLineWidth(1);
-    ow->setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
-    
-    QString content = processText(replyObj->content(), false);
-
-    ow->setText(content);
-    ow->setInfo(QString("<a href=\"%2\">%1</a> at <a href=\"%4\">%3</a>").
-                arg(author->displayName()).
-                arg(author->url()).
-                arg(relativeFuzzyTime(replyObj->published())).
-                arg(replyObj->url()));
-    connect(ow, SIGNAL(linkHovered(const QString&)),
-            this, SIGNAL(linkHovered(const QString&)));
-
-    QHBoxLayout* replyLayout = new QHBoxLayout;
-    replyLayout->setContentsMargins(0, 0, 0, 0);
-    replyLayout->addWidget(aw, 0, Qt::AlignTop);
-    replyLayout->addWidget(ow, 0, Qt::AlignTop);
-    
-    m_rightLayout->insertLayout(li + i, replyLayout);
-    m_repliesList.insert(i, replyObj);
-    m_repliesMap.insert(replyId);
-  }
-
-  if (ol->hasMore() && (qulonglong)m_repliesList.size() < ol->totalItems()) {
-    // qDebug() << "[DEBUG]:" << "addHasMoreButton:"
-    //          << ol->hasMore() << (qulonglong)m_repliesList.size()
-    //          << ol->totalItems();
-    addHasMoreButton(ol, li_before);
-  } else if (m_hasMoreButton != NULL) {
-    m_rightLayout->removeWidget(m_hasMoreButton);
-    delete m_hasMoreButton;
-    m_hasMoreButton = NULL;
-  }
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::addHasMoreButton(QASObjectList* ol, int li) {
-  QString buttonText = QString("Show all %1 replies").
-    arg(ol->totalItems());
-  if (m_hasMoreButton == NULL) {
-    m_hasMoreButton = new QPushButton(this);
-    m_hasMoreButton->setFocusPolicy(Qt::NoFocus);
-    m_rightLayout->insertWidget(li, m_hasMoreButton);
-    connect(m_hasMoreButton, SIGNAL(clicked()), 
-            this, SLOT(onHasMoreClicked()));
-  }
-
-  m_hasMoreButton->setText(buttonText);
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::onHasMoreClicked() {
-  m_hasMoreButton->setText("...");
-  m_activity->object()->replies()->refresh();
 }

@@ -279,6 +279,8 @@ public:
 
   virtual void refresh();
 
+  QString actorNames() const;
+
 private:
   static QMap<QString, QASActorList*> s_actorLists;
 };

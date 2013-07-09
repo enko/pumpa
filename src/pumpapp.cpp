@@ -20,9 +20,11 @@
 #include <QStatusBar>
 
 #include "pumpapp.h"
+
 #include "json.h"
-#include "messagewindow.h"
 #include "util.h"
+#include "messagewindow.h"
+#include "filedownloader.h"
 
 //------------------------------------------------------------------------------
 

@@ -21,6 +21,7 @@
 #define _UTIL_H_
 
 #include <QString>
+#include <QDateTime>
 
 //------------------------------------------------------------------------------
 
@@ -58,5 +59,7 @@ QString changePairedTags(QString text,
 QString siteUrlToAccountId(QString username, QString url);
 
 QString markDown(QString text);
+
+QString relativeFuzzyTime(QDateTime sTime);
 
 #endif /* _UTIL_H_ */

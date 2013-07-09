@@ -19,7 +19,7 @@
 
 #include "collectionwidget.h"
 #include "pumpa_defines.h"
-#include "newactivitywidget.h"
+#include "activitywidget.h"
 
 #include <QDebug>
 
@@ -85,7 +85,7 @@ void CollectionWidget::refreshTimeLabels() {
   for (int i=0; i<m_itemLayout->count(); i++) {
     QLayoutItem* const li = m_itemLayout->itemAt(i);
     if (dynamic_cast<QWidgetItem*>(li)) {
-      NewActivityWidget* aw = qobject_cast<NewActivityWidget*>(li->widget());
+      ActivityWidget* aw = qobject_cast<ActivityWidget*>(li->widget());
       if (aw)
         aw->refreshTimeLabels();
     }
@@ -114,11 +114,7 @@ void CollectionWidget::update(bool older) {
     QASObject* obj = activity->object();
     QString verb = activity->verb();
     
-    // bool full = verb == "post" ||
-    //   (verb == "share" && !m_shown_objects.contains(obj));
-    // bool full = false;
-
-    NewActivityWidget* aw = new NewActivityWidget(activity, this);
+    ActivityWidget* aw = new ActivityWidget(activity, this);
     connect(aw, SIGNAL(linkHovered(const QString&)),
             this,  SIGNAL(linkHovered(const QString&)));
     connect(aw, SIGNAL(newReply(QASObject*)),
@@ -130,26 +126,6 @@ void CollectionWidget::update(bool older) {
     
     m_itemLayout->insertWidget(li++, aw);
 
-    // if (!full) {
-    //   ShortActivityWidget* aw = new ShortActivityWidget(activity, this);
-    //   connect(aw, SIGNAL(linkHovered(const QString&)),
-    //           this,  SIGNAL(linkHovered(const QString&)));
-      
-    //   m_itemLayout->insertWidget(li++, aw);
-    // } else {
-    //   ActivityWidget* aw = new ActivityWidget(activity, this);
-    //   connect(aw, SIGNAL(newReply(QASObject*)),
-    //           this, SIGNAL(newReply(QASObject*)));
-    //   connect(aw, SIGNAL(linkHovered(const QString&)),
-    //           this,  SIGNAL(linkHovered(const QString&)));
-    //   connect(aw, SIGNAL(like(QASObject*)), this, SIGNAL(like(QASObject*)));
-    //   connect(aw, SIGNAL(share(QASObject*)), this, SIGNAL(share(QASObject*)));
-
-    //   aw->updateText();
-
-    //   m_itemLayout->insertWidget(li++, aw);
-    // }
-    
     m_shown_objects.insert(obj);
 
     if (!activity->actor()->isYou())

@@ -63,10 +63,10 @@ VPATH       += src
 
 OBJECT_HEADERS = pumpapp.h qactivitystreams.h collectionwidget.h	\
 	json.h messagewindow.h messageedit.h fancyhighlighter.h		\
-	qaspell.h shortactivitywidget.h 		\
-	objectwidget.h actorwidget.h filedownloader.h richtextlabel.h	\
+	qaspell.h actorwidget.h filedownloader.h richtextlabel.h	\
 	oauthwizard.h tabwidget.h util.h pumpasettingsdialog.h		\
-	pumpasettings.h newactivitywidget.h shortobjectwidget.h
+	pumpasettings.h activitywidget.h objectwidget.h			\
+	shortobjectwidget.h fullobjectwidget.h imagelabel.h
 
 SUNDOWN_HEADERS = sundown/markdown.h sundown/html.h sundown/buffer.h
 
