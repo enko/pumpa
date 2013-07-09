@@ -556,7 +556,23 @@ void PumpApp::onShare(QASObject* obj) {
 QString PumpApp::addTextMarkup(QString text) {
   QString oldText = text;
 
-  text.replace(QRegExp(HTML_TAG_REGEX), "&lt;\\1&gt;");
+  // Remove any inline HTML tags
+  // text.replace(QRegExp(HTML_TAG_REGEX), "&lt;\\1&gt;");
+  QRegExp rx(HTML_TAG_REGEX);
+  QRegExp urlRx(URL_REGEX);
+  int pos = 0;
+  
+  while ((pos = rx.indexIn(text, pos)) != -1) {
+    int len = rx.matchedLength();
+    QString tag = rx.cap(1);
+    if (urlRx.exactMatch(tag)) {
+      pos += len;
+    } else {
+      QString newText = "&lt;" + tag + "&gt;";
+      text.replace(pos, len, newText);
+      pos += newText.length();
+    }
+  }
 
   text = markDown(text);
 
