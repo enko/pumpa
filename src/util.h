@@ -24,7 +24,8 @@
 
 //------------------------------------------------------------------------------
 
-#define URL_REGEX "((https?://|www.)[^\\s\"]+\\.[^\\s\"]+[^\\s\\.\"])"
+#define URL_REGEX "((https?://|(https?://)?www.)[^\\s\"]+\\.[^\\s\"<]+[^\\s\\.\"<])"
+#define URL_REGEX_STRICT "(https?://[^\\s\"]+\\.[^\\s\"<]+[^\\s\\.\"<])"
 #define MD_NOGO_ITEMS "\\*`_"
 #define MD_PAIR_REGEX "%1([^\\s%3][^%3]*[^\\s%3]|[^\\s%3])%2"
 #define HTML_TAG_REGEX "<([^>]+)>"
@@ -40,7 +41,7 @@ QString siteUrlFixer(QString url);
    Finds things that look like URLs and changes them into a href
    links.  
 */
-QString linkifyUrls(QString text, QString before=".*", QString after=".*");
+QString linkifyUrls(QString text);
 
 
 /* 

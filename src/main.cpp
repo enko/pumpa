@@ -24,19 +24,12 @@
 
 //------------------------------------------------------------------------------
 
-int testMarkDown(QString str) {
-  if (str.isEmpty())
-    str = QString("Hello *world*!\n\nThis is unicode: ") + QChar(0x267A) +
-      QString(" and straight HTML: <code>foo</code>.");
-    
-  qDebug() << markDown(str);
-  return 0;
-}
-
-//------------------------------------------------------------------------------
-
 int testMarkup(QString str) {
-  qDebug() << PumpApp::addTextMarkup(str);
+  if (str.isEmpty()) 
+    str = "Hello *world*, [Some Url](http://www.foo.bar/baz). Some\n"
+      "> block quoted text\n\n"
+      "A `plain` url: http://saz.im";
+  PumpApp::addTextMarkup(str);
   return 0;
 }
 
@@ -50,10 +43,8 @@ int main(int argc, char** argv) {
     QString arg(argv[1]);
     if (arg == "test") 
       settingsFile = "pumpa-test.conf";
-    else if (arg == "testmarkdown")
-      return testMarkDown(argc > 2 ? argv[2] : "");
     else if (arg == "testmarkup")
-      return testMarkup(argv[2]);
+      return testMarkup(argc > 2 ? argv[2] : "");
     else if (arg == "testfeedint") {
       qDebug() << PumpaSettingsDialog::feedIntToComboIndex(atoi(argv[2]));
       return 0;
