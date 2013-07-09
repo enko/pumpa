@@ -118,10 +118,12 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
   rightLayout->addLayout(m_buttonLayout);
   rightLayout->addLayout(m_commentsLayout);
 
+  bool smallActor = m_childWidget;
+
   QASActor* actor = qobject_cast<QASActor*>(m_object);
   if (!actor)
     actor = m_object->author();
-  ActorWidget* actorWidget = new ActorWidget(actor, this, m_childWidget);
+  ActorWidget* actorWidget = new ActorWidget(actor, this, smallActor);
 
   QHBoxLayout* acrossLayout = new QHBoxLayout;
   acrossLayout->setSpacing(10);

@@ -37,18 +37,22 @@ ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
   m_actorWidget = new ActorWidget(NULL, this, true);
   updateAvatar();
 
-  QToolButton* moreButton = new QToolButton(this);
-  moreButton->setText("+");
-  moreButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-  moreButton->setFocusPolicy(Qt::NoFocus);
-  connect(moreButton, SIGNAL(clicked()), this, SIGNAL(moreClicked()));
-
+  QToolButton* moreButton = NULL;
+  if (m_object->type() != "person") {
+    moreButton = new QToolButton(this);
+    moreButton->setText("+");
+    moreButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    moreButton->setFocusPolicy(Qt::NoFocus);
+    connect(moreButton, SIGNAL(clicked()), this, SIGNAL(moreClicked()));
+  }
+  
   QHBoxLayout* acrossLayout = new QHBoxLayout;
   // acrossLayout->setSpacing(10);
   acrossLayout->setContentsMargins(0, 0, 0, 0);
   acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignVCenter);
   acrossLayout->addWidget(m_textLabel, 0, Qt::AlignVCenter);
-  acrossLayout->addWidget(moreButton, 0, Qt::AlignVCenter);
+  if (moreButton)
+    acrossLayout->addWidget(moreButton, 0, Qt::AlignVCenter);
 
   updateText();
   
@@ -84,7 +88,7 @@ void ShortObjectWidget::updateText() {
   if (author && !author->displayName().isEmpty())
     text = author->displayName();
   if (!content.isEmpty())
-    text += " \"" + content + "\"";
+    text += (text.isEmpty() ? "" : ": ") + content;
 
   m_textLabel->setText(text);
 }

@@ -33,7 +33,7 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   QASObject* obj = m_activity->object();
   QString objType = obj->type();
 
-  bool showObject = (verb == "post" || objType == "person");
+  bool showObject = (verb == "post");
 
   m_textLabel = new RichTextLabel(this);
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
