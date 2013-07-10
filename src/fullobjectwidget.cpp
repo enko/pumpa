@@ -95,11 +95,9 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
     connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
     m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
 
-    if (!m_childWidget) {
-      m_commentButton = new TextToolButton("comment", this);
-      connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
-      m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
-    }
+    m_commentButton = new TextToolButton("comment", this);
+    connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
+    m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
   }
 
   m_buttonLayout->addStretch();
@@ -321,6 +319,8 @@ void FullObjectWidget::addObjectList(QASObjectList* ol) {
 
     connect(ow, SIGNAL(linkHovered(const QString&)),
             this, SIGNAL(linkHovered(const QString&)));
+    connect(ow, SIGNAL(newReply(QASObject*)),
+            this,  SIGNAL(newReply(QASObject*)));
     connect(ow, SIGNAL(like(QASObject*)), 
             this, SIGNAL(like(QASObject*)));
     connect(ow, SIGNAL(share(QASObject*)), 

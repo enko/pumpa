@@ -50,10 +50,6 @@ signals:
   void like(QASObject*);
   void share(QASObject*);
 
-private slots:
-  void hideOriginalObject();
-  void onMoreClicked();
-
 private:
   void updateText();
   QString recipientsToString(QASObjectList* rec);
@@ -62,7 +58,6 @@ private:
   RichTextLabel* m_textLabel;
   ActorWidget* m_actorWidget;
   ObjectWidget* m_objectWidget;
-  ObjectWidget* m_irtObjectWidget;
 
   QASActivity* m_activity;
 };

@@ -123,6 +123,10 @@ void CollectionWidget::update(bool older) {
             this,  SIGNAL(like(QASObject*)));
     connect(aw, SIGNAL(share(QASObject*)),
             this,  SIGNAL(share(QASObject*)));
+
+    if (obj)
+      connect(obj, SIGNAL(request(QString, int)), 
+              this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
     
     m_itemLayout->insertWidget(li++, aw);
 

@@ -26,6 +26,7 @@
 #include "qactivitystreams.h"
 #include "shortobjectwidget.h"
 #include "fullobjectwidget.h"
+#include "richtextlabel.h"
 
 class ObjectWidget : public QFrame {
   Q_OBJECT
@@ -46,10 +47,12 @@ signals:
 private slots:
   void showMore();
   void onChanged();
+  void updateContextLabel();
 
 private:
   FullObjectWidget* m_objectWidget;
   ShortObjectWidget* m_shortObjectWidget;
+  RichTextLabel* m_contextLabel;
 
   QVBoxLayout* m_layout;
 

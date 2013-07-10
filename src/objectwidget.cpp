@@ -23,6 +23,7 @@
 
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) : 
   QFrame(parent),
+  m_contextLabel(NULL),
   m_object(obj),
   m_short(shortWidget)
 {
@@ -31,6 +32,21 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
   m_layout = new QVBoxLayout;
   m_layout->setContentsMargins(0, 0, 0, 0);
   m_layout->setSpacing(0);
+
+  if (m_object->type() == "comment") {
+    QASObject* irtObj = m_object->inReplyTo();
+    if (irtObj) {
+      m_contextLabel = new RichTextLabel(this, true);
+      connect(irtObj, SIGNAL(changed()), this, SLOT(updateContextLabel()));
+      m_layout->addWidget(m_contextLabel, 0, Qt::AlignTop);
+      if (irtObj->url().isEmpty()) {
+        m_contextLabel->setVisible(false);
+        irtObj->refresh();
+      } else {
+        updateContextLabel();
+      }
+    }
+  }
 
   m_objectWidget = new FullObjectWidget(m_object, parent);
   connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
@@ -47,6 +63,8 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
     m_shortObjectWidget = new ShortObjectWidget(m_object, parent);
     connect(m_shortObjectWidget, SIGNAL(moreClicked()),
             this, SLOT(showMore()));
+    if (m_contextLabel)
+      m_contextLabel->setVisible(false);
     m_objectWidget->setVisible(false);
     m_layout->addWidget(m_shortObjectWidget);
   }
@@ -59,9 +77,12 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
 void ObjectWidget::showMore() {
   if (!m_short || !m_shortObjectWidget)
     return;
+
   m_short = false;
   m_shortObjectWidget->setVisible(false);
   m_objectWidget->setVisible(true);
+  if (m_contextLabel)
+    m_contextLabel->setVisible(true);
   emit moreClicked();
 }
   
@@ -70,3 +91,17 @@ void ObjectWidget::showMore() {
 void ObjectWidget::onChanged() {
   setVisible(!m_object->url().isEmpty());
 }
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::updateContextLabel() {
+  QASObject* irtObj = m_object->inReplyTo();
+  if (!irtObj || !m_contextLabel)
+    return;
+
+  QString text = ShortObjectWidget::objectExcerpt(irtObj);
+  m_contextLabel->setText("Re: " + text);
+  if (!m_short)
+    m_contextLabel->setVisible(true);
+}
+  

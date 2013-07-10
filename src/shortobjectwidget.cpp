@@ -34,8 +34,8 @@ ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
 
   m_textLabel = new RichTextLabel(this, true);
 
-  // m_actorWidget = new ActorWidget(NULL, this, true);
-  // updateAvatar();
+  m_actorWidget = new ActorWidget(NULL, this, true);
+  updateAvatar();
 
   TextToolButton* moreButton = NULL;
   if (m_object->type() != "person") {
@@ -46,7 +46,7 @@ ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
   QHBoxLayout* acrossLayout = new QHBoxLayout;
   // acrossLayout->setSpacing(10);
   acrossLayout->setContentsMargins(0, 0, 0, 0);
-  // acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignVCenter);
+  acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignVCenter);
   acrossLayout->addWidget(m_textLabel, 0, Qt::AlignVCenter);
   if (moreButton)
     acrossLayout->addWidget(moreButton, 0, Qt::AlignVCenter);
@@ -63,18 +63,13 @@ void ShortObjectWidget::updateAvatar() {
   QASActor* m_actor = qobject_cast<QASActor*>(m_object);
   if (!m_actor)
     m_actor = m_object->author();
-  // m_actorWidget->setActor(m_actor);
+  m_actorWidget->setActor(m_actor);
 }
 
 //------------------------------------------------------------------------------
 
 void ShortObjectWidget::updateText() {
-  QString content = m_object->displayName();
-  if (content.isEmpty()) {
-    content = m_object->content();
-    if (!content.isEmpty())
-      content.replace(QRegExp(HTML_TAG_REGEX), " ");
-  }
+  QString content = objectExcerpt(m_object);
 
   QString text;
   QASActor* author = m_object->author();
@@ -91,4 +86,16 @@ void ShortObjectWidget::updateText() {
 void ShortObjectWidget::onChanged() {
   updateAvatar();
   updateText();
+}
+
+//------------------------------------------------------------------------------
+
+QString ShortObjectWidget::objectExcerpt(QASObject* obj) {
+  QString text = obj->displayName();
+  if (text.isEmpty()) {
+    text = obj->content();
+  }
+  if (!text.isEmpty())
+    text.replace(QRegExp(HTML_TAG_REGEX), " ");
+  return text;
 }

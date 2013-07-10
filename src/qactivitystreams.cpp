@@ -164,7 +164,10 @@ void updateUrlOrProxy(QVariantMap obj, QString& var, bool& changed) {
 
 //------------------------------------------------------------------------------
 
-QASAbstractObject::QASAbstractObject(QObject* parent) : QObject(parent) {}
+QASAbstractObject::QASAbstractObject(int asType, QObject* parent) :
+  QObject(parent),
+  m_asType(asType) 
+{}
 
 //------------------------------------------------------------------------------
 
@@ -179,6 +182,17 @@ void QASAbstractObject::connectSignals(QASAbstractObject* obj,
   if (req)
     connect(obj, SIGNAL(request(QString, int)),
             parent(), SLOT(request(QString, int)), Qt::UniqueConnection);
+}
+
+//------------------------------------------------------------------------------
+
+void QASAbstractObject::refresh() {
+  QDateTime now = QDateTime::currentDateTime();
+
+  if (m_lastRefreshed.isNull() || m_lastRefreshed.secsTo(now) > 1)
+    emit request(apiLink(), m_asType);
+
+  m_lastRefreshed = now;
 }
 
 //------------------------------------------------------------------------------
@@ -232,7 +246,7 @@ QASActor* QASActor::getActor(QVariantMap json, QObject* parent) {
 //------------------------------------------------------------------------------
 
 QASObject::QASObject(QString id, QObject* parent) :
-  QASAbstractObject(parent),
+  QASAbstractObject(QAS_OBJECT, parent),
   m_id(id),
   m_liked(false),
   m_shared(false),
@@ -323,18 +337,6 @@ QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
 
 //------------------------------------------------------------------------------
 
-void QASObject::refresh() {
-  static QDateTime last_refreshed;
-  QDateTime now = QDateTime::currentDateTime();
-  
-  if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
-    emit request(apiLink(), QAS_OBJECT);
-
-  last_refreshed = now;
-}
-
-//------------------------------------------------------------------------------
-
 void QASObject::addReply(QASObject* obj) {
   if (!m_replies)
     return;
@@ -413,7 +415,7 @@ QVariantMap QASObject::toJson() const {
 //------------------------------------------------------------------------------
 
 QASActivity::QASActivity(QString id, QObject* parent) : 
-  QASAbstractObject(parent),
+  QASAbstractObject(QAS_ACTIVITY, parent),
   m_id(id),
   m_object(NULL),
   m_actor(NULL),
@@ -505,7 +507,7 @@ bool QASActivity::hasCc() const {
 //------------------------------------------------------------------------------
 
 QASObjectList::QASObjectList(QString url, QObject* parent) :
-  QASAbstractObject(parent),
+  QASAbstractObject(QAS_OBJECTLIST, parent),
   m_url(url),
   m_totalItems(0),
   m_hasMore(false)
@@ -600,22 +602,23 @@ QString QASObjectList::urlOrProxy() const {
 
 //------------------------------------------------------------------------------
 
-//FIXME, refresh() could be in QASAbstractObject
-void QASObjectList::refresh() {
-  static QDateTime last_refreshed;
-  QDateTime now = QDateTime::currentDateTime();
+// //FIXME, refresh() could be in QASAbstractObject
+// void QASObjectList::refresh() {
+//   static QDateTime last_refreshed;
+//   QDateTime now = QDateTime::currentDateTime();
   
-  if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
-    emit request(urlOrProxy(), QAS_OBJECTLIST);
+//   if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
+//     emit request(urlOrProxy(), QAS_OBJECTLIST);
 
-  last_refreshed = now;
-}
+//   last_refreshed = now;
+// }
 
 //------------------------------------------------------------------------------
 
 QASActorList::QASActorList(QString url, QObject* parent) :
   QASObjectList(url, parent)
 {
+  m_asType = QAS_OBJECTLIST;
 #if DEBUG >= 1
   qDebug() << "new ActorList" << m_url;
 #endif
@@ -667,15 +670,15 @@ void QASActorList::removeActor(QASActor* actor) {
 //------------------------------------------------------------------------------
 
 //FIXME, refresh() could be in QASAbstractObject
-void QASActorList::refresh() {
-  static QDateTime last_refreshed;
-  QDateTime now = QDateTime::currentDateTime();
+// void QASActorList::refresh() {
+//   static QDateTime last_refreshed;
+//   QDateTime now = QDateTime::currentDateTime();
   
-  if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
-    emit request(urlOrProxy(), QAS_ACTORLIST);
+//   if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
+//     emit request(urlOrProxy(), QAS_ACTORLIST);
 
-  last_refreshed = now;
-}
+//   last_refreshed = now;
+// }
 
 //------------------------------------------------------------------------------
 
@@ -695,7 +698,7 @@ QString QASActorList::actorNames() const {
 //------------------------------------------------------------------------------
 
 QASCollection::QASCollection(QString url, QObject* parent) :
-  QASAbstractObject(parent),
+  QASAbstractObject(QAS_COLLECTION, parent),
   m_url(url),
   m_totalItems(0)
 {

@@ -37,6 +37,8 @@ public:
 
   QASObject* object() const { return m_object; }
 
+  static QString objectExcerpt(QASObject* obj);
+
 signals:
   void moreClicked();
 

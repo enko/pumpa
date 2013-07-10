@@ -27,7 +27,8 @@
 
 ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   QFrame(parent),
-  m_irtObjectWidget(NULL),
+  // m_irtObjectWidget(NULL),
+  m_objectWidget(NULL),
   m_activity(a)
 {
   const QString verb = m_activity->verb();
@@ -43,30 +44,15 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
 
-  m_objectWidget = makeObjectWidgetAndConnect(obj, !showObject);
-  connect(m_objectWidget, SIGNAL(moreClicked()), this, SLOT(onMoreClicked()));
+  if (!obj->content().isEmpty() || !obj->displayName().isEmpty())
+    m_objectWidget = makeObjectWidgetAndConnect(obj, !showObject);
 
-  if (objType == "comment") {
-    QASObject* irtObj = obj->inReplyTo();
-    if (irtObj) {
-      m_irtObjectWidget = makeObjectWidgetAndConnect(irtObj, true);
-      connect(m_irtObjectWidget, SIGNAL(moreClicked()),
-              this, SLOT(hideOriginalObject()));
-      if (irtObj->url().isEmpty()) {
-        m_irtObjectWidget->setVisible(false);
-        irtObj->refresh();
-      } else if (!showObject) {
-        m_irtObjectWidget->setVisible(false);
-      }
-    }
-  }
   QVBoxLayout* layout = new QVBoxLayout;
   layout->setContentsMargins(0, 0, 0, 0);
-  //  layout->addWidget(m_textLabel, 0, Qt::AlignTop);
   layout->addLayout(topLayout);
-  if (m_irtObjectWidget)
-      layout->addWidget(m_irtObjectWidget, 0, Qt::AlignTop);
-  layout->addWidget(m_objectWidget, 0, Qt::AlignTop);
+
+  if (m_objectWidget)
+    layout->addWidget(m_objectWidget, 0, Qt::AlignTop);
   layout->addWidget(new QLabel("<hr />"));
 
   updateText();
@@ -84,27 +70,6 @@ void ActivityWidget::onObjectChanged() {
 
 void ActivityWidget::refreshTimeLabels() {
   updateText();
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::hideOriginalObject() {
-  if (!m_irtObjectWidget)
-    return;
-
-  QASObject* obj = m_activity->object();
-  QASObjectList* replies = m_irtObjectWidget->object()->replies();
-  if (replies && replies->contains(obj))
-    m_objectWidget->setVisible(false);
-}
-
-//------------------------------------------------------------------------------
-
-void ActivityWidget::onMoreClicked() {
-  if (!m_irtObjectWidget)
-    return;
-
-  m_irtObjectWidget->setVisible(true);
 }
 
 //------------------------------------------------------------------------------

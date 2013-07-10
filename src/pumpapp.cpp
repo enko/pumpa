@@ -751,7 +751,6 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   if (sid == QAS_COLLECTION) {
     QASCollection::getCollection(obj, this, id);
   } else if (sid == QAS_ACTIVITY) {
-    // qDebug() << "QAS_ACTIVITY" << debugDumpJson(obj);
     QASActivity* act = QASActivity::getActivity(obj, this);
     if ((id & QAS_TOGGLE_LIKE) && act->object())
       act->object()->toggleLiked();
