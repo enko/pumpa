@@ -17,31 +17,34 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _ACTORWIDGET_H_
-#define _ACTORWIDGET_H_
-
-#include <QWidget>
-#include <QLabel>
-#include <QMouseEvent>
+#ifndef _CONTEXTWIDGET_H_
+#define _CONTEXTWIDGET_H_
 
 #include "qactivitystreams.h"
 
+// #include <QLabel>
+// #include <QWidget>
+// #include <QScrollBar>
+// #include <QMouseEvent>
+// #include <QScrollArea>
+// #include <QVBoxLayout>
+
+#include "aswidget.h"
+
 //------------------------------------------------------------------------------
 
-class ActorWidget : public QLabel {
+class ContextWidget : public ASWidget {
   Q_OBJECT
-public:
-  ActorWidget(QASActor* a, QWidget* parent = 0, bool small=false);
-  void setActor(QASActor* a);
 
-public slots:
-  void onImageChanged();
-  void updatePixmap();
+public:
+  ContextWidget(QWidget* parent);
+
+  void setObject(QASObject* obj);
 
 private:
-  QASActor* m_actor;
-  QString m_url;
-  QString m_localFile;
+  void update();
+
+  QASObject* m_object;
 };
 
-#endif /* _ACTORWIDGET_H_ */
+#endif /* _CONTEXTWIDGET_H_ */

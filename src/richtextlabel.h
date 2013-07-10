@@ -34,9 +34,12 @@ class RichTextLabel : public QLabel {
   Q_OBJECT
 
 public:
-  RichTextLabel(QWidget* parent = 0);
+  RichTextLabel(QWidget* parent = 0, bool singleLine = false);
 
   virtual void resizeEvent(QResizeEvent*);
+
+private:
+  bool m_singleLine;
 };
 
 #endif /* _RICHTEXTLABEL_H_ */

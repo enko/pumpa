@@ -17,31 +17,26 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _ACTORWIDGET_H_
-#define _ACTORWIDGET_H_
+#ifndef _IMAGELABEL_H_
+#define _IMAGELABEL_H_
 
-#include <QWidget>
 #include <QLabel>
+#include <QWidget>
 #include <QMouseEvent>
-
-#include "qactivitystreams.h"
 
 //------------------------------------------------------------------------------
 
-class ActorWidget : public QLabel {
+class ImageLabel : public QLabel {
   Q_OBJECT
+  
 public:
-  ActorWidget(QASActor* a, QWidget* parent = 0, bool small=false);
-  void setActor(QASActor* a);
+  ImageLabel(QWidget* parent=0);
 
-public slots:
-  void onImageChanged();
-  void updatePixmap();
+signals:
+  void clicked();
 
-private:
-  QASActor* m_actor;
-  QString m_url;
-  QString m_localFile;
+protected:
+  virtual void mousePressEvent(QMouseEvent*);
 };
 
-#endif /* _ACTORWIDGET_H_ */
+#endif /* _IMAGELABEL_H_ */

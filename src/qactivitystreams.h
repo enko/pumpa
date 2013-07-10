@@ -41,14 +41,23 @@ qint64 sortIntByDateTime(QDateTime dt);
 
 class QASAbstractObject : public QObject {
   Q_OBJECT
+
+public:
+  virtual void refresh();
+  virtual QString apiLink() const { return ""; }
+
 protected:
-  QASAbstractObject(QObject* parent);
+  QASAbstractObject(int asType, QObject* parent);
   virtual void connectSignals(QASAbstractObject* obj,
                               bool changed=true, bool req=true);
 
 signals:
   void changed();
   void request(QString, int);
+
+protected:
+  QDateTime m_lastRefreshed;
+  int m_asType;
 };
 
 //------------------------------------------------------------------------------
@@ -77,11 +86,10 @@ public:
   QString imageUrl() const { return m_imageUrl; }
   QString fullImageUrl() const { return m_fullImageUrl; }
   QString displayName() const { return m_displayName; }
-  QString apiLink() const;
+  virtual QString apiLink() const;
 
   QDateTime published() const { return m_published; }
 
-  void refresh();
 
   void toggleLiked();
   bool liked() const { return m_liked; }
@@ -128,7 +136,6 @@ protected:
   QASActorList* m_likes;
   QASActorList* m_shares;
 
-private:
   static QMap<QString, QASObject*> s_objects;
 };
 
@@ -151,7 +158,7 @@ public:
   void setYou() { m_isYou = true; }
 
 private:
-  static QMap<QString, QASActor*> s_actors;
+  // static QMap<QString, QASActor*> s_actors;
   bool m_isYou;
 };
 
@@ -186,6 +193,11 @@ public:
 
   QASObjectList* to() const { return m_to; }
   QASObjectList* cc() const { return m_cc; }
+
+  static bool isLikeVerb(QString verb) {
+    return (verb == "favorite" || verb == "like" ||
+            verb == "unfavorite" || verb == "unlike");
+  }
 
 private:
   QString m_id;
@@ -230,12 +242,17 @@ public:
   bool hasMore() const { return m_hasMore; }
   QString url() const { return m_url; }
   QString urlOrProxy() const;
-  virtual void refresh();
+  virtual QString apiLink() const { return urlOrProxy(); }
+  // virtual void refresh();
 
   virtual QASObject* at(size_t i) const {
     if (i >= size())
       return NULL;
     return m_items[i];
+  }
+
+  bool contains(QASObject* obj) const {
+    return m_items.contains(obj);
   }
 
 signals:
@@ -273,7 +290,9 @@ public:
 
   bool onlyYou() const { return size()==1 && at(0)->isYou(); }
 
-  virtual void refresh();
+  // virtual void refresh();
+
+  QString actorNames() const;
 
 private:
   static QMap<QString, QASActorList*> s_actorLists;

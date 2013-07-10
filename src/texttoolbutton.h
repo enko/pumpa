@@ -17,31 +17,19 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _ACTORWIDGET_H_
-#define _ACTORWIDGET_H_
+#ifndef _TEXTTOOLBUTTON_H_
+#define _TEXTTOOLBUTTON_H_
 
-#include <QWidget>
-#include <QLabel>
-#include <QMouseEvent>
+#include <QToolButton>
 
-#include "qactivitystreams.h"
-
-//------------------------------------------------------------------------------
-
-class ActorWidget : public QLabel {
-  Q_OBJECT
+class TextToolButton : public QToolButton {
+Q_OBJECT
 public:
-  ActorWidget(QASActor* a, QWidget* parent = 0, bool small=false);
-  void setActor(QASActor* a);
-
-public slots:
-  void onImageChanged();
-  void updatePixmap();
+  TextToolButton(QWidget* parent=0);
+  TextToolButton(QString text, QWidget* parent=0);
 
 private:
-  QASActor* m_actor;
-  QString m_url;
-  QString m_localFile;
+  void setup();
 };
 
-#endif /* _ACTORWIDGET_H_ */
+#endif /* _TEXTTOOLBUTTON_H_ */

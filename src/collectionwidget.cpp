@@ -19,43 +19,22 @@
 
 #include "collectionwidget.h"
 #include "pumpa_defines.h"
+#include "activitywidget.h"
 
 #include <QDebug>
 
 //------------------------------------------------------------------------------
 
-CollectionWidget::CollectionWidget(QWidget* parent, bool shortDisplay) :
-  QScrollArea(parent),
-  m_firstTime(true),
-  m_shortDisplay(shortDisplay),
+CollectionWidget::CollectionWidget(QWidget* parent) :
+  ASWidget(parent),
   m_collection(NULL)
-{
-  m_itemLayout = new QVBoxLayout;
-  m_itemLayout->setSpacing(10);
-  m_itemLayout->addStretch();
-
-  m_listContainer = new QWidget;
-  m_listContainer->setLayout(m_itemLayout);
-  m_listContainer->setSizePolicy(QSizePolicy::Ignored,
-                                 QSizePolicy::Ignored);
-
-  setWidget(m_listContainer);
-  setWidgetResizable(true);
-}
+{}
 
 //------------------------------------------------------------------------------
 
 void CollectionWidget::setEndpoint(QString endpoint) {
-  QLayoutItem* item;
-  while ((item = m_itemLayout->takeAt(0)) != 0) {
-    if (dynamic_cast<QWidgetItem*>(item)) {
-      QWidget* w = item->widget();
-      delete w;
-    }
-    delete item;
-  }
+  clear();
 
-  m_firstTime = true;
   m_collection = QASCollection::initCollection(endpoint,
                                                parent()->parent()->parent());
   connect(m_collection, SIGNAL(changed(bool)), this, SLOT(update(bool)),
@@ -80,16 +59,16 @@ void CollectionWidget::fetchOlder() {
 
 //------------------------------------------------------------------------------
 
-void CollectionWidget::refreshTimeLabels() {
-  for (int i=0; i<m_itemLayout->count(); i++) {
-    QLayoutItem* const li = m_itemLayout->itemAt(i);
-    if (dynamic_cast<QWidgetItem*>(li)) {
-      ActivityWidget* aw = qobject_cast<ActivityWidget*>(li->widget());
-      if (aw)
-        aw->refreshTimeLabels();
-    }
-  }
-}
+// void CollectionWidget::refreshTimeLabels() {
+//   for (int i=0; i<m_itemLayout->count(); i++) {
+//     QLayoutItem* const li = m_itemLayout->itemAt(i);
+//     if (dynamic_cast<QWidgetItem*>(li)) {
+//       ActivityWidget* aw = qobject_cast<ActivityWidget*>(li->widget());
+//       if (aw)
+//         aw->refreshTimeLabels();
+//     }
+//   }
+// }
 
 //------------------------------------------------------------------------------
 
@@ -113,29 +92,24 @@ void CollectionWidget::update(bool older) {
     QASObject* obj = activity->object();
     QString verb = activity->verb();
     
-    bool full = verb == "post" ||
-      (verb == "share" && !m_shown_objects.contains(obj));
+    ActivityWidget* aw = new ActivityWidget(activity, this);
+    connect(aw, SIGNAL(linkHovered(const QString&)),
+            this,  SIGNAL(linkHovered(const QString&)));
+    connect(aw, SIGNAL(newReply(QASObject*)),
+            this,  SIGNAL(newReply(QASObject*)));
+    connect(aw, SIGNAL(like(QASObject*)),
+            this,  SIGNAL(like(QASObject*)));
+    connect(aw, SIGNAL(share(QASObject*)),
+            this,  SIGNAL(share(QASObject*)));
+    connect(aw, SIGNAL(showContext(QASObject*)),
+            this, SIGNAL(showContext(QASObject*)));
 
-    if (!full) {
-      ShortActivityWidget* aw = new ShortActivityWidget(activity, this);
-      connect(aw, SIGNAL(linkHovered(const QString&)),
-              this,  SIGNAL(linkHovered(const QString&)));
-      
-      m_itemLayout->insertWidget(li++, aw);
-    } else {
-      ActivityWidget* aw = new ActivityWidget(activity, this);
-      connect(aw, SIGNAL(newReply(QASObject*)),
-              this, SIGNAL(newReply(QASObject*)));
-      connect(aw, SIGNAL(linkHovered(const QString&)),
-              this,  SIGNAL(linkHovered(const QString&)));
-      connect(aw, SIGNAL(like(QASObject*)), this, SIGNAL(like(QASObject*)));
-      connect(aw, SIGNAL(share(QASObject*)), this, SIGNAL(share(QASObject*)));
-
-      aw->updateText();
-
-      m_itemLayout->insertWidget(li++, aw);
-    }
+    if (obj)
+      connect(obj, SIGNAL(request(QString, int)), 
+              this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
     
+    m_itemLayout->insertWidget(li++, aw);
+
     m_shown_objects.insert(obj);
 
     if (!activity->actor()->isYou())
@@ -147,16 +121,3 @@ void CollectionWidget::update(bool older) {
   m_firstTime = false;
 }
 
-//------------------------------------------------------------------------------
-
-void CollectionWidget::keyPressEvent(QKeyEvent* event) {
-  int key = event->key();
-
-  if (key == Qt::Key_Home || key == Qt::Key_End) {
-    bool home = key==Qt::Key_Home;
-    QScrollBar* sb = verticalScrollBar();
-    sb->setValue(home ? sb->minimum() : sb->maximum());
-  } else {
-    QScrollArea::keyPressEvent(event);
-  }
-}

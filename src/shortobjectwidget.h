@@ -17,51 +17,44 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _SHORTACTIVITYWIDGET_H_
-#define _SHORTACTIVITYWIDGET_H_
+#ifndef _SHORTOBJECTWIDGET_H_
+#define _SHORTOBJECTWIDGET_H_
 
-#include <QHBoxLayout>
 #include <QFrame>
 #include <QWidget>
 
 #include "qactivitystreams.h"
-#include "actorwidget.h"
 #include "richtextlabel.h"
+#include "actorwidget.h"
 
 //------------------------------------------------------------------------------
 
-class AbstractActivityWidget : public QFrame {
+class ShortObjectWidget : public QFrame {
   Q_OBJECT
 
 public:
-  AbstractActivityWidget(QASActivity* a, QWidget* parent=0);
+  ShortObjectWidget(QASObject* obj, QWidget* parent = 0);
 
-  virtual QString getId() const { return m_activity->id(); }
+  QASObject* object() const { return m_object; }
 
-protected:
-  QASActivity* m_activity;
-};
+  static QString objectExcerpt(QASObject* obj);
 
-//------------------------------------------------------------------------------
-
-class ShortActivityWidget : public AbstractActivityWidget {
-  Q_OBJECT
-
-public:
-  ShortActivityWidget(QASActivity* a, QWidget* parent=0);
-
-public slots:
-  virtual void onObjectChanged();
+  void refreshTimeLabels() {};
 
 signals:
-  void linkHovered(const QString&);
+  void moreClicked();
+
+private slots:
+  void onChanged();
 
 private:
   void updateText();
+  void updateAvatar();
 
   RichTextLabel* m_textLabel;
   ActorWidget* m_actorWidget;
-  QHBoxLayout* m_acrossLayout;
+  QASObject* m_object;
+  QASActor* m_actor;
 };
 
-#endif /* _SHORTACTIVITYWIDGET_H_ */
+#endif /* _SHORTOBJECTWIDGET_H_ */

@@ -19,193 +19,132 @@
 
 #include "objectwidget.h"
 
-#include <QDesktopServices>
-
 //------------------------------------------------------------------------------
 
-QString actorNames(QASActorList* alist) {
-  QString text;
-  for (size_t i=0; i<alist->size(); i++) {
-    QASActor* a = alist->at(i);
-    text += QString("<a href=\"%1\">%2</a>")
-      .arg(a->url())
-      .arg(a->displayNameOrYou());
-    if (i != alist->size()-1)
-      text += ", ";
-  }
-  return text;
-}
-
-//------------------------------------------------------------------------------
-
-ImageLabel::ImageLabel(QWidget* parent) : QLabel(parent) {
-  setMaximumSize(320, 320);
-  setFocusPolicy(Qt::NoFocus);
-}
-
-//------------------------------------------------------------------------------
-
-void ImageLabel::mousePressEvent(QMouseEvent* event) {
-  QLabel::mousePressEvent(event);
-  emit clicked();
-}
-
-//------------------------------------------------------------------------------
-
-ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
+ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) : 
   QFrame(parent),
-  m_infoLabel(NULL),
-  m_likesLabel(NULL),
-  m_sharesLabel(NULL),
-  m_titleLabel(NULL),
-  m_object(obj)
+  m_contextLabel(NULL),
+  m_contextButton(NULL),
+  m_topLayout(NULL),
+  m_object(obj),
+  m_irtObject(NULL),
+  m_short(shortWidget)
 {
-  m_layout = new QVBoxLayout(this);
-
-  if (!obj->displayName().isEmpty()) {
-    m_titleLabel = new QLabel("<b>" + obj->displayName() + "</b>");
-    m_layout->addWidget(m_titleLabel);
-  }
-
-  if (obj->type() == "image") {
-    m_imageLabel = new ImageLabel(this);
-    if (!obj->fullImageUrl().isEmpty()) {
-      connect(m_imageLabel, SIGNAL(clicked()), this, SLOT(imageClicked()));
-      m_imageLabel->setCursor(Qt::PointingHandCursor);
-    }
-    m_imageUrl = obj->imageUrl();
-    updateImage();
-
-    m_layout->addWidget(m_imageLabel);
-  }
-
-  m_textLabel = new RichTextLabel(this);
-  connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
-          this,  SIGNAL(linkHovered(const QString&)));
-  m_layout->addWidget(m_textLabel);
-
-  if (obj->type() == "comment") {
-    m_infoLabel = new RichTextLabel(this);
-    connect(m_infoLabel, SIGNAL(linkHovered(const QString&)),
-            this, SIGNAL(linkHovered(const QString&)));
-
-    m_layout->addWidget(m_infoLabel);
-  }
-
-  updateLikes();
-
-  updateShares();
-  
-  setLayout(m_layout);
-
   connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+
+  m_layout = new QVBoxLayout;
+  m_layout->setContentsMargins(0, 0, 0, 0);
+  m_layout->setSpacing(0);
+
+  if (m_object->type() == "comment") {
+    m_irtObject = m_object->inReplyTo();
+    if (m_irtObject) {
+      m_topLayout = new QHBoxLayout;
+      m_topLayout->setContentsMargins(0, 0, 0, 0);
+
+      m_contextLabel = new RichTextLabel(this, true);
+      connect(m_irtObject, SIGNAL(changed()), this, SLOT(updateContextLabel()));
+      m_topLayout->addWidget(m_contextLabel, 0, Qt::AlignVCenter);
+
+      m_topLayout->addSpacing(10);
+      m_contextButton = new TextToolButton(this);
+      connect(m_contextButton, SIGNAL(clicked()), this, SLOT(onShowContext()));
+      m_topLayout->addWidget(m_contextButton, 0, Qt::AlignVCenter);
+
+      if (m_irtObject->url().isEmpty()) {
+        m_contextLabel->setVisible(false);
+        m_contextButton->setVisible(false);
+        m_irtObject->refresh();
+      } else {
+        updateContextLabel();
+      }
+      m_layout->addLayout(m_topLayout);
+    }
+  }
+
+  m_objectWidget = new FullObjectWidget(m_object, parent);
+  connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
+          this, SIGNAL(linkHovered(const QString&)));
+  connect(m_objectWidget, SIGNAL(like(QASObject*)),
+          this, SIGNAL(like(QASObject*)));
+  connect(m_objectWidget, SIGNAL(share(QASObject*)),
+          this, SIGNAL(share(QASObject*)));
+  connect(m_objectWidget, SIGNAL(newReply(QASObject*)),
+          this, SIGNAL(newReply(QASObject*)));
+  m_layout->addWidget(m_objectWidget);
+
+  if (m_short) {
+    m_shortObjectWidget = new ShortObjectWidget(m_object, parent);
+    connect(m_shortObjectWidget, SIGNAL(moreClicked()),
+            this, SLOT(showMore()));
+    if (m_contextLabel)
+      m_contextLabel->setVisible(false);
+    if (m_contextButton)
+      m_contextButton->setVisible(false);
+    m_objectWidget->setVisible(false);
+    m_layout->addWidget(m_shortObjectWidget);
+  }
+  
+  QASActor* author = m_object->author();
+  if (author && author->url().isEmpty())
+    m_object->refresh();
+
+  setLayout(m_layout);
 }
 
+//------------------------------------------------------------------------------
+
+void ObjectWidget::showMore() {
+  if (!m_short || !m_shortObjectWidget)
+    return;
+
+  m_short = false;
+  m_shortObjectWidget->setVisible(false);
+  m_objectWidget->setVisible(true);
+  if (m_contextLabel)
+    m_contextLabel->setVisible(true);
+  if (m_contextButton)
+    m_contextButton->setVisible(true);
+  emit moreClicked();
+}
+  
 //------------------------------------------------------------------------------
 
 void ObjectWidget::onChanged() {
-  updateLikes();
-  updateShares();
+  setVisible(!m_object->url().isEmpty());
 }
 
 //------------------------------------------------------------------------------
 
-void ObjectWidget::setText(QString text) {
-  m_textLabel->setText(text);
-}
-
-//------------------------------------------------------------------------------
-
-void ObjectWidget::setInfo(QString text) {
-  if (m_infoLabel == NULL) {
-    qDebug() << "[WARNING] Trying to set info text to a non-comment object.";
+void ObjectWidget::updateContextLabel() {
+  if (!m_irtObject || !m_contextLabel)
     return;
+
+  QString text = ShortObjectWidget::objectExcerpt(m_irtObject);
+  m_contextLabel->setText("Re: " + text);
+  m_contextButton->setText("Show context");
+  if (!m_short) {
+    m_contextLabel->setVisible(true);
+    m_contextButton->setVisible(true);
   }
-  m_infoLabel->setText(text);
 }
 
 //------------------------------------------------------------------------------
 
-void ObjectWidget::updateImage() {
-  FileDownloader* fd = FileDownloader::get(m_imageUrl, true);
-  connect(fd, SIGNAL(fileReady()), this, SLOT(updateImage()),
-          Qt::UniqueConnection);
-  m_imageLabel->setPixmap(fd->pixmap(":/images/broken_image.png"));
-}    
-
-//------------------------------------------------------------------------------
-
-void ObjectWidget::updateLikes() {
-  size_t nl = m_object->numLikes();
-
-  if (nl <= 0) {
-    if (m_likesLabel != NULL) {
-      m_layout->removeWidget(m_likesLabel);
-      delete m_likesLabel;
-      m_likesLabel = NULL;
-    }
+void ObjectWidget::onShowContext() {
+  if (!m_irtObject || !m_topLayout)
     return;
-  }
 
-  QASActorList* likes = m_object->likes();
-
-  QString text;
-  if (m_likesLabel == NULL) {
-    m_likesLabel = new RichTextLabel(this);
-    connect(m_likesLabel, SIGNAL(linkHovered(const QString&)),
-            this,  SIGNAL(linkHovered(const QString&)));
-    m_layout->addWidget(m_likesLabel);
-  }
-
-  text = actorNames(likes);
-  text += (nl==1 && !likes->onlyYou()) ? " likes" : " like";
-  text += " this.";
-  
-  m_likesLabel->setText(text);
+  emit showContext(m_irtObject);
+  // m_contextLabel->setVisible(false);
+  // m_contextButton->setVisible(false);
 }
-
+    
 //------------------------------------------------------------------------------
 
-void ObjectWidget::updateShares() {
-  size_t ns = m_object->numShares();
-  if (!ns) {
-    if (m_sharesLabel != NULL) {
-      m_layout->removeWidget(m_sharesLabel);
-      delete m_sharesLabel;
-      m_sharesLabel = NULL;
-    }
-    return;
-  }
-
-  if (m_sharesLabel == NULL) {
-    m_sharesLabel = new RichTextLabel(this);
-    connect(m_sharesLabel, SIGNAL(linkHovered(const QString&)),
-            this,  SIGNAL(linkHovered(const QString&)));
-    m_layout->addWidget(m_sharesLabel);
-  }
-
-  QString text;
-  if (m_object->shares()->size()) {
-    text = actorNames(m_object->shares());
-    int others = ns-m_object->shares()->size();
-    if (others > 0)
-      text += QString(" and %1 other %2").arg(others).
-        arg(others > 1 ? "persons" : "person");
-    text += " shared this.";
-  } else {
-    if (ns == 1)
-      text = "1 person shared this.";
-    else
-      text = QString("%1 persons shared this.").arg(ns);
-  }
-  
-  m_sharesLabel->setText(text);
+void ObjectWidget::refreshTimeLabels() {
+  if (m_objectWidget)
+    m_objectWidget->refreshTimeLabels();
+  if (m_shortObjectWidget)
+    m_shortObjectWidget->refreshTimeLabels();
 }
-
-//------------------------------------------------------------------------------
-
-void ObjectWidget::imageClicked() {
-  QString url = m_object->fullImageUrl();
-  if (!url.isEmpty())
-    QDesktopServices::openUrl(url);
-}  

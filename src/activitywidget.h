@@ -17,78 +17,50 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ACTIVITYWIDGET_H
-#define ACTIVITYWIDGET_H
+#ifndef _ACTIVITYWIDGET_H_
+#define _ACTIVITYWIDGET_H_
 
 #include <QFrame>
 #include <QWidget>
-#include <QToolButton>
 #include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QMouseEvent>
 #include <QPushButton>
 
+#include "richtextlabel.h"
 #include "qactivitystreams.h"
 #include "objectwidget.h"
-#include "actorwidget.h"
-#include "richtextlabel.h"
-#include "shortactivitywidget.h"
-
-#define MAX_WORD_LENGTH       40
 
 //------------------------------------------------------------------------------
 
-class ActivityWidget : public AbstractActivityWidget {
+class ActivityWidget : public QFrame {
   Q_OBJECT
 
 public:
   ActivityWidget(QASActivity* a, QWidget* parent=0);
 
-  QString getId() const { return m_activity->id(); }
-  void updateText();
-  void refreshTimeLabels();
-                   
-public slots:
-  void favourite();
-  void repeat();
-  void reply();
+  virtual QString getId() const { return m_activity->id(); }
 
-  void onObjectChanged();
-  void onHasMoreClicked();
+  void refreshTimeLabels();
+
+public slots:
+  virtual void onObjectChanged();
 
 signals:
+  void linkHovered(const QString&);
   void newReply(QASObject*);
   void like(QASObject*);
   void share(QASObject*);
-  void linkHovered(const QString&);
+  void showContext(QASObject*);
 
 private:
+  void updateText();
   QString recipientsToString(QASObjectList* rec);
-  QString processText(QString old_text, bool getImages=false);
-  QASActor* effectiveAuthor();
-  void updateInfoText();
+  ObjectWidget* makeObjectWidgetAndConnect(QASObject* obj, bool shortObject);
 
-  void addHasMoreButton(QASObjectList* ol, int li);
-  void updateFavourButton(bool wait = false);
-  void updateShareButton(bool wait = false);
-  void addObjectList(QASObjectList* ol);
-
-  RichTextLabel* m_infoLabel;
-  ObjectWidget* m_objectWidget;
+  RichTextLabel* m_textLabel;
   ActorWidget* m_actorWidget;
+  ObjectWidget* m_objectWidget;
 
-  QToolButton* m_favourButton;
-  QToolButton* m_shareButton;
-  QToolButton* m_commentButton;
-
-  QHBoxLayout* m_buttonLayout;
-  QVBoxLayout* m_rightLayout;
-  QHBoxLayout* m_acrossLayout;
-  
-  QPushButton* m_hasMoreButton;
-
-  QList<QASObject*> m_repliesList;
-  QSet<QString> m_repliesMap;
+  QASActivity* m_activity;
 };
 
-#endif 
+#endif /* _ACTIVITYWIDGET_H_ */

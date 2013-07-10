@@ -44,6 +44,7 @@
 #include "tabwidget.h"
 #include "pumpasettingsdialog.h"
 #include "pumpasettings.h"
+#include "contextwidget.h"
 
 //------------------------------------------------------------------------------
 
@@ -72,7 +73,7 @@ private slots:
   void errorMessage(QString msg);
   void notifyMessage(QString msg);
   void statusMessage(const QString& msg);
-
+  void onShowContext(QASObject*);
   void tabSelected(int index);
 
   void onClientRegistered(QString, QString, QString, QString);
@@ -118,7 +119,7 @@ private:
   QString showHideText(bool);
   QString showHideText() { return showHideText(isVisible()); }
 
-  void connectCollection(CollectionWidget* w);
+  void connectCollection(ASWidget* w);
 
   bool haveOAuth();
 
@@ -154,9 +155,6 @@ private:
   QAction* aboutQtAction;
   QMenu* helpMenu;
 
-  // QSystemTrayIcon* trayIcon;
-  // QMenu* trayIconMenu;
-  
   KQOAuthManager *oaManager;
   KQOAuthRequest *oaRequest;
 
@@ -165,6 +163,7 @@ private:
   CollectionWidget* m_directMajorWidget;
   CollectionWidget* m_directMinorWidget;
   CollectionWidget* m_inboxMinorWidget;
+  ContextWidget* m_contextWidget;
 
   QASActor* m_selfActor;
 

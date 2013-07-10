@@ -17,56 +17,40 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _OBJECTWIDGET_H_
-#define _OBJECTWIDGET_H_
-
-#include <QFrame>
-#include <QWidget>
+#ifndef _ASWIDGET_H_
+#define _ASWIDGET_H_
 
 #include "qactivitystreams.h"
-#include "shortobjectwidget.h"
-#include "fullobjectwidget.h"
-#include "texttoolbutton.h"
-#include "richtextlabel.h"
 
-class ObjectWidget : public QFrame {
+#include <QWidget>
+#include <QScrollArea>
+#include <QVBoxLayout>
+
+//------------------------------------------------------------------------------
+
+class ASWidget : public QScrollArea {
   Q_OBJECT
 
 public:
-  ObjectWidget(QASObject* obj, QWidget* parent = 0,
-                      bool shortWidget=false);
-
-  QASObject* object() const { return m_object; }
-
+  ASWidget(QWidget* parent);
   void refreshTimeLabels();
 
 signals:
+  void highlightMe();  
+  void request(QString, int);
+  void newReply(QASObject*);
   void linkHovered(const QString&);
   void like(QASObject*);
   void share(QASObject*);
-  void newReply(QASObject*);
-  void moreClicked();
   void showContext(QASObject*);
-                          
-private slots:
-  void showMore();
-  void onChanged();
-  void updateContextLabel();
-  void onShowContext();
 
-private:
-  FullObjectWidget* m_objectWidget;
-  ShortObjectWidget* m_shortObjectWidget;
-  RichTextLabel* m_contextLabel;
-  TextToolButton* m_contextButton;
+protected:
+  void keyPressEvent(QKeyEvent* event);
+  void clear();
 
-  QVBoxLayout* m_layout;
-  QHBoxLayout* m_topLayout;
-  QASObject* m_object;
-  QASObject* m_irtObject;
-
-  bool m_short;
+  QVBoxLayout* m_itemLayout;
+  QWidget* m_listContainer;
+  bool m_firstTime;
 };
-  
 
-#endif /* _OBJECTWIDGET_H_ */
+#endif /* _ASWIDGET_H_ */

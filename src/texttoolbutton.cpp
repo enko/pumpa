@@ -17,31 +17,25 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _ACTORWIDGET_H_
-#define _ACTORWIDGET_H_
+#include "texttoolbutton.h"
 
-#include <QWidget>
-#include <QLabel>
-#include <QMouseEvent>
-
-#include "qactivitystreams.h"
+TextToolButton::TextToolButton(QWidget* parent) :
+QToolButton(parent) { 
+  setup();
+}
 
 //------------------------------------------------------------------------------
 
-class ActorWidget : public QLabel {
-  Q_OBJECT
-public:
-  ActorWidget(QASActor* a, QWidget* parent = 0, bool small=false);
-  void setActor(QASActor* a);
+TextToolButton::TextToolButton(QString text, QWidget* parent) :
+  QToolButton(parent) 
+{
+  setup();
+  setText(text);
+}
 
-public slots:
-  void onImageChanged();
-  void updatePixmap();
+//------------------------------------------------------------------------------
 
-private:
-  QASActor* m_actor;
-  QString m_url;
-  QString m_localFile;
-};
-
-#endif /* _ACTORWIDGET_H_ */
+void TextToolButton::setup() {
+  setToolButtonStyle(Qt::ToolButtonTextOnly);
+  setFocusPolicy(Qt::NoFocus);
+}

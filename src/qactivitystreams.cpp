@@ -29,7 +29,7 @@
 
 //------------------------------------------------------------------------------
 
-QMap<QString, QASActor*> QASActor::s_actors;
+// QMap<QString, QASActor*> QASActor::s_actors;
 QMap<QString, QASObject*> QASObject::s_objects;
 QMap<QString, QASActivity*> QASActivity::s_activities;
 QMap<QString, QASObjectList*> QASObjectList::s_objectLists;
@@ -43,7 +43,7 @@ template <class T> void deleteMap(QMap<QString, T>& map) {
   map.clear();
 }
 
-void QASActor::clearCache() { deleteMap<QASActor*>(s_actors); }
+// void QASActor::clearCache() { deleteMap<QASActor*>(s_actors); }
 void QASObject::clearCache() { deleteMap<QASObject*>(s_objects); }
 void QASActivity::clearCache() { deleteMap<QASActivity*>(s_activities); }
 void QASObjectList::clearCache() { deleteMap<QASObjectList*>(s_objectLists); }
@@ -51,7 +51,7 @@ void QASActorList::clearCache() { deleteMap<QASActorList*>(s_actorLists); }
 void QASCollection::clearCache() { deleteMap<QASCollection*>(s_collections); }
 
 void resetActivityStreams() {
-  QASActor::clearCache();
+  // QASActor::clearCache();
   QASObject::clearCache();
   QASActivity::clearCache();
   QASObjectList::clearCache();
@@ -164,7 +164,10 @@ void updateUrlOrProxy(QVariantMap obj, QString& var, bool& changed) {
 
 //------------------------------------------------------------------------------
 
-QASAbstractObject::QASAbstractObject(QObject* parent) : QObject(parent) {}
+QASAbstractObject::QASAbstractObject(int asType, QObject* parent) :
+  QObject(parent),
+  m_asType(asType) 
+{}
 
 //------------------------------------------------------------------------------
 
@@ -179,6 +182,17 @@ void QASAbstractObject::connectSignals(QASAbstractObject* obj,
   if (req)
     connect(obj, SIGNAL(request(QString, int)),
             parent(), SLOT(request(QString, int)), Qt::UniqueConnection);
+}
+
+//------------------------------------------------------------------------------
+
+void QASAbstractObject::refresh() {
+  QDateTime now = QDateTime::currentDateTime();
+
+  if (m_lastRefreshed.isNull() || m_lastRefreshed.secsTo(now) > 1)
+    emit request(apiLink(), m_asType);
+
+  m_lastRefreshed = now;
 }
 
 //------------------------------------------------------------------------------
@@ -200,8 +214,11 @@ void QASActor::update(QVariantMap json) {
 #endif
   bool ch = false;
 
+  m_author = NULL;
+
   updateVar(json, m_url, "url", ch); 
   updateVar(json, m_displayName, "displayName", ch);
+  updateVar(json, m_objectType, "objectType", ch);
 
   if (json.contains("image")) {
     QVariantMap im = json["image"].toMap();
@@ -218,9 +235,9 @@ QASActor* QASActor::getActor(QVariantMap json, QObject* parent) {
   QString id = json["id"].toString();
   Q_ASSERT_X(!id.isEmpty(), "getActor", serializeJsonC(json));
 
-  QASActor* act = s_actors.contains(id) ?  s_actors[id] :
-    new QASActor(id, parent);
-  s_actors.insert(id, act);
+  QASActor* act = s_objects.contains(id) ?
+    qobject_cast<QASActor*>(s_objects[id]) : new QASActor(id, parent);
+  s_objects.insert(id, act);
 
   act->update(json);
   return act;
@@ -229,7 +246,7 @@ QASActor* QASActor::getActor(QVariantMap json, QObject* parent) {
 //------------------------------------------------------------------------------
 
 QASObject::QASObject(QString id, QObject* parent) :
-  QASAbstractObject(parent),
+  QASAbstractObject(QAS_OBJECT, parent),
   m_id(id),
   m_liked(false),
   m_shared(false),
@@ -274,7 +291,7 @@ void QASObject::update(QVariantMap json) {
 
   if (json.contains("inReplyTo")) {
     m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
-    connectSignals(m_inReplyTo, true, false);
+    connectSignals(m_inReplyTo, true, true);
   }
 
   if (json.contains("author")) {
@@ -307,24 +324,15 @@ QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
   QString id = json["id"].toString();
   Q_ASSERT_X(!id.isEmpty(), "getObject", serializeJsonC(json));
 
+  if (json["objectType"] == "person")
+    return QASActor::getActor(json, parent);
+
   QASObject* obj = s_objects.contains(id) ?  s_objects[id] :
     new QASObject(id, parent);
   s_objects.insert(id, obj);
 
   obj->update(json);
   return obj;
-}
-
-//------------------------------------------------------------------------------
-
-void QASObject::refresh() {
-  static QDateTime last_refreshed;
-  QDateTime now = QDateTime::currentDateTime();
-  
-  if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
-    emit request(apiLink(), QAS_OBJECT);
-
-  last_refreshed = now;
 }
 
 //------------------------------------------------------------------------------
@@ -407,7 +415,7 @@ QVariantMap QASObject::toJson() const {
 //------------------------------------------------------------------------------
 
 QASActivity::QASActivity(QString id, QObject* parent) : 
-  QASAbstractObject(parent),
+  QASAbstractObject(QAS_ACTIVITY, parent),
   m_id(id),
   m_object(NULL),
   m_actor(NULL),
@@ -453,8 +461,7 @@ void QASActivity::update(QVariantMap json) {
   if (m_verb == "post" && m_object && m_object->inReplyTo())
     m_object->inReplyTo()->addReply(m_object);
 
-  if ((m_verb == "favorite" || m_verb == "like" ||
-       m_verb == "unfavorite" || m_verb == "unlike") && m_object && m_actor) 
+  if (isLikeVerb(m_verb) && m_object && m_actor) 
     m_object->addLike(m_actor, !m_verb.startsWith("un"));
 
   if (m_verb == "share" && m_object && m_actor) 
@@ -499,7 +506,7 @@ bool QASActivity::hasCc() const {
 //------------------------------------------------------------------------------
 
 QASObjectList::QASObjectList(QString url, QObject* parent) :
-  QASAbstractObject(parent),
+  QASAbstractObject(QAS_OBJECTLIST, parent),
   m_url(url),
   m_totalItems(0),
   m_hasMore(false)
@@ -594,22 +601,23 @@ QString QASObjectList::urlOrProxy() const {
 
 //------------------------------------------------------------------------------
 
-//FIXME, refresh() could be in QASAbstractObject
-void QASObjectList::refresh() {
-  static QDateTime last_refreshed;
-  QDateTime now = QDateTime::currentDateTime();
+// //FIXME, refresh() could be in QASAbstractObject
+// void QASObjectList::refresh() {
+//   static QDateTime last_refreshed;
+//   QDateTime now = QDateTime::currentDateTime();
   
-  if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
-    emit request(urlOrProxy(), QAS_OBJECTLIST);
+//   if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
+//     emit request(urlOrProxy(), QAS_OBJECTLIST);
 
-  last_refreshed = now;
-}
+//   last_refreshed = now;
+// }
 
 //------------------------------------------------------------------------------
 
 QASActorList::QASActorList(QString url, QObject* parent) :
   QASObjectList(url, parent)
 {
+  m_asType = QAS_OBJECTLIST;
 #if DEBUG >= 1
   qDebug() << "new ActorList" << m_url;
 #endif
@@ -661,20 +669,35 @@ void QASActorList::removeActor(QASActor* actor) {
 //------------------------------------------------------------------------------
 
 //FIXME, refresh() could be in QASAbstractObject
-void QASActorList::refresh() {
-  static QDateTime last_refreshed;
-  QDateTime now = QDateTime::currentDateTime();
+// void QASActorList::refresh() {
+//   static QDateTime last_refreshed;
+//   QDateTime now = QDateTime::currentDateTime();
   
-  if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
-    emit request(urlOrProxy(), QAS_ACTORLIST);
+//   if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
+//     emit request(urlOrProxy(), QAS_ACTORLIST);
 
-  last_refreshed = now;
+//   last_refreshed = now;
+// }
+
+//------------------------------------------------------------------------------
+
+QString QASActorList::actorNames() const {
+  QString text;
+  for (size_t i=0; i<size(); i++) {
+    QASActor* a = at(i);
+    text += QString("<a href=\"%1\">%2</a>")
+      .arg(a->url())
+      .arg(a->displayNameOrYou());
+    if (i != size()-1)
+      text += ", ";
+  }
+  return text;
 }
 
 //------------------------------------------------------------------------------
 
 QASCollection::QASCollection(QString url, QObject* parent) :
-  QASAbstractObject(parent),
+  QASAbstractObject(QAS_COLLECTION, parent),
   m_url(url),
   m_totalItems(0)
 {

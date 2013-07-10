@@ -20,14 +20,17 @@
 #include <QStatusBar>
 
 #include "pumpapp.h"
+
 #include "json.h"
-#include "messagewindow.h"
 #include "util.h"
+#include "messagewindow.h"
+#include "filedownloader.h"
 
 //------------------------------------------------------------------------------
 
 PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
   QMainWindow(parent),
+  m_contextWidget(NULL),
   m_wiz(NULL),
   m_trayIcon(NULL),
   m_requests(0)
@@ -67,7 +70,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_inboxWidget = new CollectionWidget(this);
   connectCollection(m_inboxWidget);
 
-  m_inboxMinorWidget = new CollectionWidget(this, true);
+  m_inboxMinorWidget = new CollectionWidget(this);
   connectCollection(m_inboxMinorWidget);
 
   m_directMajorWidget = new CollectionWidget(this);
@@ -149,7 +152,7 @@ void PumpApp::startPumping() {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::connectCollection(CollectionWidget* w) {
+void PumpApp::connectCollection(ASWidget* w) {
   connect(w, SIGNAL(request(QString, int)), this, SLOT(request(QString, int)));
   connect(w, SIGNAL(newReply(QASObject*)), this, SLOT(newNote(QASObject*)));
   connect(w, SIGNAL(linkHovered(const QString&)),
@@ -157,6 +160,8 @@ void PumpApp::connectCollection(CollectionWidget* w) {
   connect(w, SIGNAL(like(QASObject*)), this, SLOT(onLike(QASObject*)));
   connect(w, SIGNAL(share(QASObject*)), this, SLOT(onShare(QASObject*)));
   connect(w, SIGNAL(highlightMe()), m_notifyMap, SLOT(map()));
+  connect(w, SIGNAL(showContext(QASObject*)), 
+          this, SLOT(onShowContext(QASObject*)));
 }
 
 //------------------------------------------------------------------------------
@@ -551,6 +556,19 @@ void PumpApp::onShare(QASObject* obj) {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::onShowContext(QASObject* obj) {
+  if (!m_contextWidget) {
+    m_contextWidget = new ContextWidget(this);
+    connectCollection(m_contextWidget);
+    m_tabWidget->addTab(m_contextWidget, "&context");
+  }
+
+  m_contextWidget->setObject(obj);
+  m_tabWidget->setCurrentWidget(m_contextWidget);
+}
+
+//------------------------------------------------------------------------------
+
 QString PumpApp::addTextMarkup(QString text) {
   QString oldText = text;
 
@@ -749,7 +767,6 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   if (sid == QAS_COLLECTION) {
     QASCollection::getCollection(obj, this, id);
   } else if (sid == QAS_ACTIVITY) {
-    // qDebug() << "QAS_ACTIVITY" << debugDumpJson(obj);
     QASActivity* act = QASActivity::getActivity(obj, this);
     if ((id & QAS_TOGGLE_LIKE) && act->object())
       act->object()->toggleLiked();
