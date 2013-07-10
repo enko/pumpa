@@ -130,7 +130,7 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
 
 bool FullObjectWidget::hasValidIrtObject() {
   QASObject* irtObj = m_object->inReplyTo();
-  return irtObj && !irtObj->url().isEmpty();
+  return irtObj && !irtObj->id().isEmpty();
 }
 
 //------------------------------------------------------------------------------
