@@ -57,6 +57,7 @@ private slots:
 private:
   void updateText();
   QString recipientsToString(QASObjectList* rec);
+  ObjectWidget* makeObjectWidgetAndConnect(QASObject* obj, bool shortObject);
 
   RichTextLabel* m_textLabel;
   ActorWidget* m_actorWidget;

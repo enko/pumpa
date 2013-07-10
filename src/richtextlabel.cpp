@@ -21,13 +21,17 @@
 
 //------------------------------------------------------------------------------
 
-RichTextLabel::RichTextLabel(QWidget* parent) : QLabel(parent) {
+RichTextLabel::RichTextLabel(QWidget* parent, bool singleLine) :
+  QLabel(parent),
+  m_singleLine(singleLine)
+{
   // useful for debugging layouts and margins
   // setLineWidth(1);
   // setFrameStyle(QFrame::Box);
 
   setSizePolicy(QSizePolicy::Ignored, QSizePolicy::MinimumExpanding);
-  setWordWrap(true);
+  if (!m_singleLine)
+    setWordWrap(true);
 
   setOpenExternalLinks(true);
   setTextInteractionFlags(Qt::TextSelectableByMouse |
@@ -43,7 +47,7 @@ RichTextLabel::RichTextLabel(QWidget* parent) : QLabel(parent) {
 //------------------------------------------------------------------------------
 
 void RichTextLabel::resizeEvent(QResizeEvent*) {
-  if (minimumSizeHint().width() > size().width()) {
+  if (!m_singleLine && minimumSizeHint().width() > size().width()) {
     // qDebug() << "[DEBUG]: chop off" << minimumSizeHint().width() << size().width();
     setStyleSheet( "border-width: 2px; border-top-style: none; border-right-style: solid; border-bottom-style: none; border-left-style: none; border-color: red; ");
   } else {

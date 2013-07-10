@@ -25,10 +25,10 @@
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QPushButton>
-#include <QToolButton>
 
 #include "qactivitystreams.h"
 #include "richtextlabel.h"
+#include "texttoolbutton.h"
 #include "imagelabel.h"
 
 //------------------------------------------------------------------------------
@@ -84,9 +84,9 @@ private:
   QLabel* m_titleLabel;
   QPushButton* m_hasMoreButton;
 
-  QToolButton* m_favourButton;
-  QToolButton* m_shareButton;
-  QToolButton* m_commentButton;
+  TextToolButton* m_favourButton;
+  TextToolButton* m_shareButton;
+  TextToolButton* m_commentButton;
 
   QVBoxLayout* m_contentLayout;
   QHBoxLayout* m_buttonLayout;

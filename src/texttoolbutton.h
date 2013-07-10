@@ -17,29 +17,19 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _RICHTEXTLABEL_H_
-#define _RICHTEXTLABEL_H_
+#ifndef _TEXTTOOLBUTTON_H_
+#define _TEXTTOOLBUTTON_H_
 
-#include <QFrame>
-#include <QWidget>
-#include <QLabel>
-#include <QVBoxLayout>
+#include <QToolButton>
 
-#include "qactivitystreams.h"
-#include "filedownloader.h"
-
-//------------------------------------------------------------------------------
-
-class RichTextLabel : public QLabel {
-  Q_OBJECT
-
+class TextToolButton : public QToolButton {
+Q_OBJECT
 public:
-  RichTextLabel(QWidget* parent = 0, bool singleLine = false);
-
-  virtual void resizeEvent(QResizeEvent*);
+  TextToolButton(QWidget* parent=0);
+  TextToolButton(QString text, QWidget* parent=0);
 
 private:
-  bool m_singleLine;
+  void setup();
 };
 
-#endif /* _RICHTEXTLABEL_H_ */
+#endif /* _TEXTTOOLBUTTON_H_ */

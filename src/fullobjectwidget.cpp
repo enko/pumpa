@@ -87,23 +87,16 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
   m_buttonLayout = new QHBoxLayout;
 
   if (objType == "note" || objType == "comment" || objType == "image") {
-    m_favourButton = new QToolButton();
-    m_favourButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    m_favourButton->setFocusPolicy(Qt::NoFocus);
+    m_favourButton = new TextToolButton(this);
     connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
     m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
 
-    m_shareButton = new QToolButton();
-    m_shareButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    m_shareButton->setFocusPolicy(Qt::NoFocus);
+    m_shareButton = new TextToolButton(this);
     connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
     m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
 
     if (!m_childWidget) {
-      m_commentButton = new QToolButton();
-      m_commentButton->setText("comment");
-      m_commentButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-      m_commentButton->setFocusPolicy(Qt::NoFocus);
+      m_commentButton = new TextToolButton("comment", this);
       connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
       m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
     }

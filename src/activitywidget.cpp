@@ -18,6 +18,7 @@
 */
 
 #include "activitywidget.h"
+#include "texttoolbutton.h"
 #include "pumpa_defines.h"
 
 #include <QDebug>
@@ -35,37 +36,22 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
 
   bool showObject = (verb == "post");
 
+  QHBoxLayout* topLayout = new QHBoxLayout;
+  topLayout->setContentsMargins(0, 0, 0, 0);
   m_textLabel = new RichTextLabel(this);
+  topLayout->addWidget(m_textLabel, 0, Qt::AlignTop);
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
 
-  m_objectWidget = new ObjectWidget(obj, this, !showObject);
-  connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
-          this,  SIGNAL(linkHovered(const QString&)));
-  connect(m_objectWidget, SIGNAL(newReply(QASObject*)),
-          this,  SIGNAL(newReply(QASObject*)));
-  connect(m_objectWidget, SIGNAL(like(QASObject*)),
-          this,  SIGNAL(like(QASObject*)));
-  connect(m_objectWidget, SIGNAL(share(QASObject*)),
-          this,  SIGNAL(share(QASObject*)));
-  connect(m_objectWidget, SIGNAL(moreClicked()),
-          this, SLOT(onMoreClicked()));
-
-  connect(obj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
-          Qt::UniqueConnection);
-
-  QVBoxLayout* layout = new QVBoxLayout;
-  layout->setContentsMargins(0, 0, 0, 0);
-  layout->addWidget(m_textLabel, 0, Qt::AlignTop);
+  m_objectWidget = makeObjectWidgetAndConnect(obj, !showObject);
+  connect(m_objectWidget, SIGNAL(moreClicked()), this, SLOT(onMoreClicked()));
 
   if (objType == "comment") {
     QASObject* irtObj = obj->inReplyTo();
     if (irtObj) {
-      m_irtObjectWidget = new ObjectWidget(irtObj, this, true);
+      m_irtObjectWidget = makeObjectWidgetAndConnect(irtObj, true);
       connect(m_irtObjectWidget, SIGNAL(moreClicked()),
               this, SLOT(hideOriginalObject()));
-      layout->addWidget(m_irtObjectWidget, 0, Qt::AlignTop);
-
       if (irtObj->url().isEmpty()) {
         m_irtObjectWidget->setVisible(false);
         irtObj->refresh();
@@ -74,6 +60,12 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
       }
     }
   }
+  QVBoxLayout* layout = new QVBoxLayout;
+  layout->setContentsMargins(0, 0, 0, 0);
+  //  layout->addWidget(m_textLabel, 0, Qt::AlignTop);
+  layout->addLayout(topLayout);
+  if (m_irtObjectWidget)
+      layout->addWidget(m_irtObjectWidget, 0, Qt::AlignTop);
   layout->addWidget(m_objectWidget, 0, Qt::AlignTop);
   layout->addWidget(new QLabel("<hr />"));
 
@@ -161,4 +153,25 @@ QString ActivityWidget::recipientsToString(QASObjectList* rec) {
   }
 
   return ret.join(", ");
+}
+
+//------------------------------------------------------------------------------
+
+ObjectWidget* ActivityWidget::makeObjectWidgetAndConnect(QASObject* obj,
+                                                         bool shortObject) {
+  ObjectWidget* ow = new ObjectWidget(obj, this, shortObject);
+
+  connect(ow, SIGNAL(linkHovered(const QString&)),
+          this,  SIGNAL(linkHovered(const QString&)));
+  connect(ow, SIGNAL(newReply(QASObject*)),
+          this,  SIGNAL(newReply(QASObject*)));
+  connect(ow, SIGNAL(like(QASObject*)),
+          this,  SIGNAL(like(QASObject*)));
+  connect(ow, SIGNAL(share(QASObject*)),
+          this,  SIGNAL(share(QASObject*)));
+
+  connect(obj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
+          Qt::UniqueConnection);
+
+  return ow;
 }

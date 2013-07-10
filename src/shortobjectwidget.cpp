@@ -21,7 +21,7 @@
 #include "util.h"
 
 #include <QVBoxLayout>
-#include <QToolButton>
+#include "texttoolbutton.h"
 
 //------------------------------------------------------------------------------
 
@@ -32,24 +32,21 @@ ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
 {
   connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
 
-  m_textLabel = new RichTextLabel(this);
+  m_textLabel = new RichTextLabel(this, true);
 
-  m_actorWidget = new ActorWidget(NULL, this, true);
-  updateAvatar();
+  // m_actorWidget = new ActorWidget(NULL, this, true);
+  // updateAvatar();
 
-  QToolButton* moreButton = NULL;
+  TextToolButton* moreButton = NULL;
   if (m_object->type() != "person") {
-    moreButton = new QToolButton(this);
-    moreButton->setText("+");
-    moreButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    moreButton->setFocusPolicy(Qt::NoFocus);
+    moreButton = new TextToolButton("+", this);
     connect(moreButton, SIGNAL(clicked()), this, SIGNAL(moreClicked()));
   }
   
   QHBoxLayout* acrossLayout = new QHBoxLayout;
   // acrossLayout->setSpacing(10);
   acrossLayout->setContentsMargins(0, 0, 0, 0);
-  acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignVCenter);
+  // acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignVCenter);
   acrossLayout->addWidget(m_textLabel, 0, Qt::AlignVCenter);
   if (moreButton)
     acrossLayout->addWidget(moreButton, 0, Qt::AlignVCenter);
@@ -66,7 +63,7 @@ void ShortObjectWidget::updateAvatar() {
   QASActor* m_actor = qobject_cast<QASActor*>(m_object);
   if (!m_actor)
     m_actor = m_object->author();
-  m_actorWidget->setActor(m_actor);
+  // m_actorWidget->setActor(m_actor);
 }
 
 //------------------------------------------------------------------------------
@@ -75,12 +72,8 @@ void ShortObjectWidget::updateText() {
   QString content = m_object->displayName();
   if (content.isEmpty()) {
     content = m_object->content();
-    if (!content.isEmpty()) {
+    if (!content.isEmpty())
       content.replace(QRegExp(HTML_TAG_REGEX), " ");
-      content = content.section(QRegExp("\\s+"), 0, 8,
-                                QString::SectionSkipEmpty) +
-        " ...";
-    }
   }
 
   QString text;
