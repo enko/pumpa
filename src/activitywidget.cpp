@@ -27,7 +27,6 @@
 
 ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   QFrame(parent),
-  // m_irtObjectWidget(NULL),
   m_objectWidget(NULL),
   m_activity(a)
 {
@@ -56,6 +55,10 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   layout->addWidget(new QLabel("<hr />"));
 
   updateText();
+
+  QASActor* actor = m_activity->actor();
+  if (QASActivity::isLikeVerb(verb) && actor && !actor->isYou())
+    obj->refresh();
 
   setLayout(layout);
 }

@@ -194,6 +194,11 @@ public:
   QASObjectList* to() const { return m_to; }
   QASObjectList* cc() const { return m_cc; }
 
+  static bool isLikeVerb(QString verb) {
+    return (verb == "favorite" || verb == "like" ||
+            verb == "unfavorite" || verb == "unlike");
+  }
+
 private:
   QString m_id;
   QString m_url;

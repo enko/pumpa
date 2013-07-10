@@ -461,8 +461,7 @@ void QASActivity::update(QVariantMap json) {
   if (m_verb == "post" && m_object && m_object->inReplyTo())
     m_object->inReplyTo()->addReply(m_object);
 
-  if ((m_verb == "favorite" || m_verb == "like" ||
-       m_verb == "unfavorite" || m_verb == "unlike") && m_object && m_actor) 
+  if (isLikeVerb(m_verb) && m_object && m_actor) 
     m_object->addLike(m_actor, !m_verb.startsWith("un"));
 
   if (m_verb == "share" && m_object && m_actor) 

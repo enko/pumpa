@@ -69,6 +69,10 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
     m_layout->addWidget(m_shortObjectWidget);
   }
   
+  QASActor* author = m_object->author();
+  if (author && author->url().isEmpty())
+    m_object->refresh();
+
   setLayout(m_layout);
 }
 
