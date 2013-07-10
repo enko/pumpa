@@ -31,7 +31,7 @@ ASWidget::ASWidget(QWidget* parent) :
 {
   m_itemLayout = new QVBoxLayout;
   m_itemLayout->setSpacing(10);
-  m_itemLayout->addStretch();
+  // m_itemLayout->addStretch();
 
   m_listContainer = new QWidget;
   m_listContainer->setLayout(m_itemLayout);
@@ -64,8 +64,13 @@ void ASWidget::refreshTimeLabels() {
     QLayoutItem* const li = m_itemLayout->itemAt(i);
     if (dynamic_cast<QWidgetItem*>(li)) {
       ActivityWidget* aw = qobject_cast<ActivityWidget*>(li->widget());
-      if (aw)
+      if (aw) {
         aw->refreshTimeLabels();
+      } else {
+        ObjectWidget* ow = qobject_cast<ObjectWidget*>(li->widget());
+        if (ow)
+          ow->refreshTimeLabels();
+      }
     }
   }
 }

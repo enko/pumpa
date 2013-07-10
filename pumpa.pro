@@ -62,10 +62,10 @@ INCLUDEPATH += src
 VPATH       += src
 
 OBJECT_HEADERS = pumpapp.h qactivitystreams.h aswidget.h		\
-	collectionwidget.h json.h messagewindow.h messageedit.h		\
-	fancyhighlighter.h qaspell.h actorwidget.h filedownloader.h	\
-	richtextlabel.h oauthwizard.h tabwidget.h util.h		\
-	pumpasettingsdialog.h pumpasettings.h activitywidget.h		\
+	collectionwidget.h contextwidget.h json.h messagewindow.h	\
+	messageedit.h fancyhighlighter.h qaspell.h actorwidget.h	\
+	filedownloader.h richtextlabel.h oauthwizard.h tabwidget.h	\
+	util.h pumpasettingsdialog.h pumpasettings.h activitywidget.h	\
 	objectwidget.h shortobjectwidget.h fullobjectwidget.h		\
 	imagelabel.h texttoolbutton.h
 

@@ -30,6 +30,7 @@
 
 PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
   QMainWindow(parent),
+  m_contextWidget(NULL),
   m_wiz(NULL),
   m_trayIcon(NULL),
   m_requests(0)
@@ -151,7 +152,7 @@ void PumpApp::startPumping() {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::connectCollection(CollectionWidget* w) {
+void PumpApp::connectCollection(ASWidget* w) {
   connect(w, SIGNAL(request(QString, int)), this, SLOT(request(QString, int)));
   connect(w, SIGNAL(newReply(QASObject*)), this, SLOT(newNote(QASObject*)));
   connect(w, SIGNAL(linkHovered(const QString&)),
@@ -556,12 +557,14 @@ void PumpApp::onShare(QASObject* obj) {
 //------------------------------------------------------------------------------
 
 void PumpApp::onShowContext(QASObject* obj) {
-  // if (!m_contextWidget) {
-  //   m_contextWidget = new ContextWidget(this);
-  //   m_tabWidget->addTab(m_contextWidget, "&context");
-  // }
+  if (!m_contextWidget) {
+    m_contextWidget = new ContextWidget(this);
+    connectCollection(m_contextWidget);
+    m_tabWidget->addTab(m_contextWidget, "&context");
+  }
 
-  // m_contextWidget->setObject(obj);
+  m_contextWidget->setObject(obj);
+  m_tabWidget->setCurrentWidget(m_contextWidget);
 }
 
 //------------------------------------------------------------------------------
