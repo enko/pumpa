@@ -128,12 +128,20 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
 
 //------------------------------------------------------------------------------
 
+bool FullObjectWidget::hasValidIrtObject() {
+  QASObject* irtObj = m_object->inReplyTo();
+  return irtObj && !irtObj->url().isEmpty();
+}
+
+//------------------------------------------------------------------------------
+
 void FullObjectWidget::onChanged() {
   updateLikes();
   updateShares();
 
   updateFavourButton();
   updateShareButton();
+  m_commentButton->setVisible(hasValidIrtObject());
 
   setText(processText(m_object->content(), true));
 

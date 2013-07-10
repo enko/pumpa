@@ -58,6 +58,7 @@ private slots:
   void reply();
 
 private:
+  bool hasValidIrtObject();
   void setText(QString text);
   void setInfo(QString text);
 
