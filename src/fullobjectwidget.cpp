@@ -141,7 +141,8 @@ void FullObjectWidget::onChanged() {
 
   updateFavourButton();
   updateShareButton();
-  m_commentButton->setVisible(hasValidIrtObject());
+  m_commentButton->setVisible(m_object->type() != "comment" ||
+                              hasValidIrtObject());
 
   setText(processText(m_object->content(), true));
 
