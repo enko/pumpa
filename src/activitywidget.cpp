@@ -36,10 +36,7 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
 
   bool showObject = (verb == "post");
 
-  QHBoxLayout* topLayout = new QHBoxLayout;
-  topLayout->setContentsMargins(0, 0, 0, 0);
   m_textLabel = new RichTextLabel(this);
-  topLayout->addWidget(m_textLabel, 0, Qt::AlignTop);
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
 
@@ -48,7 +45,7 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
 
   QVBoxLayout* layout = new QVBoxLayout;
   layout->setContentsMargins(0, 0, 0, 0);
-  layout->addLayout(topLayout);
+  layout->addWidget(m_textLabel, 0, Qt::AlignTop);
 
   if (m_objectWidget)
     layout->addWidget(m_objectWidget, 0, Qt::AlignTop);

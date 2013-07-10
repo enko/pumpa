@@ -24,7 +24,10 @@
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) : 
   QFrame(parent),
   m_contextLabel(NULL),
+  m_contextButton(NULL),
+  m_topLayout(NULL),
   m_object(obj),
+  m_irtObject(NULL),
   m_short(shortWidget)
 {
   connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
@@ -34,17 +37,28 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
   m_layout->setSpacing(0);
 
   if (m_object->type() == "comment") {
-    QASObject* irtObj = m_object->inReplyTo();
-    if (irtObj) {
+    m_irtObject = m_object->inReplyTo();
+    if (m_irtObject) {
+      m_topLayout = new QHBoxLayout;
+      m_topLayout->setContentsMargins(0, 0, 0, 0);
+
       m_contextLabel = new RichTextLabel(this, true);
-      connect(irtObj, SIGNAL(changed()), this, SLOT(updateContextLabel()));
-      m_layout->addWidget(m_contextLabel, 0, Qt::AlignTop);
-      if (irtObj->url().isEmpty()) {
+      connect(m_irtObject, SIGNAL(changed()), this, SLOT(updateContextLabel()));
+      m_topLayout->addWidget(m_contextLabel, 0, Qt::AlignVCenter);
+
+      m_topLayout->addSpacing(10);
+      m_contextButton = new TextToolButton(this);
+      connect(m_contextButton, SIGNAL(clicked()), this, SLOT(onShowContext()));
+      m_topLayout->addWidget(m_contextButton, 0, Qt::AlignVCenter);
+
+      if (m_irtObject->url().isEmpty()) {
         m_contextLabel->setVisible(false);
-        irtObj->refresh();
+        m_contextButton->setVisible(false);
+        m_irtObject->refresh();
       } else {
         updateContextLabel();
       }
+      m_layout->addLayout(m_topLayout);
     }
   }
 
@@ -65,6 +79,8 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
             this, SLOT(showMore()));
     if (m_contextLabel)
       m_contextLabel->setVisible(false);
+    if (m_contextButton)
+      m_contextButton->setVisible(false);
     m_objectWidget->setVisible(false);
     m_layout->addWidget(m_shortObjectWidget);
   }
@@ -87,6 +103,8 @@ void ObjectWidget::showMore() {
   m_objectWidget->setVisible(true);
   if (m_contextLabel)
     m_contextLabel->setVisible(true);
+  if (m_contextButton)
+    m_contextButton->setVisible(true);
   emit moreClicked();
 }
   
@@ -99,13 +117,25 @@ void ObjectWidget::onChanged() {
 //------------------------------------------------------------------------------
 
 void ObjectWidget::updateContextLabel() {
-  QASObject* irtObj = m_object->inReplyTo();
-  if (!irtObj || !m_contextLabel)
+  if (!m_irtObject || !m_contextLabel)
     return;
 
-  QString text = ShortObjectWidget::objectExcerpt(irtObj);
+  QString text = ShortObjectWidget::objectExcerpt(m_irtObject);
   m_contextLabel->setText("Re: " + text);
-  if (!m_short)
+  m_contextButton->setText("Show context");
+  if (!m_short) {
     m_contextLabel->setVisible(true);
+    m_contextButton->setVisible(true);
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::onShowContext() {
+  if (!m_irtObject || !m_topLayout)
+    return;
+
+  // m_contextLabel->setVisible(false);
+  // m_contextButton->setVisible(false);
 }
   

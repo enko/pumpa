@@ -26,6 +26,7 @@
 #include "qactivitystreams.h"
 #include "shortobjectwidget.h"
 #include "fullobjectwidget.h"
+#include "texttoolbutton.h"
 #include "richtextlabel.h"
 
 class ObjectWidget : public QFrame {
@@ -48,15 +49,19 @@ private slots:
   void showMore();
   void onChanged();
   void updateContextLabel();
+  void onShowContext();
 
 private:
   FullObjectWidget* m_objectWidget;
   ShortObjectWidget* m_shortObjectWidget;
   RichTextLabel* m_contextLabel;
+  TextToolButton* m_contextButton;
 
   QVBoxLayout* m_layout;
-
+  QHBoxLayout* m_topLayout;
   QASObject* m_object;
+  QASObject* m_irtObject;
+
   bool m_short;
 };
   
