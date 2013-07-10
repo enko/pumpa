@@ -41,6 +41,8 @@ public:
 
   QASObject* object() const { return m_object; }
 
+  void refreshTimeLabels() { updateInfoText(); }
+
 signals:
   void linkHovered(const QString&);
   void like(QASObject*);
@@ -60,7 +62,7 @@ private slots:
 private:
   bool hasValidIrtObject();
   void setText(QString text);
-  void setInfo(QString text);
+  void updateInfoText();
 
   void updateLikes();
   void updateShares();

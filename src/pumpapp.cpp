@@ -69,7 +69,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_inboxWidget = new CollectionWidget(this);
   connectCollection(m_inboxWidget);
 
-  m_inboxMinorWidget = new CollectionWidget(this, true);
+  m_inboxMinorWidget = new CollectionWidget(this);
   connectCollection(m_inboxMinorWidget);
 
   m_directMajorWidget = new CollectionWidget(this);
@@ -159,6 +159,8 @@ void PumpApp::connectCollection(CollectionWidget* w) {
   connect(w, SIGNAL(like(QASObject*)), this, SLOT(onLike(QASObject*)));
   connect(w, SIGNAL(share(QASObject*)), this, SLOT(onShare(QASObject*)));
   connect(w, SIGNAL(highlightMe()), m_notifyMap, SLOT(map()));
+  connect(w, SIGNAL(showContext(QASObject*)), 
+          this, SLOT(onShowContext(QASObject*)));
 }
 
 //------------------------------------------------------------------------------
@@ -549,6 +551,17 @@ void PumpApp::onLike(QASObject* obj) {
 
 void PumpApp::onShare(QASObject* obj) {
   feed("share", obj->toJson(), QAS_ACTIVITY | QAS_REFRESH);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::onShowContext(QASObject* obj) {
+  // if (!m_contextWidget) {
+  //   m_contextWidget = new ContextWidget(this);
+  //   m_tabWidget->addTab(m_contextWidget, "&context");
+  // }
+
+  // m_contextWidget->setObject(obj);
 }
 
 //------------------------------------------------------------------------------

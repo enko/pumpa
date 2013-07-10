@@ -95,7 +95,11 @@ QString ShortObjectWidget::objectExcerpt(QASObject* obj) {
   if (text.isEmpty()) {
     text = obj->content();
   }
-  if (!text.isEmpty())
+  if (!text.isEmpty()) {
     text.replace(QRegExp(HTML_TAG_REGEX), " ");
+  } else {
+    QString t = obj->type();
+    text = (t == "image" ? "an " : "a ") + t;
+  }
   return text;
 }

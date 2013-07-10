@@ -135,7 +135,16 @@ void ObjectWidget::onShowContext() {
   if (!m_irtObject || !m_topLayout)
     return;
 
+  emit showContext(m_irtObject);
   // m_contextLabel->setVisible(false);
   // m_contextButton->setVisible(false);
 }
-  
+    
+//------------------------------------------------------------------------------
+
+void ObjectWidget::refreshTimeLabels() {
+  if (m_objectWidget)
+    m_objectWidget->refreshTimeLabels();
+  if (m_shortObjectWidget)
+    m_shortObjectWidget->refreshTimeLabels();
+}

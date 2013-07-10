@@ -40,7 +40,8 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
           this,  SIGNAL(linkHovered(const QString&)));
 
-  if (!obj->content().isEmpty() || !obj->displayName().isEmpty())
+  if (!obj->content().isEmpty() || !obj->displayName().isEmpty()
+      || (objType == "image" && !obj->imageUrl().isEmpty()))
     m_objectWidget = makeObjectWidgetAndConnect(obj, !showObject);
 
   QVBoxLayout* layout = new QVBoxLayout;
@@ -69,7 +70,8 @@ void ActivityWidget::onObjectChanged() {
 //------------------------------------------------------------------------------
 
 void ActivityWidget::refreshTimeLabels() {
-  updateText();
+  if (m_objectWidget)
+    m_objectWidget->refreshTimeLabels();
 }
 
 //------------------------------------------------------------------------------
@@ -134,6 +136,8 @@ ObjectWidget* ActivityWidget::makeObjectWidgetAndConnect(QASObject* obj,
           this,  SIGNAL(like(QASObject*)));
   connect(ow, SIGNAL(share(QASObject*)),
           this,  SIGNAL(share(QASObject*)));
+  connect(ow, SIGNAL(showContext(QASObject*)),
+          this, SIGNAL(showContext(QASObject*)));
 
   connect(obj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
           Qt::UniqueConnection);

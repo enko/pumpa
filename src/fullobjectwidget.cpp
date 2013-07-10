@@ -141,22 +141,13 @@ void FullObjectWidget::onChanged() {
 
   updateFavourButton();
   updateShareButton();
-  m_commentButton->setVisible(m_object->type() != "comment" ||
-                              hasValidIrtObject());
+  if (m_commentButton)
+    m_commentButton->setVisible(m_object->type() != "comment" ||
+                                hasValidIrtObject());
 
   setText(processText(m_object->content(), true));
 
-  QString infoStr = QString("<a href=\"%2\">%1</a>").
-    arg(relativeFuzzyTime(m_object->published())).
-    arg(m_object->url());
-
-  QASActor* author = m_object->author();
-  if (author)
-    infoStr = QString("<a href=\"%2\">%1</a> at ").
-      arg(author->displayName()).
-      arg(author->url()) + infoStr;
-
-  setInfo(infoStr);
+  updateInfoText();
   if (m_object->numReplies() > 0) {
     QASObjectList* ol = m_object->replies();
     if (ol) 
@@ -174,12 +165,21 @@ void FullObjectWidget::setText(QString text) {
 
 //------------------------------------------------------------------------------
 
-void FullObjectWidget::setInfo(QString text) {
-  if (m_infoLabel == NULL) {
-    qDebug() << "[WARNING] Trying to set info text to a non-comment object.";
+void FullObjectWidget::updateInfoText() {
+  if (m_infoLabel == NULL)
     return;
-  }
-  m_infoLabel->setText(text);
+
+  QString infoStr = QString("<a href=\"%2\">%1</a>").
+    arg(relativeFuzzyTime(m_object->published())).
+    arg(m_object->url());
+
+  QASActor* author = m_object->author();
+  if (author)
+    infoStr = QString("<a href=\"%2\">%1</a> at ").
+      arg(author->displayName()).
+      arg(author->url()) + infoStr;
+
+  m_infoLabel->setText(infoStr);
 }
 
 //------------------------------------------------------------------------------

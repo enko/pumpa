@@ -39,6 +39,8 @@ public:
 
   static QString objectExcerpt(QASObject* obj);
 
+  void refreshTimeLabels() {};
+
 signals:
   void moreClicked();
 

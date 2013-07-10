@@ -49,6 +49,7 @@ signals:
   void newReply(QASObject*);
   void like(QASObject*);
   void share(QASObject*);
+  void showContext(QASObject*);
 
 private:
   void updateText();

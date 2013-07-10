@@ -22,47 +22,32 @@
 
 #include "qactivitystreams.h"
 
-#include <QLabel>
-#include <QWidget>
-#include <QScrollBar>
-#include <QMouseEvent>
-#include <QScrollArea>
-#include <QVBoxLayout>
+// #include <QLabel>
+// #include <QWidget>
+// #include <QScrollBar>
+// #include <QMouseEvent>
+// #include <QScrollArea>
+// #include <QVBoxLayout>
+
+#include "aswidget.h"
 
 //------------------------------------------------------------------------------
 
-class CollectionWidget : public QScrollArea {
+class CollectionWidget : public ASWidget {
   Q_OBJECT
 
 public:
-  CollectionWidget(QWidget* parent, bool shortDisplay=false);
+  CollectionWidget(QWidget* parent);
   void setEndpoint(QString endpoint);
   void fetchNewer();
   void fetchOlder();
-  void refreshTimeLabels();
-
-signals:
-  void highlightMe();  
-  void request(QString, int);
-  void newReply(QASObject*);
-  void linkHovered(const QString&);
-  void like(QASObject*);
-  void share(QASObject*);
-
-protected:
-  void keyPressEvent(QKeyEvent* event);
+  // void refreshTimeLabels();
 
 private slots:
   void update(bool older);
 
 private:
-  QVBoxLayout* m_itemLayout;
-  QWidget* m_listContainer;
   QSet<QASActivity*> m_activity_set;
-  
-  bool m_firstTime;
-  bool m_shortDisplay;
-
   QSet<QASObject*> m_shown_objects;
 
   QASCollection* m_collection;
