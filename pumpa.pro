@@ -28,7 +28,7 @@ QT += core gui network
 # To enable for gdb debug info, uncomment this
 # CONFIG += debug
 
-unix: {
+unix:!macx {
   message("Enabling dbus")
   QT += dbus
   DEFINES += USE_DBUS
