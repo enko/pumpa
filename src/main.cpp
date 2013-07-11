@@ -78,6 +78,9 @@ int main(int argc, char** argv) {
       Q_ASSERT(f(255) == 0);
       return 0;
     }
+    else if (arg == "-c" && argc == 3) {
+      settingsFile = argv[2];
+    }
   }
 
   PumpApp papp(settingsFile);
