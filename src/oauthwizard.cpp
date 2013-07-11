@@ -164,10 +164,12 @@ bool OAuthSecondPage::validatePage() {
 
 //------------------------------------------------------------------------------
 
-OAuthWizard::OAuthWizard(QWidget* parent) : QWizard(parent) {
+OAuthWizard::OAuthWizard(QNetworkAccessManager* nam, QWidget* parent) :
+  QWizard(parent),
+  m_nam(nam)
+{
   setWindowTitle("Pumpa");
 
-  m_nam = new QNetworkAccessManager(this);
   m_oam = new KQOAuthManager(this);
   m_oar = new KQOAuthRequest(this);
 

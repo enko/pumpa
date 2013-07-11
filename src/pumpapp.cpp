@@ -43,6 +43,8 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   connect(m_settingsDialog, SIGNAL(newAccount()),
           this, SLOT(launchOAuthWizard()));
   
+  m_nam = new QNetworkAccessManager(this);
+
   oaRequest = new KQOAuthRequest(this);
   oaManager = new KQOAuthManager(this);
   connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
@@ -121,7 +123,7 @@ PumpApp::~PumpApp() {
 
 void PumpApp::launchOAuthWizard() {
   if (!m_wiz) {
-    m_wiz = new OAuthWizard(this);
+    m_wiz = new OAuthWizard(m_nam, this);
     connect(m_wiz, SIGNAL(clientRegistered(QString, QString, QString, QString)),
             this, SLOT(onClientRegistered(QString, QString, QString, QString)));
     connect(m_wiz, SIGNAL(accessTokenReceived(QString, QString)),
@@ -145,6 +147,8 @@ void PumpApp::startPumping() {
 
   show();
   request("/api/user/" + m_s->userName(), QAS_SELF_PROFILE);
+  request("/api/user/" + m_s->userName() + "/following",
+          QAS_ACTORLIST | QAS_FOLLOW);
   fetchAll();
 
   resetTimer();
@@ -563,21 +567,53 @@ void PumpApp::followDialog() {
     QInputDialog::getText(this, "Follow pump.io user",
                           "Enter webfinger ID of person to follow: ",
                           QLineEdit::Normal, "evan@e14n.com", &ok);
-  qDebug() << "got" << ok << text;
 
   if (!ok || text.isEmpty())
     return;
 
   QString username, server;
-  ok = splitWebfingerId(text, username, server);
-  if (!ok) {
-    QMessageBox::critical(this, CLIENT_FANCY_NAME,
-                          "Sorry, that doesn't even look like a "
-                          "webfinger ID.", QMessageBox::Ok);
+  QString error;
+
+  if (!splitWebfingerId(text, username, server))
+    error = "Sorry, that doesn't even look like a webfinger ID!";
+
+  QASObject* obj = QASObject::getObject("acct:" + username + "@" + server);
+  QASActor* actor = obj ? obj->asActor() : NULL;
+  if (actor && actor->followed())
+    error = "Sorry, you are already following that person!";
+
+  if (!error.isEmpty()) {
+    QMessageBox::critical(this, CLIENT_FANCY_NAME, error, QMessageBox::Ok);
     return;
   }
-  
-  follow(QString("acct:%1@%2").arg(username).arg(server));
+
+  testUserAndFollow(username, server);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::testUserAndFollow(QString username, QString server) {
+  QString fingerUrl = QString("%1/.well-known/webfinger?resource=%2@%1").
+    arg(server).arg(username);
+  // https://io.saz.im/.well-known/webfinger?resource=sazius@saz.im
+
+  QNetworkRequest rec(QUrl("http://" + fingerUrl));
+  QNetworkReply* reply = m_nam->head(rec);
+  connect(reply, SIGNAL(finished()), this, SLOT(userTestDoneAndFollow()));
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::userTestDoneAndFollow() {
+  QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+  QString userId = reply->url().queryItemValue("resource");
+  qDebug() << "tried" << reply->url() << reply->error();
+  if (reply->error() == QNetworkReply::NoError) {
+    qDebug() << "user OK" << userId;
+    //follow("acct:" + userId);
+  } else {
+    qDebug() << "invalid user" << userId;
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -679,7 +715,7 @@ void PumpApp::follow(QString acctId) {
   QVariantMap obj;
   obj["id"] = acctId;
   obj["objectType"] = "person";
-  feed("follow", obj, QAS_ACTIVITY);
+  feed("follow", obj, QAS_ACTIVITY | QAS_FOLLOW);
 }
 
 //------------------------------------------------------------------------------
@@ -789,8 +825,8 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     notifyMessage("Ready!");
 
   if (oaManager->lastError()) {
-    errorMessage(QString("Network or authorisation error [id=%1].").
-                 arg(oaManager->lastError()));
+    errorMessage(QString("Network or authorisation error [id=%1] [%2].").
+                 arg(oaManager->lastError()).arg(id));
     return;
   }
 
@@ -804,14 +840,27 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     QASCollection::getCollection(obj, this, id);
   } else if (sid == QAS_ACTIVITY) {
     QASActivity* act = QASActivity::getActivity(obj, this);
+
     if ((id & QAS_TOGGLE_LIKE) && act->object())
       act->object()->toggleLiked();
+
+    if (id & QAS_FOLLOW) {
+      QASActor* actor = act->object() ? act->object()->asActor() : NULL;
+      if (actor)
+        actor->setFollowed(true);
+    }
   } else if (sid == QAS_OBJECTLIST) {
     QASObjectList::getObjectList(obj, this, id);
   } else if (sid == QAS_OBJECT) {
     QASObject::getObject(obj, this);
   } else if (sid == QAS_ACTORLIST) {
-    QASActorList::getActorList(obj, this);
+    QASActorList* al = QASActorList::getActorList(obj, this);
+    if (id & QAS_FOLLOW) {
+      for (size_t i=0; i<al->size(); ++i)
+        al->at(i)->setFollowed(true);
+      if (!al->nextLink().isEmpty())
+        request(al->nextLink(), QAS_ACTORLIST | QAS_FOLLOW);
+    }
   } else if (sid == QAS_SELF_PROFILE) {
     m_selfActor = QASActor::getActor(obj["profile"].toMap(), this);
     m_selfActor->setYou();

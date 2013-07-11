@@ -106,7 +106,7 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
     m_followButton = new TextToolButton(this);
     connect(m_followButton, SIGNAL(clicked()), this, SLOT(follow()));
     m_buttonLayout->addWidget(m_followButton, 0, Qt::AlignTop);
-    m_author = qobject_cast<QASActor*>(m_object);
+    m_author = m_object->asActor();
   }
 
   m_buttonLayout->addStretch();
@@ -120,7 +120,7 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
 
   bool smallActor = m_childWidget;
 
-  QASActor* actor = qobject_cast<QASActor*>(m_object);
+  QASActor* actor = m_author;
   if (!actor)
     actor = m_object->author();
   ActorWidget* actorWidget = new ActorWidget(actor, this, smallActor);
@@ -155,7 +155,13 @@ void FullObjectWidget::onChanged() {
                                 hasValidIrtObject());
   updateFollowButton();
 
-  QString text = m_author ? m_author->summary() : m_object->content();
+  QString text = m_object->content();
+  if (m_author) {
+    text = m_author->summary();
+    if (text.isEmpty())
+      text = "[No description]";
+  }
+
   setText(processText(text, true));
 
   updateInfoText();

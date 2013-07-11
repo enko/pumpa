@@ -77,6 +77,8 @@ public:
   }
   virtual void update(QVariantMap json);
 
+  QASActor* asActor();
+
   qint64 sortInt() const { return sortIntByDateTime(m_updated); }
   
   QString id() const { return m_id; }
@@ -157,6 +159,7 @@ public:
   bool isYou() const { return m_isYou; }
   void setYou() { m_isYou = true; }
   bool followed() const { return m_followed; }
+  void setFollowed(bool b);
   QString summary() const { return m_summary; }
   QString location() const { return m_location; }
 
@@ -261,6 +264,8 @@ public:
     return m_items.contains(obj);
   }
 
+  QString nextLink() const { return m_nextLink; }
+
 signals:
   void changed();
 
@@ -270,6 +275,7 @@ protected:
   qulonglong m_totalItems;
   QList<QASObject*> m_items;
   bool m_hasMore;
+  QString m_nextLink;
 
 private:
   static QMap<QString, QASObjectList*> s_objectLists;

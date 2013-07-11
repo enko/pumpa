@@ -220,7 +220,10 @@ void QASActor::update(QVariantMap json) {
   updateVar(json, m_url, "url", ch); 
   updateVar(json, m_displayName, "displayName", ch);
   updateVar(json, m_objectType, "objectType", ch);
-  updateVar(json, m_followed, "pump_io", "followed", ch);
+
+  // this seems to be unreliable
+  // updateVar(json, m_followed, "pump_io", "followed", ch);
+
   updateVar(json, m_summary, "summary", ch);
   updateVar(json, m_location, "location", "displayName", ch);
 
@@ -245,6 +248,13 @@ QASActor* QASActor::getActor(QVariantMap json, QObject* parent) {
 
   act->update(json);
   return act;
+}
+
+//------------------------------------------------------------------------------
+
+void QASActor::setFollowed(bool b) { 
+  m_followed = b; 
+  emit changed();
 }
 
 //------------------------------------------------------------------------------
@@ -418,6 +428,12 @@ QVariantMap QASObject::toJson() const {
 
 //------------------------------------------------------------------------------
 
+QASActor* QASObject::asActor() {
+  return qobject_cast<QASActor*>(this);
+}
+
+//------------------------------------------------------------------------------
+
 QASActivity::QASActivity(QString id, QObject* parent) : 
   QASAbstractObject(QAS_ACTIVITY, parent),
   m_id(id),
@@ -531,6 +547,9 @@ void QASObjectList::update(QVariantMap json, bool) {
   updateVar(json, m_totalItems, "totalItems", ch);
   updateVar(json, m_proxyUrl, "pump_io", "proxyURL", ch);
 
+  m_nextLink = "";
+  updateVar(json, m_nextLink, "links", "next", "href", ch);
+
   if (json.contains("items")) {
     m_items.clear();
     QVariantList items_json = json["items"].toList();
@@ -605,19 +624,6 @@ QString QASObjectList::urlOrProxy() const {
 
 //------------------------------------------------------------------------------
 
-// //FIXME, refresh() could be in QASAbstractObject
-// void QASObjectList::refresh() {
-//   static QDateTime last_refreshed;
-//   QDateTime now = QDateTime::currentDateTime();
-  
-//   if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
-//     emit request(urlOrProxy(), QAS_OBJECTLIST);
-
-//   last_refreshed = now;
-// }
-
-//------------------------------------------------------------------------------
-
 QASActorList::QASActorList(QString url, QObject* parent) :
   QASObjectList(url, parent)
 {
@@ -648,7 +654,7 @@ QASActorList* QASActorList::getActorList(QVariantMap json, QObject* parent,
 QASActor* QASActorList::at(size_t i) const {
   if (i >= size())
     return NULL;
-  return qobject_cast<QASActor*>(m_items[i]);
+  return m_items[i]->asActor();
 }
 
 //------------------------------------------------------------------------------
@@ -669,19 +675,6 @@ void QASActorList::removeActor(QASActor* actor) {
   m_totalItems--;
   emit changed();
 }
-
-//------------------------------------------------------------------------------
-
-//FIXME, refresh() could be in QASAbstractObject
-// void QASActorList::refresh() {
-//   static QDateTime last_refreshed;
-//   QDateTime now = QDateTime::currentDateTime();
-  
-//   if (last_refreshed.isNull() || last_refreshed.secsTo(now) > 1)
-//     emit request(urlOrProxy(), QAS_ACTORLIST);
-
-//   last_refreshed = now;
-// }
 
 //------------------------------------------------------------------------------
 

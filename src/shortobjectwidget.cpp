@@ -65,7 +65,7 @@ ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
 //------------------------------------------------------------------------------
 
 void ShortObjectWidget::updateAvatar() {
-  QASActor* m_actor = qobject_cast<QASActor*>(m_object);
+  QASActor* m_actor = m_object->asActor();
   if (!m_actor)
     m_actor = m_object->author();
   m_actorWidget->setActor(m_actor);

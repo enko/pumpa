@@ -61,6 +61,8 @@ signals:
   void userAuthorizationStarted();
                     
 private slots:
+  void userTestDoneAndFollow();
+
   void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
   void updateTrayIcon();
   void toggleVisible();
@@ -112,6 +114,8 @@ protected:
   }
 
 private:
+  void testUserAndFollow(QString username, QString server);
+
   QString apiUrl(QString endpoint);
   void addRecipient(QVariantMap& data, QString name, int to);
 
@@ -179,6 +183,8 @@ private:
   int m_timerId;
   int m_timerCount;
   int m_requests;
+
+  QNetworkAccessManager* m_nam;
 
   QSignalMapper* m_notifyMap;
 #ifdef USE_DBUS
