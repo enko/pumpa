@@ -63,4 +63,6 @@ QString markDown(QString text);
 
 QString relativeFuzzyTime(QDateTime sTime);
 
+bool splitWebfingerId(QString accountId, QString& username, QString& server);
+
 #endif /* _UTIL_H_ */

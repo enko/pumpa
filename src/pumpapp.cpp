@@ -386,14 +386,13 @@ void PumpApp::createActions() {
   connect(reloadAction, SIGNAL(triggered()), 
           this, SLOT(reload()));
 
-  loadOlderAction = new QAction(tr("Load &older in timeline"), this);
-  loadOlderAction->setShortcut(tr("Ctrl+O"));
+  loadOlderAction = new QAction(tr("Load older in timeline"), this);
+  // loadOlderAction->setShortcut(tr("Ctrl+O"));
   connect(loadOlderAction, SIGNAL(triggered()), this, SLOT(loadOlder()));
 
-  // pauseAct = new QAction(tr("&Pause home timeline"), this);
-  // pauseAct->setShortcut(tr("Ctrl+P"));
-  // pauseAct->setCheckable(true);
-  // connect(pauseAct, SIGNAL(triggered()), this, SLOT(pauseTimeline()));
+  followAction = new QAction(tr("F&ollow an account"), this);
+  followAction->setShortcut(tr("Ctrl+O"));
+  connect(followAction, SIGNAL(triggered()), this, SLOT(followDialog()));
 
   aboutAction = new QAction(tr("&About"), this);
   connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
@@ -420,6 +419,7 @@ void PumpApp::createMenu() {
   fileMenu = new QMenu(tr("&Pumpa"), this);
   fileMenu->addAction(newNoteAction);
   fileMenu->addAction(newPictureAction);
+  fileMenu->addAction(followAction);
   // fileMenu->addSeparator();
   fileMenu->addAction(reloadAction);
   fileMenu->addAction(loadOlderAction);
@@ -556,6 +556,31 @@ void PumpApp::onShare(QASObject* obj) {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::followDialog() {
+  bool ok;
+  QString text =
+    QInputDialog::getText(this, "Follow pump.io user",
+                          "Enter webfinger ID of person to follow: ",
+                          QLineEdit::Normal, "evan@e14n.com", &ok);
+  qDebug() << "got" << ok << text;
+
+  if (!ok || text.isEmpty())
+    return;
+
+  QString username, server;
+  ok = splitWebfingerId(text, username, server);
+  if (!ok) {
+    QMessageBox::critical(this, CLIENT_FANCY_NAME,
+                          "Sorry, that doesn't even look like a "
+                          "webfinger ID.", QMessageBox::Ok);
+    return;
+  }
+  
+  follow(QString("acct:%1@%2").arg(username).arg(server));
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::onShowContext(QASObject* obj) {
   if (!m_contextWidget) {
     m_contextWidget = new ContextWidget(this);
@@ -649,6 +674,15 @@ void PumpApp::postReply(QASObject* replyToObj, QString content) {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::follow(QString acctId) {
+  QVariantMap obj;
+  obj["id"] = acctId;
+  obj["objectType"] = "person";
+  feed("follow", obj, QAS_ACTIVITY);
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::addRecipient(QVariantMap& data, QString name, int to) {
   if (to == RECIPIENT_EMPTY)
     return;
@@ -666,6 +700,7 @@ void PumpApp::addRecipient(QVariantMap& data, QString name, int to) {
 
   data[name] = recList;
 }
+
 //------------------------------------------------------------------------------
 
 void PumpApp::feed(QString verb, QVariantMap object, int response_id,

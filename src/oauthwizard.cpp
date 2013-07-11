@@ -85,19 +85,12 @@ void OAuthFirstPage::setMessage(QString msg) {
 //------------------------------------------------------------------------------
 
 bool OAuthFirstPage::splitAccountId(QString& username, QString& server) const {
-  static QRegExp rx("^([\\w\\._-+]+)@([\\w\\._-+]+)$");
   QString accountId = field("accountId").toString().trimmed();
 
   if (accountId == EXAMPLE_ACCOUNT_ID)
     return false;
 
-  if (!rx.exactMatch(accountId))
-    return false;
-
-  username = rx.cap(1);
-  server = rx.cap(2);
-
-  return true;
+  return splitWebfingerId(accountId, username, server);
 }
 
 //------------------------------------------------------------------------------
@@ -131,8 +124,9 @@ OAuthSecondPage::OAuthSecondPage(QWidget* parent) : QWizardPage(parent) {
     new QLabel("In order for Pumpa to be able to read and post new messages "
                "to your pump.io account you need to grant Pumpa access via "
                "the web page. Pumpa will open the web page for you - just "
-               "follow the instructions and copy &amp; paste the <b>token</b> "
-               "and <b>verifier</b> text strings back into the fields below.",
+               "follow the instructions and copy &amp; paste the "
+               "<b>verifier</b> text string back into the field below. (The"
+               "token should be automatically pre-filled.)",
                this);
   infoLabel->setWordWrap(true);
   layout->addWidget(infoLabel);

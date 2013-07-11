@@ -66,10 +66,12 @@ private slots:
   void toggleVisible();
   void timelineHighlighted(int);
 
+  void followDialog();
   void onLike(QASObject* obj);
   void onShare(QASObject* obj);
   void postNote(QString note, int to, int cc);
   void postReply(QASObject* replyToObj, QString content);
+  void follow(QString acctId);
   void errorMessage(QString msg);
   void notifyMessage(QString msg);
   void statusMessage(const QString& msg);
@@ -146,6 +148,7 @@ private:
   QAction* newNoteAction;
   QAction* newPictureAction;
   QAction* reloadAction;
+  QAction* followAction;
   QAction* loadOlderAction;
   QAction* openPrefsAction;
   QAction* exitAction;
