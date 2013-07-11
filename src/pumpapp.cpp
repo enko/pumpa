@@ -868,8 +868,15 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
 
     if (id & QAS_FOLLOW) {
       QASActor* actor = act->object() ? act->object()->asActor() : NULL;
-      if (actor)
+      if (actor) {
         actor->setFollowed(true);
+        QString n = actor->displayName();
+        if (n.isEmpty())
+          n = actor->id();
+        if (n.startsWith("acct:"))
+          n.remove(0, 5);
+        notifyMessage("Successfully followed " + n);
+      }
     }
   } else if (sid == QAS_OBJECTLIST) {
     QASObjectList::getObjectList(obj, this, id);
