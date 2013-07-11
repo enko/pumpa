@@ -884,7 +884,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     QASObject::getObject(obj, this);
   } else if (sid == QAS_ACTORLIST) {
     QASActorList* al = QASActorList::getActorList(obj, this);
-    if (id & QAS_FOLLOW) {
+    if (al && (id & QAS_FOLLOW)) {
       for (size_t i=0; i<al->size(); ++i)
         al->at(i)->setFollowed(true);
       if (!al->nextLink().isEmpty())

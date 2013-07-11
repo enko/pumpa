@@ -136,7 +136,7 @@ QString relativeFuzzyTime(QDateTime sTime) {
 
 bool splitWebfingerId(QString accountId, QString& username, QString& server) {
   static QRegExp rx("^([\\w\\._-+]+)@([\\w\\._-+]+)$");
-  if (!rx.exactMatch(accountId))
+  if (!rx.exactMatch(accountId.trimmed()))
     return false;
 
   username = rx.cap(1);
