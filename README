@@ -1,4 +1,4 @@
-# Pumpa v0.4
+# Pumpa v0.5
 
 Greetings, fellow pumpkins!
 
@@ -93,8 +93,6 @@ There are still several missing features.  This list contains some of
 them, not necessarily in order of importance:
 
 * Ability to post images
-* Better display of comments' context
-* Liking of comments
 * Ability to post to a particular user or user list
 * Possibly a WYSIWYG post editor (as an option)
 
