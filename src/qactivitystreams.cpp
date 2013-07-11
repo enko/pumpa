@@ -199,6 +199,7 @@ void QASAbstractObject::refresh() {
 
 QASActor::QASActor(QString id, QObject* parent) :
   QASObject(id, parent),
+  m_followed(false),
   m_isYou(false)
 {
 #if DEBUG >= 1
@@ -219,6 +220,9 @@ void QASActor::update(QVariantMap json) {
   updateVar(json, m_url, "url", ch); 
   updateVar(json, m_displayName, "displayName", ch);
   updateVar(json, m_objectType, "objectType", ch);
+  updateVar(json, m_followed, "pump_io", "followed", ch);
+  updateVar(json, m_summary, "summary", ch);
+  updateVar(json, m_location, "location", "displayName", ch);
 
   if (json.contains("image")) {
     QVariantMap im = json["image"].toMap();

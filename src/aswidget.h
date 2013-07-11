@@ -43,6 +43,7 @@ signals:
   void like(QASObject*);
   void share(QASObject*);
   void showContext(QASObject*);
+  void follow(QString);
 
 protected:
   void keyPressEvent(QKeyEvent* event);

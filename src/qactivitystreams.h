@@ -156,10 +156,16 @@ public:
   QString displayNameOrYou() const { return isYou() ? "You" : displayName(); }
   bool isYou() const { return m_isYou; }
   void setYou() { m_isYou = true; }
+  bool followed() const { return m_followed; }
+  QString summary() const { return m_summary; }
+  QString location() const { return m_location; }
 
 private:
   // static QMap<QString, QASActor*> s_actors;
+  bool m_followed;
   bool m_isYou;
+  QString m_summary;
+  QString m_location;
 };
 
 //------------------------------------------------------------------------------

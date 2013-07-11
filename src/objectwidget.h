@@ -47,6 +47,7 @@ signals:
   void newReply(QASObject*);
   void moreClicked();
   void showContext(QASObject*);
+  void follow(QString);
                           
 private slots:
   void showMore();

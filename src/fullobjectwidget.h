@@ -48,6 +48,7 @@ signals:
   void like(QASObject*);
   void share(QASObject*);
   void newReply(QASObject*);
+  void follow(QString);
 
 private slots:
   void onChanged();
@@ -58,6 +59,7 @@ private slots:
   void favourite();
   void repeat();
   void reply();
+  void follow();
 
 private:
   bool hasValidIrtObject();
@@ -73,6 +75,10 @@ private:
   void addHasMoreButton(QASObjectList* ol, int li);
   void updateFavourButton(bool wait = false);
   void updateShareButton(bool wait = false);
+  void updateFollowButton(bool wait = false);
+
+  bool isFollowable() const;
+
   void addObjectList(QASObjectList* ol);
 
   QString m_imageUrl;
@@ -90,12 +96,14 @@ private:
   TextToolButton* m_favourButton;
   TextToolButton* m_shareButton;
   TextToolButton* m_commentButton;
+  TextToolButton* m_followButton;
 
   QVBoxLayout* m_contentLayout;
   QHBoxLayout* m_buttonLayout;
   QVBoxLayout* m_commentsLayout;
 
   QASObject* m_object;
+  QASActor* m_author;
 
   QList<QASObject*> m_repliesList;
   QSet<QString> m_repliesMap;

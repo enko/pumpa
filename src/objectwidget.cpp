@@ -36,6 +36,8 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
   m_layout->setContentsMargins(0, 0, 0, 0);
   m_layout->setSpacing(0);
 
+  // Add label with context "Re:" text and "show context" button for
+  // replies.
   if (m_object->type() == "comment") {
     m_irtObject = m_object->inReplyTo();
     if (m_irtObject) {
@@ -71,6 +73,8 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
           this, SIGNAL(share(QASObject*)));
   connect(m_objectWidget, SIGNAL(newReply(QASObject*)),
           this, SIGNAL(newReply(QASObject*)));
+  connect(m_objectWidget, SIGNAL(follow(QString)),
+          this, SIGNAL(follow(QString)));
   m_layout->addWidget(m_objectWidget);
 
   if (m_short) {
@@ -136,8 +140,6 @@ void ObjectWidget::onShowContext() {
     return;
 
   emit showContext(m_irtObject);
-  // m_contextLabel->setVisible(false);
-  // m_contextButton->setVisible(false);
 }
     
 //------------------------------------------------------------------------------

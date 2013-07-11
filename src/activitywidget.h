@@ -50,6 +50,7 @@ signals:
   void like(QASObject*);
   void share(QASObject*);
   void showContext(QASObject*);
+  void follow(QString);
 
 private:
   void updateText();

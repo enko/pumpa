@@ -41,7 +41,9 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
   m_favourButton(NULL),
   m_shareButton(NULL),
   m_commentButton(NULL),
+  m_followButton(NULL),
   m_object(obj),
+  m_author(NULL),
   m_childWidget(childWidget)
 {
   const QString objType = m_object->type();
@@ -100,6 +102,13 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
     m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
   }
 
+  if (objType == "person") {
+    m_followButton = new TextToolButton(this);
+    connect(m_followButton, SIGNAL(clicked()), this, SLOT(follow()));
+    m_buttonLayout->addWidget(m_followButton, 0, Qt::AlignTop);
+    m_author = qobject_cast<QASActor*>(m_object);
+  }
+
   m_buttonLayout->addStretch();
 
   m_commentsLayout = new QVBoxLayout;
@@ -144,8 +153,10 @@ void FullObjectWidget::onChanged() {
   if (m_commentButton)
     m_commentButton->setVisible(m_object->type() != "comment" ||
                                 hasValidIrtObject());
+  updateFollowButton();
 
-  setText(processText(m_object->content(), true));
+  QString text = m_author ? m_author->summary() : m_object->content();
+  setText(processText(text, true));
 
   updateInfoText();
   if (m_object->numReplies() > 0) {
@@ -169,16 +180,27 @@ void FullObjectWidget::updateInfoText() {
   if (m_infoLabel == NULL)
     return;
 
-  QString infoStr = QString("<a href=\"%2\">%1</a>").
-    arg(relativeFuzzyTime(m_object->published())).
-    arg(m_object->url());
+  QString infoStr;
+  if (m_author) {
+    QString aid = m_author->id();
+    if (aid.startsWith("acct:"))
+      aid.remove(0, 5);
+    infoStr = QString("<a href=\"%2\">%1</a>").arg(aid).arg(m_object->url());
+    
+    QString location = m_author->location();
+    if (!location.isEmpty())
+      infoStr += " at " + location;
+  } else {
+    infoStr = QString("<a href=\"%2\">%1</a>").
+      arg(relativeFuzzyTime(m_object->published())).
+      arg(m_object->url());
 
-  QASActor* author = m_object->author();
-  if (author)
-    infoStr = QString("<a href=\"%2\">%1</a> at ").
-      arg(author->displayName()).
-      arg(author->url()) + infoStr;
-
+    QASActor* author = m_object->author();
+    if (author)
+      infoStr = QString("<a href=\"%2\">%1</a> at ").
+        arg(author->displayName()).
+        arg(author->url()) + infoStr;
+  }
   m_infoLabel->setText(infoStr);
 }
 
@@ -201,6 +223,28 @@ void FullObjectWidget::updateShareButton(bool /*wait*/) {
     return;
 
   m_shareButton->setText("share");
+}
+
+//------------------------------------------------------------------------------
+
+bool FullObjectWidget::isFollowable() const {
+  return m_object->type() == "person" && m_object->id().startsWith("acct:") &&
+    m_author && !m_author->isYou();
+}
+
+//------------------------------------------------------------------------------
+
+void FullObjectWidget::updateFollowButton(bool /*wait*/) {
+  if (!m_followButton)
+    return;
+  
+  if (!isFollowable()) {
+    m_followButton->setVisible(false);
+    return;
+  }
+
+  m_followButton->setVisible(true);
+  m_followButton->setText(m_author->followed() ? "Stop following" : "Follow");
 }
 
 //------------------------------------------------------------------------------
@@ -334,6 +378,8 @@ void FullObjectWidget::addObjectList(QASObjectList* ol) {
             this, SIGNAL(like(QASObject*)));
     connect(ow, SIGNAL(share(QASObject*)), 
             this, SIGNAL(share(QASObject*)));
+    connect(ow, SIGNAL(follow(QString)),
+            this, SIGNAL(follow(QString)));
 
     m_commentsLayout->insertWidget(li + i, ow);
     m_repliesList.insert(i, replyObj);
@@ -393,6 +439,13 @@ void FullObjectWidget::repeat() {
 
 void FullObjectWidget::reply() {
   emit newReply(m_object);
+}
+
+//------------------------------------------------------------------------------
+
+void FullObjectWidget::follow() {
+  if (isFollowable())
+    emit follow(m_object->id());
 }
 
 //------------------------------------------------------------------------------

@@ -50,6 +50,8 @@ void ContextWidget::setObject(QASObject* obj) {
           this,  SIGNAL(share(QASObject*)));
   connect(ow, SIGNAL(showContext(QASObject*)),
           this, SIGNAL(showContext(QASObject*)));
+  connect(ow, SIGNAL(follow(QString)),
+          this, SIGNAL(follow(QString)));
 
   m_itemLayout->insertWidget(0, ow);
   m_itemLayout->addStretch();

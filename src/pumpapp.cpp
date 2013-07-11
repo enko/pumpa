@@ -162,6 +162,7 @@ void PumpApp::connectCollection(ASWidget* w) {
   connect(w, SIGNAL(highlightMe()), m_notifyMap, SLOT(map()));
   connect(w, SIGNAL(showContext(QASObject*)), 
           this, SLOT(onShowContext(QASObject*)));
+  connect(w, SIGNAL(follow(QString)), this, SLOT(follow(QString)));
 }
 
 //------------------------------------------------------------------------------

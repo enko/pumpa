@@ -30,6 +30,10 @@ ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
   m_object(obj),
   m_actor(NULL)
 {
+  static QSet<QString> expandableTypes;
+  if (expandableTypes.isEmpty())
+    expandableTypes << "person" << "note" << "comment";
+
   connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
 
   m_textLabel = new RichTextLabel(this, true);
@@ -38,7 +42,8 @@ ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
   updateAvatar();
 
   TextToolButton* moreButton = NULL;
-  if (m_object->type() != "person") {
+  
+  if (expandableTypes.contains(m_object->type())) {
     moreButton = new TextToolButton("+", this);
     connect(moreButton, SIGNAL(clicked()), this, SIGNAL(moreClicked()));
   }

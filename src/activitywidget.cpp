@@ -34,7 +34,7 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
   QASObject* obj = m_activity->object();
   QString objType = obj->type();
 
-  bool showObject = (verb == "post");
+  bool fullObject = (verb == "post");
 
   m_textLabel = new RichTextLabel(this);
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
@@ -42,7 +42,7 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
 
   if (!obj->content().isEmpty() || !obj->displayName().isEmpty()
       || (objType == "image" && !obj->imageUrl().isEmpty()))
-    m_objectWidget = makeObjectWidgetAndConnect(obj, !showObject);
+    m_objectWidget = makeObjectWidgetAndConnect(obj, !fullObject);
 
   QVBoxLayout* layout = new QVBoxLayout;
   layout->setContentsMargins(0, 0, 0, 0);
@@ -138,6 +138,8 @@ ObjectWidget* ActivityWidget::makeObjectWidgetAndConnect(QASObject* obj,
           this,  SIGNAL(share(QASObject*)));
   connect(ow, SIGNAL(showContext(QASObject*)),
           this, SIGNAL(showContext(QASObject*)));
+  connect(ow, SIGNAL(follow(QString)),
+          this, SIGNAL(follow(QString)));
 
   connect(obj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
           Qt::UniqueConnection);
