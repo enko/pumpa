@@ -561,6 +561,12 @@ void PumpApp::onShare(QASObject* obj) {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::errorBox(QString msg) {
+  QMessageBox::critical(this, CLIENT_FANCY_NAME, msg, QMessageBox::Ok);
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::followDialog() {
   bool ok;
   QString text =
@@ -582,10 +588,8 @@ void PumpApp::followDialog() {
   if (actor && actor->followed())
     error = "Sorry, you are already following that person!";
 
-  if (!error.isEmpty()) {
-    QMessageBox::critical(this, CLIENT_FANCY_NAME, error, QMessageBox::Ok);
-    return;
-  }
+  if (!error.isEmpty())
+    return errorBox(error);
 
   testUserAndFollow(username, server);
 }
@@ -600,20 +604,38 @@ void PumpApp::testUserAndFollow(QString username, QString server) {
   QNetworkRequest rec(QUrl("http://" + fingerUrl));
   QNetworkReply* reply = m_nam->head(rec);
   connect(reply, SIGNAL(finished()), this, SLOT(userTestDoneAndFollow()));
+  
+  // isn't this an ugly yet fancy hack? :-)
+  reply->setProperty("pumpa_redirects", 0);
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::userTestDoneAndFollow() {
+  QString error;
+
   QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
   QString userId = reply->url().queryItemValue("resource");
-  qDebug() << "tried" << reply->url() << reply->error();
-  if (reply->error() == QNetworkReply::NoError) {
-    qDebug() << "user OK" << userId;
-    //follow("acct:" + userId);
-  } else {
-    qDebug() << "invalid user" << userId;
+
+  if (reply->error() != QNetworkReply::NoError)
+    return errorBox("Invalid user (cannot find webfinger): " + userId);
+
+  int redirs = reply->property("pumpa_redirects").toInt();
+
+  QUrl loc = reply->header(QNetworkRequest::LocationHeader).toUrl();
+  if (loc.isValid()) {
+    if (redirs > 5)
+      return errorBox("Invalid user (infinite redirections): " + userId);
+    reply->deleteLater();
+    
+    QNetworkRequest rec(loc);
+    QNetworkReply* r = m_nam->head(rec);
+    r->setProperty("pumpa_redirects", ++redirs);
+    connect(r, SIGNAL(finished()), this, SLOT(userTestDoneAndFollow()));
+    return;
   }
+  
+  follow("acct:" + userId);
 }
 
 //------------------------------------------------------------------------------

@@ -114,6 +114,8 @@ protected:
   }
 
 private:
+  void errorBox(QString msg);
+
   void testUserAndFollow(QString username, QString server);
 
   QString apiUrl(QString endpoint);
