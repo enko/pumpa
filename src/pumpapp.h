@@ -73,7 +73,7 @@ private slots:
   void onShare(QASObject* obj);
   void postNote(QString note, int to, int cc);
   void postReply(QASObject* replyToObj, QString content);
-  void follow(QString acctId);
+  void follow(QString acctId, bool follow);
   void errorMessage(QString msg);
   void notifyMessage(QString msg);
   void statusMessage(const QString& msg);

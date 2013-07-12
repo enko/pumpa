@@ -166,7 +166,7 @@ void PumpApp::connectCollection(ASWidget* w) {
   connect(w, SIGNAL(highlightMe()), m_notifyMap, SLOT(map()));
   connect(w, SIGNAL(showContext(QASObject*)), 
           this, SLOT(onShowContext(QASObject*)));
-  connect(w, SIGNAL(follow(QString)), this, SLOT(follow(QString)));
+  connect(w, SIGNAL(follow(QString, bool)), this, SLOT(follow(QString, bool)));
 }
 
 //------------------------------------------------------------------------------
@@ -635,7 +635,7 @@ void PumpApp::userTestDoneAndFollow() {
     return;
   }
   
-  follow("acct:" + userId);
+  follow("acct:" + userId, true);
 }
 
 //------------------------------------------------------------------------------
@@ -733,11 +733,11 @@ void PumpApp::postReply(QASObject* replyToObj, QString content) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::follow(QString acctId) {
+void PumpApp::follow(QString acctId, bool follow) {
   QVariantMap obj;
   obj["id"] = acctId;
   obj["objectType"] = "person";
-  feed("follow", obj, QAS_ACTIVITY | QAS_FOLLOW);
+  feed(follow ? "follow" : "stop-following", obj, QAS_ACTIVITY | QAS_FOLLOW);
 }
 
 //------------------------------------------------------------------------------

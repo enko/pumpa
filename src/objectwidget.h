@@ -29,7 +29,9 @@
 #include "texttoolbutton.h"
 #include "richtextlabel.h"
 
-class ObjectWidget : public QFrame {
+//------------------------------------------------------------------------------
+
+class ObjectWidget : public ObjectWidgetWithSignals {
   Q_OBJECT
 
 public:
@@ -41,13 +43,8 @@ public:
   void refreshTimeLabels();
 
 signals:
-  void linkHovered(const QString&);
-  void like(QASObject*);
-  void share(QASObject*);
-  void newReply(QASObject*);
   void moreClicked();
   void showContext(QASObject*);
-  void follow(QString);
                           
 private slots:
   void showMore();

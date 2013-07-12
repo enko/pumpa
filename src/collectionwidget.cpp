@@ -91,10 +91,11 @@ void CollectionWidget::update(bool older) {
             this,  SIGNAL(like(QASObject*)));
     connect(aw, SIGNAL(share(QASObject*)),
             this,  SIGNAL(share(QASObject*)));
+    connect(aw, SIGNAL(follow(QString, bool)),
+            this, SIGNAL(follow(QString, bool)));
+
     connect(aw, SIGNAL(showContext(QASObject*)),
             this, SIGNAL(showContext(QASObject*)));
-    connect(aw, SIGNAL(follow(QString)),
-            this, SIGNAL(follow(QString)));
 
     if (obj)
       connect(obj, SIGNAL(request(QString, int)), 

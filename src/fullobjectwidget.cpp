@@ -32,7 +32,7 @@ QSet<QString> s_allowedTags;
 
 FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
                                    bool childWidget) :
-  QFrame(parent),
+  ObjectWidgetWithSignals(parent),
   m_infoLabel(NULL),
   m_likesLabel(NULL),
   m_sharesLabel(NULL),
@@ -42,7 +42,9 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
   m_shareButton(NULL),
   m_commentButton(NULL),
   m_followButton(NULL),
+  m_followAuthorButton(NULL),
   m_object(obj),
+  m_actor(NULL),
   m_author(NULL),
   m_childWidget(childWidget)
 {
@@ -93,6 +95,11 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
     connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
     m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
 
+    m_followAuthorButton = new TextToolButton(this);
+    connect(m_followAuthorButton, SIGNAL(clicked()),
+            this, SLOT(followAuthor()));
+    m_buttonLayout->addWidget(m_followAuthorButton, 0, Qt::AlignTop);
+
     m_shareButton = new TextToolButton(this);
     connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
     m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
@@ -104,15 +111,21 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
 
   if (objType == "person") {
     m_followButton = new TextToolButton(this);
-    connect(m_followButton, SIGNAL(clicked()), this, SLOT(follow()));
+    connect(m_followButton, SIGNAL(clicked()), this, SLOT(onFollow()));
     m_buttonLayout->addWidget(m_followButton, 0, Qt::AlignTop);
-    m_author = m_object->asActor();
+    m_actor = m_object->asActor();
   }
 
+  m_author = m_object->author();
+  
   m_buttonLayout->addStretch();
 
   m_commentsLayout = new QVBoxLayout;
   onChanged();
+  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+  if (m_author)
+    connect(m_author, SIGNAL(changed()),
+            this, SLOT(updateFollowAuthorButton()));
 
   rightLayout->addLayout(m_contentLayout);
   rightLayout->addLayout(m_buttonLayout);
@@ -120,10 +133,10 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
 
   bool smallActor = m_childWidget;
 
-  QASActor* actor = m_author;
-  if (!actor)
-    actor = m_object->author();
-  ActorWidget* actorWidget = new ActorWidget(actor, this, smallActor);
+  // If this object is not an actor itself, show the author in the
+  // avatar image.
+  QASActor* actorOnAvatar = m_actor ? m_actor : m_author;
+  ActorWidget* actorWidget = new ActorWidget(actorOnAvatar , this, smallActor);
 
   QHBoxLayout* acrossLayout = new QHBoxLayout;
   acrossLayout->setSpacing(10);
@@ -131,8 +144,6 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
   acrossLayout->addLayout(rightLayout);
   
   setLayout(acrossLayout);
-
-  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
 }
 
 //------------------------------------------------------------------------------
@@ -154,10 +165,11 @@ void FullObjectWidget::onChanged() {
     m_commentButton->setVisible(m_object->type() != "comment" ||
                                 hasValidIrtObject());
   updateFollowButton();
+  updateFollowAuthorButton();
 
   QString text = m_object->content();
-  if (m_author) {
-    text = m_author->summary();
+  if (m_actor) {
+    text = m_actor->summary();
     if (text.isEmpty())
       text = "[No description]";
   }
@@ -187,13 +199,13 @@ void FullObjectWidget::updateInfoText() {
     return;
 
   QString infoStr;
-  if (m_author) {
-    QString aid = m_author->id();
+  if (m_actor) {
+    QString aid = m_actor->id();
     if (aid.startsWith("acct:"))
       aid.remove(0, 5);
     infoStr = QString("<a href=\"%2\">%1</a>").arg(aid).arg(m_object->url());
     
-    QString location = m_author->location();
+    QString location = m_actor->location();
     if (!location.isEmpty())
       infoStr += " at " + location;
   } else {
@@ -233,9 +245,13 @@ void FullObjectWidget::updateShareButton(bool /*wait*/) {
 
 //------------------------------------------------------------------------------
 
-bool FullObjectWidget::isFollowable() const {
-  return m_object->type() == "person" && m_object->id().startsWith("acct:") &&
-    m_author && !m_author->isYou();
+bool FullObjectWidget::isFollowable(QASObject* obj) const {
+  if (!obj)
+    return false;
+
+  QASActor* actor = obj->asActor();
+  return obj->type() == "person" && obj->id().startsWith("acct:") &&
+    actor && !actor->isYou();
 }
 
 //------------------------------------------------------------------------------
@@ -244,13 +260,28 @@ void FullObjectWidget::updateFollowButton(bool /*wait*/) {
   if (!m_followButton)
     return;
   
-  if (!isFollowable()) {
+  if (!isFollowable(m_object)) {
     m_followButton->setVisible(false);
     return;
   }
 
   m_followButton->setVisible(true);
-  m_followButton->setText(m_author->followed() ? "Stop following" : "Follow");
+  m_followButton->setText(m_actor->followed() ? "Stop following" : "Follow");
+}
+
+//------------------------------------------------------------------------------
+
+void FullObjectWidget::updateFollowAuthorButton(bool /*wait*/) {
+  if (!m_followAuthorButton)
+    return;
+  
+  if (!m_author || !isFollowable(m_author) || m_author->followed()) {
+    m_followAuthorButton->setVisible(false);
+    return;
+  }
+
+  m_followAuthorButton->setVisible(true);
+  m_followAuthorButton->setText("Follow " + m_author->displayName());
 }
 
 //------------------------------------------------------------------------------
@@ -375,17 +406,7 @@ void FullObjectWidget::addObjectList(QASObjectList* ol) {
       continue;
 
     FullObjectWidget* ow = new FullObjectWidget(replyObj, this, true);
-
-    connect(ow, SIGNAL(linkHovered(const QString&)),
-            this, SIGNAL(linkHovered(const QString&)));
-    connect(ow, SIGNAL(newReply(QASObject*)),
-            this,  SIGNAL(newReply(QASObject*)));
-    connect(ow, SIGNAL(like(QASObject*)), 
-            this, SIGNAL(like(QASObject*)));
-    connect(ow, SIGNAL(share(QASObject*)), 
-            this, SIGNAL(share(QASObject*)));
-    connect(ow, SIGNAL(follow(QString)),
-            this, SIGNAL(follow(QString)));
+    connectObjectWidgetSignals(ow);
 
     m_commentsLayout->insertWidget(li + i, ow);
     m_repliesList.insert(i, replyObj);
@@ -449,9 +470,18 @@ void FullObjectWidget::reply() {
 
 //------------------------------------------------------------------------------
 
-void FullObjectWidget::follow() {
-  if (isFollowable())
-    emit follow(m_object->id());
+void FullObjectWidget::onFollow() {
+  updateFollowButton(true);
+  if (isFollowable(m_actor))
+    emit follow(m_actor->id(), !m_actor->followed());
+}
+
+//------------------------------------------------------------------------------
+
+void FullObjectWidget::followAuthor() {
+  updateFollowAuthorButton(true);
+  if (isFollowable(m_author))
+    emit follow(m_author->id(), !m_author->followed());
 }
 
 //------------------------------------------------------------------------------

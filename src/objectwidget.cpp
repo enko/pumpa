@@ -22,7 +22,7 @@
 //------------------------------------------------------------------------------
 
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) : 
-  QFrame(parent),
+  ObjectWidgetWithSignals(parent),
   m_contextLabel(NULL),
   m_contextButton(NULL),
   m_topLayout(NULL),
@@ -65,16 +65,7 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
   }
 
   m_objectWidget = new FullObjectWidget(m_object, parent);
-  connect(m_objectWidget, SIGNAL(linkHovered(const QString&)),
-          this, SIGNAL(linkHovered(const QString&)));
-  connect(m_objectWidget, SIGNAL(like(QASObject*)),
-          this, SIGNAL(like(QASObject*)));
-  connect(m_objectWidget, SIGNAL(share(QASObject*)),
-          this, SIGNAL(share(QASObject*)));
-  connect(m_objectWidget, SIGNAL(newReply(QASObject*)),
-          this, SIGNAL(newReply(QASObject*)));
-  connect(m_objectWidget, SIGNAL(follow(QString)),
-          this, SIGNAL(follow(QString)));
+  connectObjectWidgetSignals(m_objectWidget);
   m_layout->addWidget(m_objectWidget);
 
   if (m_short) {

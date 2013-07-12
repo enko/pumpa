@@ -17,41 +17,28 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _ASWIDGET_H_
-#define _ASWIDGET_H_
+#ifndef _OBJECTWIDGETWITHSIGNALS_H_
+#define _OBJECTWIDGETWITHSIGNALS_H_
 
+#include <QFrame>
 #include "qactivitystreams.h"
-
-#include <QWidget>
-#include <QScrollArea>
-#include <QVBoxLayout>
 
 //------------------------------------------------------------------------------
 
-class ASWidget : public QScrollArea {
+class ObjectWidgetWithSignals : public QFrame {
   Q_OBJECT
 
 public:
-  ASWidget(QWidget* parent);
-  void refreshTimeLabels();
+  ObjectWidgetWithSignals(QWidget* parent = 0);
 
+  void connectObjectWidgetSignals(ObjectWidgetWithSignals* ow);
+  
 signals:
-  void highlightMe();  
-  void request(QString, int);
-  void newReply(QASObject*);
   void linkHovered(const QString&);
   void like(QASObject*);
   void share(QASObject*);
-  void showContext(QASObject*);
+  void newReply(QASObject*);
   void follow(QString, bool);
-
-protected:
-  void keyPressEvent(QKeyEvent* event);
-  void clear();
-
-  QVBoxLayout* m_itemLayout;
-  QWidget* m_listContainer;
-  bool m_firstTime;
 };
 
-#endif /* _ASWIDGET_H_ */
+#endif /* _OBJECTWIDGETWITHSIGNALS_H_ */

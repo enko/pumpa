@@ -67,7 +67,7 @@ OBJECT_HEADERS = pumpapp.h qactivitystreams.h aswidget.h		\
 	filedownloader.h richtextlabel.h oauthwizard.h tabwidget.h	\
 	util.h pumpasettingsdialog.h pumpasettings.h activitywidget.h	\
 	objectwidget.h shortobjectwidget.h fullobjectwidget.h		\
-	imagelabel.h texttoolbutton.h
+	imagelabel.h texttoolbutton.h objectwidgetwithsignals.h
 
 SUNDOWN_HEADERS = sundown/markdown.h sundown/html.h sundown/buffer.h
 

@@ -31,7 +31,7 @@
 
 //------------------------------------------------------------------------------
 
-class ActivityWidget : public QFrame {
+class ActivityWidget : public ObjectWidgetWithSignals {
   Q_OBJECT
 
 public:
@@ -45,12 +45,7 @@ public slots:
   virtual void onObjectChanged();
 
 signals:
-  void linkHovered(const QString&);
-  void newReply(QASObject*);
-  void like(QASObject*);
-  void share(QASObject*);
   void showContext(QASObject*);
-  void follow(QString);
 
 private:
   void updateText();

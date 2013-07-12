@@ -26,7 +26,7 @@
 //------------------------------------------------------------------------------
 
 ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
-  QFrame(parent),
+  ObjectWidgetWithSignals(parent),
   m_objectWidget(NULL),
   m_activity(a)
 {
@@ -128,18 +128,9 @@ ObjectWidget* ActivityWidget::makeObjectWidgetAndConnect(QASObject* obj,
                                                          bool shortObject) {
   ObjectWidget* ow = new ObjectWidget(obj, this, shortObject);
 
-  connect(ow, SIGNAL(linkHovered(const QString&)),
-          this,  SIGNAL(linkHovered(const QString&)));
-  connect(ow, SIGNAL(newReply(QASObject*)),
-          this,  SIGNAL(newReply(QASObject*)));
-  connect(ow, SIGNAL(like(QASObject*)),
-          this,  SIGNAL(like(QASObject*)));
-  connect(ow, SIGNAL(share(QASObject*)),
-          this,  SIGNAL(share(QASObject*)));
+  connectObjectWidgetSignals(ow);
   connect(ow, SIGNAL(showContext(QASObject*)),
           this, SIGNAL(showContext(QASObject*)));
-  connect(ow, SIGNAL(follow(QString)),
-          this, SIGNAL(follow(QString)));
 
   connect(obj, SIGNAL(changed()), this, SLOT(onObjectChanged()),
           Qt::UniqueConnection);

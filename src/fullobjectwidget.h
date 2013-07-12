@@ -20,7 +20,6 @@
 #ifndef _FULLOBJECTWIDGET_H_
 #define _FULLOBJECTWIDGET_H_
 
-#include <QFrame>
 #include <QLabel>
 #include <QWidget>
 #include <QVBoxLayout>
@@ -30,10 +29,11 @@
 #include "richtextlabel.h"
 #include "texttoolbutton.h"
 #include "imagelabel.h"
+#include "objectwidgetwithsignals.h"
 
 //------------------------------------------------------------------------------
 
-class FullObjectWidget : public QFrame {
+class FullObjectWidget : public ObjectWidgetWithSignals {
   Q_OBJECT
 
 public:
@@ -42,13 +42,6 @@ public:
   QASObject* object() const { return m_object; }
 
   void refreshTimeLabels() { updateInfoText(); }
-
-signals:
-  void linkHovered(const QString&);
-  void like(QASObject*);
-  void share(QASObject*);
-  void newReply(QASObject*);
-  void follow(QString);
 
 private slots:
   void onChanged();
@@ -59,7 +52,9 @@ private slots:
   void favourite();
   void repeat();
   void reply();
-  void follow();
+  void onFollow();
+  void followAuthor();
+  void updateFollowAuthorButton(bool wait = false);
 
 private:
   bool hasValidIrtObject();
@@ -77,7 +72,7 @@ private:
   void updateShareButton(bool wait = false);
   void updateFollowButton(bool wait = false);
 
-  bool isFollowable() const;
+  bool isFollowable(QASObject* obj) const;
 
   void addObjectList(QASObjectList* ol);
 
@@ -97,12 +92,14 @@ private:
   TextToolButton* m_shareButton;
   TextToolButton* m_commentButton;
   TextToolButton* m_followButton;
+  TextToolButton* m_followAuthorButton;
 
   QVBoxLayout* m_contentLayout;
   QHBoxLayout* m_buttonLayout;
   QVBoxLayout* m_commentsLayout;
 
   QASObject* m_object;
+  QASActor* m_actor;
   QASActor* m_author;
 
   QList<QASObject*> m_repliesList;
