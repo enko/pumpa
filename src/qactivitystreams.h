@@ -116,6 +116,8 @@ public:
   // favouriting the object
   QVariantMap toJson() const;
 
+  bool isDeleted() const { return !m_deleted.isNull(); }
+
 protected:
   QString m_id;
   QString m_content;
@@ -131,6 +133,7 @@ protected:
 
   QDateTime m_published;
   QDateTime m_updated;
+  QDateTime m_deleted;
 
   QASObject* m_inReplyTo;
   QASActor* m_author;

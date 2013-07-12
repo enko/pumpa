@@ -72,11 +72,14 @@ void CollectionWidget::update(bool older) {
   for (size_t i=0; i<m_collection->size(); i++) {
     QASActivity* activity = m_collection->at(i);
 
+    QASObject* obj = activity->object();
+    if (obj->isDeleted())
+      continue;
+
     if (m_activity_set.contains(activity))
       continue;
     m_activity_set.insert(activity);
 
-    QASObject* obj = activity->object();
     QString verb = activity->verb();
     
     ActivityWidget* aw = new ActivityWidget(activity, this);

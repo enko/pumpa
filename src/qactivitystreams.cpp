@@ -299,6 +299,7 @@ void QASObject::update(QVariantMap json) {
 
   updateVar(json, m_published, "published", ch);
   updateVar(json, m_updated, "updated", ch);
+  updateVar(json, m_deleted, "deleted", ch);
 
   updateVar(json, m_apiLink, "links", "self", "href", ch);  
   updateVar(json, m_proxyUrl, "pump_io", "proxyURL", ch);
