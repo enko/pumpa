@@ -878,7 +878,8 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
       if (actor) {
         bool doFollow = (id & QAS_FOLLOW);
         actor->setFollowed(doFollow);
-        notifyMessage(QString("Successfully %1followed").arg(doFollow?"":"un")+
+        notifyMessage(QString("Successfully %1followed ").
+                      arg(doFollow?"":"un") +
                       actor->displayNameOrWebFinger());
       }
     }
