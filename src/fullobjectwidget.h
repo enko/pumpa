@@ -53,7 +53,7 @@ private slots:
   void repeat();
   void reply();
   void onFollow();
-  void followAuthor();
+  void onFollowAuthor();
   void updateFollowAuthorButton(bool wait = false);
 
 private:

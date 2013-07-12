@@ -158,6 +158,10 @@ public:
   static QASActor* getActor(QVariantMap json, QObject* parent);
   virtual void update(QVariantMap json);
 
+  QString webFinger() const;    
+  QString displayNameOrWebFinger() const;
+  QString displayNameOrWebFingerShort() const;
+
   QString displayNameOrYou() const { return isYou() ? "You" : displayName(); }
   bool isYou() const { return m_isYou; }
   void setYou() { m_isYou = true; }

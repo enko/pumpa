@@ -259,6 +259,29 @@ void QASActor::setFollowed(bool b) {
 
 //------------------------------------------------------------------------------
 
+QString QASActor::webFinger() const {
+  QString wf = id();
+  if (wf.startsWith("acct:"))
+    wf.remove(0, 5);
+  return wf;
+}
+
+//------------------------------------------------------------------------------
+
+QString QASActor::displayNameOrWebFinger() const {
+  if (displayName().isEmpty())
+    return webFinger();
+  return displayName();
+}
+
+//------------------------------------------------------------------------------
+
+QString QASActor::displayNameOrWebFingerShort() const {
+  return displayNameOrWebFinger().remove(QRegExp("[\\@- ].*"));
+}
+
+//------------------------------------------------------------------------------
+
 QASObject::QASObject(QString id, QObject* parent) :
   QASAbstractObject(QAS_OBJECT, parent),
   m_id(id),

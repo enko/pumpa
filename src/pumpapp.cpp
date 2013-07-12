@@ -737,7 +737,14 @@ void PumpApp::follow(QString acctId, bool follow) {
   QVariantMap obj;
   obj["id"] = acctId;
   obj["objectType"] = "person";
-  feed(follow ? "follow" : "stop-following", obj, QAS_ACTIVITY | QAS_FOLLOW);
+
+  int mode = QAS_ACTIVITY;
+  if (follow)
+    mode |= QAS_FOLLOW;
+  else
+    mode |= QAS_UNFOLLOW;
+
+  feed(follow ? "follow" : "stop-following", obj, mode);
 }
 
 //------------------------------------------------------------------------------
@@ -866,16 +873,13 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     if ((id & QAS_TOGGLE_LIKE) && act->object())
       act->object()->toggleLiked();
 
-    if (id & QAS_FOLLOW) {
+    if ((id & QAS_FOLLOW) || (id & QAS_UNFOLLOW)) {
       QASActor* actor = act->object() ? act->object()->asActor() : NULL;
       if (actor) {
-        actor->setFollowed(true);
-        QString n = actor->displayName();
-        if (n.isEmpty())
-          n = actor->id();
-        if (n.startsWith("acct:"))
-          n.remove(0, 5);
-        notifyMessage("Successfully followed " + n);
+        bool doFollow = (id & QAS_FOLLOW);
+        actor->setFollowed(doFollow);
+        notifyMessage(QString("Successfully %1followed").arg(doFollow?"":"un")+
+                      actor->displayNameOrWebFinger());
       }
     }
   } else if (sid == QAS_OBJECTLIST) {

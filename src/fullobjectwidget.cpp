@@ -23,6 +23,7 @@
 #include "util.h"
 
 #include <QDesktopServices>
+#include <QMessageBox>
 
 //------------------------------------------------------------------------------
 
@@ -97,7 +98,7 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
 
     m_followAuthorButton = new TextToolButton(this);
     connect(m_followAuthorButton, SIGNAL(clicked()),
-            this, SLOT(followAuthor()));
+            this, SLOT(onFollowAuthor()));
     m_buttonLayout->addWidget(m_followAuthorButton, 0, Qt::AlignTop);
 
     m_shareButton = new TextToolButton(this);
@@ -200,9 +201,7 @@ void FullObjectWidget::updateInfoText() {
 
   QString infoStr;
   if (m_actor) {
-    QString aid = m_actor->id();
-    if (aid.startsWith("acct:"))
-      aid.remove(0, 5);
+    QString aid = m_actor->webFinger();
     infoStr = QString("<a href=\"%2\">%1</a>").arg(aid).arg(m_object->url());
     
     QString location = m_actor->location();
@@ -275,13 +274,17 @@ void FullObjectWidget::updateFollowAuthorButton(bool /*wait*/) {
   if (!m_followAuthorButton)
     return;
   
-  if (!m_author || !isFollowable(m_author) || m_author->followed()) {
+  if (!m_author || !isFollowable(m_author)) {
     m_followAuthorButton->setVisible(false);
     return;
   }
 
   m_followAuthorButton->setVisible(true);
-  m_followAuthorButton->setText("Follow " + m_author->displayName());
+
+  QString text = m_author->followed() ? "Stop following " : "Follow ";
+  text += m_author->displayNameOrWebFingerShort();
+
+  m_followAuthorButton->setText(text);
 }
 
 //------------------------------------------------------------------------------
@@ -478,10 +481,21 @@ void FullObjectWidget::onFollow() {
 
 //------------------------------------------------------------------------------
 
-void FullObjectWidget::followAuthor() {
+void FullObjectWidget::onFollowAuthor() {
+  bool doFollow = !m_author->followed();
+  if (!doFollow) {
+    QString msg = "Are you sure you want to stop following " +
+      m_author->displayNameOrWebFinger();
+    int ret = QMessageBox::warning(this, CLIENT_FANCY_NAME, msg,
+                                   QMessageBox::Cancel | QMessageBox::Yes,
+                                   QMessageBox::Cancel);
+    if (ret == QMessageBox::Cancel)
+      return;
+  }
+
   updateFollowAuthorButton(true);
   if (isFollowable(m_author))
-    emit follow(m_author->id(), !m_author->followed());
+    emit follow(m_author->id(), doFollow);
 }
 
 //------------------------------------------------------------------------------
