@@ -128,7 +128,7 @@ ObjectWidget* ActivityWidget::makeObjectWidgetAndConnect(QASObject* obj,
                                                          bool shortObject) {
   ObjectWidget* ow = new ObjectWidget(obj, this, shortObject);
 
-  connectObjectWidgetSignals(ow);
+  ObjectWidgetWithSignals::connectSignals(ow, this);
   connect(ow, SIGNAL(showContext(QASObject*)),
           this, SIGNAL(showContext(QASObject*)));
 

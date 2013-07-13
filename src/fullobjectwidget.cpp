@@ -409,7 +409,7 @@ void FullObjectWidget::addObjectList(QASObjectList* ol) {
       continue;
 
     FullObjectWidget* ow = new FullObjectWidget(replyObj, this, true);
-    connectObjectWidgetSignals(ow);
+    ObjectWidgetWithSignals::connectSignals(ow, this);
 
     m_commentsLayout->insertWidget(li + i, ow);
     m_repliesList.insert(i, replyObj);

@@ -26,19 +26,18 @@ ObjectWidgetWithSignals::ObjectWidgetWithSignals(QWidget* parent) :
 
 //------------------------------------------------------------------------------
 
-void 
-ObjectWidgetWithSignals::connectObjectWidgetSignals(ObjectWidgetWithSignals*
-                                                    ow) 
+void ObjectWidgetWithSignals::connectSignals(ObjectWidgetWithSignals* ow, 
+                                             QWidget* w) 
 {
   connect(ow, SIGNAL(linkHovered(const QString&)),
-          this, SIGNAL(linkHovered(const QString&)));
+          w, SIGNAL(linkHovered(const QString&)));
   connect(ow, SIGNAL(like(QASObject*)),
-          this, SIGNAL(like(QASObject*)));
+          w, SIGNAL(like(QASObject*)));
   connect(ow, SIGNAL(share(QASObject*)),
-          this, SIGNAL(share(QASObject*)));
+          w, SIGNAL(share(QASObject*)));
   connect(ow, SIGNAL(newReply(QASObject*)),
-          this, SIGNAL(newReply(QASObject*)));
+          w, SIGNAL(newReply(QASObject*)));
   connect(ow, SIGNAL(follow(QString, bool)),
-          this, SIGNAL(follow(QString, bool)));
+          w, SIGNAL(follow(QString, bool)));
 }
 

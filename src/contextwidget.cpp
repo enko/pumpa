@@ -40,18 +40,9 @@ void ContextWidget::setObject(QASObject* obj) {
           Qt::UniqueConnection);
 
   ObjectWidget* ow = new ObjectWidget(m_object, this);
-  connect(ow, SIGNAL(linkHovered(const QString&)),
-          this,  SIGNAL(linkHovered(const QString&)));
-  connect(ow, SIGNAL(newReply(QASObject*)),
-          this,  SIGNAL(newReply(QASObject*)));
-  connect(ow, SIGNAL(like(QASObject*)),
-          this,  SIGNAL(like(QASObject*)));
-  connect(ow, SIGNAL(share(QASObject*)),
-          this,  SIGNAL(share(QASObject*)));
+  ObjectWidgetWithSignals::connectSignals(ow, this);
   connect(ow, SIGNAL(showContext(QASObject*)),
           this, SIGNAL(showContext(QASObject*)));
-  connect(ow, SIGNAL(follow(QString)),
-          this, SIGNAL(follow(QString)));
 
   m_itemLayout->insertWidget(0, ow);
   m_itemLayout->addStretch();

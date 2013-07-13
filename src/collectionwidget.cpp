@@ -83,17 +83,7 @@ void CollectionWidget::update(bool older) {
     QString verb = activity->verb();
     
     ActivityWidget* aw = new ActivityWidget(activity, this);
-    connect(aw, SIGNAL(linkHovered(const QString&)),
-            this,  SIGNAL(linkHovered(const QString&)));
-    connect(aw, SIGNAL(newReply(QASObject*)),
-            this,  SIGNAL(newReply(QASObject*)));
-    connect(aw, SIGNAL(like(QASObject*)),
-            this,  SIGNAL(like(QASObject*)));
-    connect(aw, SIGNAL(share(QASObject*)),
-            this,  SIGNAL(share(QASObject*)));
-    connect(aw, SIGNAL(follow(QString, bool)),
-            this, SIGNAL(follow(QString, bool)));
-
+    ObjectWidgetWithSignals::connectSignals(aw, this);
     connect(aw, SIGNAL(showContext(QASObject*)),
             this, SIGNAL(showContext(QASObject*)));
 

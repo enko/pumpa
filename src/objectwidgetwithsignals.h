@@ -31,7 +31,7 @@ class ObjectWidgetWithSignals : public QFrame {
 public:
   ObjectWidgetWithSignals(QWidget* parent = 0);
 
-  void connectObjectWidgetSignals(ObjectWidgetWithSignals* ow);
+  static void connectSignals(ObjectWidgetWithSignals* ow, QWidget* w);
   
 signals:
   void linkHovered(const QString&);

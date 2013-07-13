@@ -65,7 +65,7 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
   }
 
   m_objectWidget = new FullObjectWidget(m_object, parent);
-  connectObjectWidgetSignals(m_objectWidget);
+  ObjectWidgetWithSignals::connectSignals(m_objectWidget, this);
   m_layout->addWidget(m_objectWidget);
 
   if (m_short) {
