@@ -17,29 +17,35 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "qactivitystreams.h"
-#include "pumpa_defines.h"
-#include "json.h"
-
-#include <QDebug>
-#include <QStringList>
-#include <QVariantList>
+#include "qasobjectlist.h"
+#include "qasactor.h"
 
 //------------------------------------------------------------------------------
 
-void resetActivityStreams() {
-  // QASActor::clearCache();
-  QASObject::clearCache();
-  QASActivity::clearCache();
-  QASObjectList::clearCache();
-  QASActorList::clearCache();
-  QASCollection::clearCache();
-}
+class QASActorList : public QASObjectList {
+  Q_OBJECT
 
-//------------------------------------------------------------------------------
+protected:
+  QASActorList(QString url, QObject* parent);
 
-// bool timeNewer(QDateTime thisT, QDateTime thatT) {
-//   return sortIntByDateTime(thisT) > sortIntByDateTime(thatT);
-// }
+public:
+  static void clearCache();
 
-//------------------------------------------------------------------------------
+  static QASActorList* getActorList(QVariantMap json, QObject* parent,
+                                    int id=0);
+
+  virtual QASActor* at(size_t i) const;
+
+  void addActor(QASActor* actor);
+  void removeActor(QASActor* actor);
+
+  bool onlyYou() const { return size()==1 && at(0)->isYou(); }
+
+  // virtual void refresh();
+
+  QString actorNames() const;
+
+private:
+  static QMap<QString, QASActorList*> s_actorLists;
+};
+

@@ -20,6 +20,7 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
+#include <QMap>
 #include <QString>
 #include <QDateTime>
 
@@ -64,5 +65,14 @@ QString markDown(QString text);
 QString relativeFuzzyTime(QDateTime sTime);
 
 bool splitWebfingerId(QString accountId, QString& username, QString& server);
+
+template <class T> void deleteMap(QMap<QString, T>& map) {
+  typename QMap<QString, T>::iterator i;
+  for (i = map.begin(); i != map.end(); ++i)
+    delete i.value();
+  map.clear();
+}
+
+//------------------------------------------------------------------------------
 
 #endif /* _UTIL_H_ */
