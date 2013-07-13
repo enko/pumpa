@@ -17,8 +17,8 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _CONTEXTWIDGET_H_
-#define _CONTEXTWIDGET_H_
+#ifndef _OBJECTLISTWIDGET_H_
+#define _OBJECTLISTWIDGET_H_
 
 #include "qactivitystreams.h"
 
@@ -26,18 +26,22 @@
 
 //------------------------------------------------------------------------------
 
-class ContextWidget : public ASWidget {
+class ObjectListWidget : public ASWidget {
   Q_OBJECT
 
 public:
-  ContextWidget(QWidget* parent);
+  ObjectListWidget(QWidget* parent);
+  void setEndpoint(QString endpoint);
+  void fetchNewer();
+  void fetchOlder();
 
-  void setObject(QASObject* obj);
+private slots:
+  void update(bool older=false);
 
 private:
-  void update();
+  QSet<QASObject*> m_object_set;
 
-  QASObject* m_object;
+  QASObjectList* m_objectList;
 };
 
-#endif /* _CONTEXTWIDGET_H_ */
+#endif /* _OBJECTLISTWIDGET_H_ */

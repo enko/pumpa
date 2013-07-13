@@ -45,6 +45,7 @@
 #include "pumpasettingsdialog.h"
 #include "pumpasettings.h"
 #include "contextwidget.h"
+#include "objectlistwidget.h"
 
 //------------------------------------------------------------------------------
 
@@ -119,6 +120,10 @@ private:
   void testUserAndFollow(QString username, QString server);
 
   QString apiUrl(QString endpoint);
+
+  // constructs api/user/$username/$path
+  QString apiUser(QString path);
+
   void addRecipient(QVariantMap& data, QString name, int to);
 
   void resetNotifications();
@@ -173,6 +178,7 @@ private:
   CollectionWidget* m_directMinorWidget;
   CollectionWidget* m_inboxMinorWidget;
   ContextWidget* m_contextWidget;
+  ObjectListWidget* m_followersWidget;
 
   QASActor* m_selfActor;
 

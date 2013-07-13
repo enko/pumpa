@@ -562,7 +562,7 @@ QASObjectList::QASObjectList(QString url, QObject* parent) :
 
 //------------------------------------------------------------------------------
 
-void QASObjectList::update(QVariantMap json, bool) {
+void QASObjectList::update(QVariantMap json, bool older) {
 #if DEBUG >= 1
   qDebug() << "updating ObjectList" << m_url;
 #endif
@@ -573,9 +573,11 @@ void QASObjectList::update(QVariantMap json, bool) {
 
   m_nextLink = "";
   updateVar(json, m_nextLink, "links", "next", "href", ch);
+  updateVar(json, m_prevLink, "links", "prev", "href", ch);
+
 
   if (json.contains("items")) {
-    m_items.clear();
+    // m_items.clear();
     QVariantList items_json = json["items"].toList();
     for (int i=0; i<items_json.count(); i++) {
       QVariantMap item = items_json[i].toMap();
@@ -584,8 +586,13 @@ void QASObjectList::update(QVariantMap json, bool) {
         obj = QASActor::getActor(item, parent());
       else
         obj = QASObject::getObject(item, parent());
-      
+
+      if (m_item_set.contains(obj))
+        continue;
+
       m_items.append(obj);
+      m_item_set.insert(obj);
+
       connectSignals(obj, false, true);
       ch = true;
     }
@@ -599,7 +606,19 @@ void QASObjectList::update(QVariantMap json, bool) {
   //   qDebug() << "[DEBUG]: set hasMore" << m_url << m_proxyUrl << urlOrProxy();
 
   if (ch)
-    emit changed();
+    emit changed(older);
+}
+
+//------------------------------------------------------------------------------
+
+QASObjectList* QASObjectList::initObjectList(QString url, QObject* parent) {
+  if (s_objectLists.contains(url))
+    return s_objectLists[url];
+  
+  QASObjectList* ol = new QASObjectList(url, parent);
+  s_objectLists.insert(url, ol);
+
+  return ol;
 }
 
 //------------------------------------------------------------------------------
@@ -637,7 +656,7 @@ void QASObjectList::addObject(QASObject* obj) {
     return;
   m_items.append(obj);
   m_totalItems++;
-  emit changed();
+  emit changed(false);
 }
 
 //------------------------------------------------------------------------------
@@ -689,7 +708,7 @@ void QASActorList::addActor(QASActor* actor) {
 
   m_items.append(actor);
   m_totalItems++;
-  emit changed();
+  emit changed(false);
 }
 
 //------------------------------------------------------------------------------
@@ -697,7 +716,7 @@ void QASActorList::addActor(QASActor* actor) {
 void QASActorList::removeActor(QASActor* actor) {
   m_items.removeAll(actor);
   m_totalItems--;
-  emit changed();
+  emit changed(false);
 }
 
 //------------------------------------------------------------------------------

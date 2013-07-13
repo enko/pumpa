@@ -81,6 +81,9 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_directMinorWidget = new CollectionWidget(this);
   connectCollection(m_directMinorWidget);
 
+  m_followersWidget = new ObjectListWidget(this);
+  connectCollection(m_followersWidget);
+
   m_tabWidget = new TabWidget(this);
   connect(m_tabWidget, SIGNAL(currentChanged(int)),
           this, SLOT(tabSelected(int)));
@@ -88,6 +91,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget->addTab(m_directMinorWidget, "&mentions");
   m_tabWidget->addTab(m_directMajorWidget, "&direct");
   m_tabWidget->addTab(m_inboxMinorWidget, "mean&while");
+  m_tabWidget->addTab(m_followersWidget, "&followers");
 
   m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
   m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);
@@ -144,8 +148,10 @@ void PumpApp::startPumping() {
   m_inboxMinorWidget->setEndpoint(inboxEndpoint("minor"));
   m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"));
   m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
+  m_followersWidget->setEndpoint(apiUrl(apiUser("followers")));
 
   show();
+
   request("/api/user/" + m_s->userName(), QAS_SELF_PROFILE);
   request("/api/user/" + m_s->userName() + "/following",
           QAS_ACTORLIST | QAS_FOLLOW);
@@ -526,6 +532,7 @@ void PumpApp::fetchAll() {
   m_directMinorWidget->fetchNewer();
   m_directMajorWidget->fetchNewer();
   m_inboxMinorWidget->fetchNewer();
+  m_followersWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
@@ -795,6 +802,12 @@ QString PumpApp::apiUrl(QString endpoint) {
     ret = m_s->siteUrl() + ret;
   }
   return ret;
+}
+
+//------------------------------------------------------------------------------
+
+QString PumpApp::apiUser(QString path) {
+  return QString("api/user/%1/%2").arg(m_s->userName()).arg(path);
 }
 
 //------------------------------------------------------------------------------

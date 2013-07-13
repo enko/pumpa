@@ -22,13 +22,6 @@
 
 #include "qactivitystreams.h"
 
-// #include <QLabel>
-// #include <QWidget>
-// #include <QScrollBar>
-// #include <QMouseEvent>
-// #include <QScrollArea>
-// #include <QVBoxLayout>
-
 #include "aswidget.h"
 
 //------------------------------------------------------------------------------
@@ -41,7 +34,6 @@ public:
   void setEndpoint(QString endpoint);
   void fetchNewer();
   void fetchOlder();
-  // void refreshTimeLabels();
 
 private slots:
   void update(bool older);

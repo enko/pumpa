@@ -245,6 +245,8 @@ protected:
 public:
   static void clearCache();
 
+  static QASObjectList* initObjectList(QString url, QObject* parent);
+
   static QASObjectList* getObjectList(QVariantMap json, QObject* parent, 
                                       int id=0);
   static QASObjectList* getObjectList(QVariantList json, QObject* parent, 
@@ -272,17 +274,22 @@ public:
   }
 
   QString nextLink() const { return m_nextLink; }
+  QString prevLink() const { 
+    return m_prevLink.isEmpty() ? m_url : m_prevLink; 
+  }
 
 signals:
-  void changed();
+  void changed(bool);
 
 protected:
   QString m_url;
   QString m_proxyUrl;
   qulonglong m_totalItems;
   QList<QASObject*> m_items;
+  QSet<QASObject*> m_item_set;
   bool m_hasMore;
   QString m_nextLink;
+  QString m_prevLink;
 
 private:
   static QMap<QString, QASObjectList*> s_objectLists;
