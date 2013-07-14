@@ -874,14 +874,14 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
 
   int sid = id & 0xFF;
 
-  QVariantMap obj = parseJson(response);
+  QVariantMap json = parseJson(response);
   if (sid == QAS_NULL)
     return;
 
   if (sid == QAS_COLLECTION) {
-    QASCollection::getCollection(obj, this, id);
+    QASCollection::getCollection(json, this, id);
   } else if (sid == QAS_ACTIVITY) {
-    QASActivity* act = QASActivity::getActivity(obj, this);
+    QASActivity* act = QASActivity::getActivity(json, this);
 
     if ((id & QAS_TOGGLE_LIKE) && act->object())
       act->object()->toggleLiked();
@@ -897,11 +897,11 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
       }
     }
   } else if (sid == QAS_OBJECTLIST) {
-    QASObjectList::getObjectList(obj, this, id);
+    QASObjectList::getObjectList(json, this, id);
   } else if (sid == QAS_OBJECT) {
-    QASObject::getObject(obj, this);
+    QASObject::getObject(json, this);
   } else if (sid == QAS_ACTORLIST) {
-    QASActorList* al = QASActorList::getActorList(obj, this);
+    QASActorList* al = QASActorList::getActorList(json, this);
     if (al && (id & QAS_FOLLOW)) {
       for (size_t i=0; i<al->size(); ++i)
         al->at(i)->setFollowed(true);
@@ -909,7 +909,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
         request(al->nextLink(), QAS_ACTORLIST | QAS_FOLLOW);
     }
   } else if (sid == QAS_SELF_PROFILE) {
-    m_selfActor = QASActor::getActor(obj["profile"].toMap(), this);
+    m_selfActor = QASActor::getActor(json["profile"].toMap(), this);
     m_selfActor->setYou();
   }
 

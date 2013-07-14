@@ -58,7 +58,7 @@ QASActorList* QASActorList::getActorList(QVariantMap json, QObject* parent,
 QASActor* QASActorList::at(size_t i) const {
   if (i >= size())
     return NULL;
-  return m_items[i]->asActor();
+  return QASObjectList::at(i)->asActor();
 }
 
 //------------------------------------------------------------------------------

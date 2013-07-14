@@ -20,14 +20,15 @@
 #ifndef _QASCOLLECTION_H_
 #define _QASCOLLECTION_H_
 
-#include "qasabstractobject.h"
 #include "qasactivity.h"
+#include "qasabstractobject.h"
+#include "qasabstractobjectlist.h"
 
 #include <QSet>
 
 //------------------------------------------------------------------------------
 
-class QASCollection : public QASAbstractObject {
+class QASCollection : public QASAbstractObjectList {
   Q_OBJECT
 
 protected:
@@ -39,32 +40,14 @@ public:
   static QASCollection* initCollection(QString url, QObject* parent);
   static QASCollection* getCollection(QVariantMap json, QObject* parent,
                                       int id);
-  void update(QVariantMap json, bool older);
-
-  QString prevLink() const { 
-    return m_prevLink.isEmpty() ? m_url : m_prevLink; 
-  }
-  QString nextLink() const { return m_nextLink; }
-
-  size_t size() const { return m_items.size(); }
 
   QASActivity* at(size_t i) const {
-    if (i >= size())
-      return NULL;
-    return m_items[i];
+    return qobject_cast<QASActivity*>(QASAbstractObjectList::at(i));
   }
 
-signals:
-  void changed(bool);
-
 private:
-  QString m_displayName;
-  QString m_url;
-  qulonglong m_totalItems;
-  QList<QASActivity*> m_items;
-  QSet<QASActivity*> m_item_set;
-
-  QString m_prevLink, m_nextLink;
+  virtual QASAbstractObject* getAbstractObject(QVariantMap json,
+                                               QObject* parent);
 
   static QMap<QString, QASCollection*> s_collections;
 };

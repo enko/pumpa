@@ -30,9 +30,7 @@ void QASObjectList::clearCache() { deleteMap<QASObjectList*>(s_objectLists); }
 //------------------------------------------------------------------------------
 
 QASObjectList::QASObjectList(QString url, QObject* parent) :
-  QASAbstractObject(QAS_OBJECTLIST, parent),
-  m_url(url),
-  m_totalItems(0),
+  QASAbstractObjectList(QAS_OBJECTLIST, url, parent),
   m_hasMore(false)
 {
 #if DEBUG >= 1
@@ -42,52 +40,62 @@ QASObjectList::QASObjectList(QString url, QObject* parent) :
 
 //------------------------------------------------------------------------------
 
-void QASObjectList::update(QVariantMap json, bool older) {
-#if DEBUG >= 1
-  qDebug() << "updating ObjectList" << m_url;
-#endif
-  bool ch = false;
+// void QASObjectList::update(QVariantMap json, bool older) {
+// #if DEBUG >= 1
+//   qDebug() << "updating ObjectList" << m_url;
+// #endif
+//   bool ch = false;
 
-  updateVar(json, m_totalItems, "totalItems", ch);
-  updateVar(json, m_proxyUrl, "pump_io", "proxyURL", ch);
+//   updateVar(json, m_totalItems, "totalItems", ch);
+//   updateVar(json, m_proxyUrl, "pump_io", "proxyURL", ch);
 
-  m_nextLink = "";
-  updateVar(json, m_nextLink, "links", "next", "href", ch);
-  updateVar(json, m_prevLink, "links", "prev", "href", ch);
+//   m_nextLink = "";
+//   updateVar(json, m_nextLink, "links", "next", "href", ch);
+//   updateVar(json, m_prevLink, "links", "prev", "href", ch);
 
 
-  if (json.contains("items")) {
-    // m_items.clear();
-    QVariantList items_json = json["items"].toList();
-    for (int i=0; i<items_json.count(); i++) {
-      QVariantMap item = items_json[i].toMap();
-      QASObject* obj;
-      if (item["objectType"].toString() == "person")
-        obj = QASActor::getActor(item, parent());
-      else
-        obj = QASObject::getObject(item, parent());
+//   if (json.contains("items")) {
+//     // m_items.clear();
+//     QVariantList items_json = json["items"].toList();
+//     for (int i=0; i<items_json.count(); i++) {
+//       QVariantMap item = items_json[i].toMap();
+//       QASObject* obj;
+//       if (item["objectType"].toString() == "person")
+//         obj = QASActor::getActor(item, parent());
+//       else
+//         obj = QASObject::getObject(item, parent());
 
-      if (m_item_set.contains(obj))
-        continue;
+//       if (m_item_set.contains(obj))
+//         continue;
 
-      m_items.append(obj);
-      m_item_set.insert(obj);
+//       m_items.append(obj);
+//       m_item_set.insert(obj);
 
-      connectSignals(obj, false, true);
-      ch = true;
-    }
-  }
-  // set to false if number of items < total, and if we have already
-  // fetched it - that seems to have a displayName element
-  // ^^ FFFUUUGLY HACK !!!
-  // bool old_hasMore = m_hasMore;
-  m_hasMore = !json.contains("displayName") && size() < m_totalItems;
-  // if (!old_hasMore && m_hasMore)
-  //   qDebug() << "[DEBUG]: set hasMore" << m_url << m_proxyUrl << urlOrProxy();
+//       connectSignals(obj, false, true);
+//       ch = true;
+//     }
+//   }
+//   // set to false if number of items < total, and if we have already
+//   // fetched it - that seems to have a displayName element
+//   // ^^ FFFUUUGLY HACK !!!
+//   // bool old_hasMore = m_hasMore;
+//   m_hasMore = !json.contains("displayName") && size() < m_totalItems;
+//   // if (!old_hasMore && m_hasMore)
+//   //   qDebug() << "[DEBUG]: set hasMore" << m_url << m_proxyUrl << urlOrProxy();
 
-  if (ch)
-    emit changed(older);
+//   if (ch)
+//     emit changed(older);
+// }
+
+//------------------------------------------------------------------------------
+
+QASAbstractObject* QASObjectList::getAbstractObject(QVariantMap json,
+                                                    QObject* parent) {
+  if (json["objectType"].toString() == "person")
+    return QASActor::getActor(json, parent);
+  return QASObject::getObject(json, parent);
 }
+
 
 //------------------------------------------------------------------------------
 
@@ -137,12 +145,6 @@ void QASObjectList::addObject(QASObject* obj) {
   m_items.append(obj);
   m_totalItems++;
   emit changed(false);
-}
-
-//------------------------------------------------------------------------------
-
-QString QASObjectList::urlOrProxy() const {
-  return m_proxyUrl.isEmpty() ? m_url : m_proxyUrl; 
 }
 
 

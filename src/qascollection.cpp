@@ -30,9 +30,7 @@ void QASCollection::clearCache() { deleteMap<QASCollection*>(s_collections); }
 //------------------------------------------------------------------------------
 
 QASCollection::QASCollection(QString url, QObject* parent) :
-  QASAbstractObject(QAS_COLLECTION, parent),
-  m_url(url),
-  m_totalItems(0)
+  QASAbstractObjectList(QAS_COLLECTION, url, parent)
 {
 #if DEBUG >= 1
   qDebug() << "new Collection" << m_url;
@@ -41,39 +39,9 @@ QASCollection::QASCollection(QString url, QObject* parent) :
 
 //------------------------------------------------------------------------------
 
-void QASCollection::update(QVariantMap json, bool older) {
-  bool ch = false;
-
-  updateVar(json, m_displayName, "displayName", ch);
-  updateVar(json, m_totalItems, "totalItems", ch);
-
-  updateVar(json, m_prevLink, "links", "prev", "href", ch);
-  updateVar(json, m_nextLink, "links", "next", "href", ch);
-
-  // We assume that collections come in as newest first, so we add
-  // items starting from the top going downwards. Or if older=true
-  // starting from the end and going downwards (appending).
-
-  // Start adding from the top or bottom, depending on value of older.
-  int mi = older ? m_items.size() : 0;
-
-
-  QVariantList items_json = json["items"].toList();
-  for (int i=0; i<items_json.count(); i++) {
-    QASActivity* act = QASActivity::getActivity(items_json.at(i).toMap(),
-                                                parent());
-    if (m_item_set.contains(act))
-      continue;
-
-    m_items.insert(mi++, act);
-    m_item_set.insert(act);
-    connectSignals(act);
-
-    ch = true;
-  }
-
-  if (ch)
-    emit changed(older);
+QASAbstractObject* QASCollection::getAbstractObject(QVariantMap json,
+                                                    QObject* parent) {
+  return QASActivity::getActivity(json, parent);
 }
 
 //------------------------------------------------------------------------------

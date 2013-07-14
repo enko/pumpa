@@ -21,13 +21,14 @@
 #define _QASOBJECTLIST_H_
 
 #include "qasabstractobject.h"
+#include "qasabstractobjectlist.h"
 #include "qasobject.h"
 
 #include <QSet>
 
 //------------------------------------------------------------------------------
 
-class QASObjectList : public QASAbstractObject {
+class QASObjectList : public QASAbstractObjectList {
   Q_OBJECT
 
 protected:
@@ -42,45 +43,24 @@ public:
                                       int id=0);
   static QASObjectList* getObjectList(QVariantList json, QObject* parent, 
                                       int id=0);
-  void update(QVariantMap json, bool older);
 
   void addObject(QASObject* obj);
 
-  size_t size() const { return m_items.size(); }
-  qulonglong totalItems() const { return m_totalItems; }
   bool hasMore() const { return m_hasMore; }
-  QString url() const { return m_url; }
-  QString urlOrProxy() const;
-  virtual QString apiLink() const { return urlOrProxy(); }
-  // virtual void refresh();
 
-  virtual QASObject* at(size_t i) const {
-    if (i >= size())
-      return NULL;
-    return m_items[i];
+  QASObject* at(size_t i) const {
+    return qobject_cast<QASObject*>(QASAbstractObjectList::at(i));
   }
 
   bool contains(QASObject* obj) const {
     return m_items.contains(obj);
   }
 
-  QString nextLink() const { return m_nextLink; }
-  QString prevLink() const { 
-    return m_prevLink.isEmpty() ? m_url : m_prevLink; 
-  }
-
-signals:
-  void changed(bool);
-
 protected:
-  QString m_url;
-  QString m_proxyUrl;
-  qulonglong m_totalItems;
-  QList<QASObject*> m_items;
-  QSet<QASObject*> m_item_set;
+  virtual QASAbstractObject* getAbstractObject(QVariantMap json,
+                                               QObject* parent);
+
   bool m_hasMore;
-  QString m_nextLink;
-  QString m_prevLink;
 
 private:
   static QMap<QString, QASObjectList*> s_objectLists;
