@@ -37,8 +37,8 @@ void ObjectListWidget::setEndpoint(QString endpoint) {
 
   m_objectList = QASObjectList::initObjectList(endpoint,
                                                parent()->parent()->parent());
-  connect(m_objectList, SIGNAL(changed(bool)),
-          this, SLOT(update(bool)), Qt::UniqueConnection);
+  connect(m_objectList, SIGNAL(changed()),
+          this, SLOT(update()), Qt::UniqueConnection);
   connect(m_objectList, SIGNAL(request(QString, int)),
           this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
 }
@@ -59,14 +59,11 @@ void ObjectListWidget::fetchOlder() {
 
 //------------------------------------------------------------------------------
 
-void ObjectListWidget::update(bool older) {
-  /* 
-     We assume m_objectList contains all objects, but new ones might
-     have been added. Go through from top (newest) to bottom. Add any
-     non-existing to top (going down from there).
-  */
+void ObjectListWidget::update() {
+  // FIXME: this should be merged with almost exactly same function in
+  // collectionwidget
 
-  int li = older ? m_itemLayout->count() : 0;
+  int li = 0;
   int newCount = 0;
 
   for (size_t i=0; i<m_objectList->size(); i++) {
@@ -87,7 +84,7 @@ void ObjectListWidget::update(bool older) {
     newCount++;
   }
 
-  if (newCount && !isVisible() && !m_firstTime && !older)
+  if (newCount && !isVisible() && !m_firstTime) // && !older)
     emit highlightMe();
   m_firstTime = false;
 

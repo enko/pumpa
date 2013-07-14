@@ -21,6 +21,8 @@
 
 #include "util.h"
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 QASAbstractObjectList::QASAbstractObjectList(int asType, QString url,
@@ -34,6 +36,7 @@ QASAbstractObjectList::QASAbstractObjectList(int asType, QString url,
 
 void QASAbstractObjectList::update(QVariantMap json, bool older) {
   bool ch = false;
+  bool dummy = false;
 
   updateVar(json, m_displayName, "displayName", ch);
   updateVar(json, m_totalItems, "totalItems", ch);
@@ -41,7 +44,7 @@ void QASAbstractObjectList::update(QVariantMap json, bool older) {
 
   m_nextLink = "";
   updateVar(json, m_prevLink, "links", "prev", "href", ch);
-  updateVar(json, m_nextLink, "links", "next", "href", ch);
+  updateVar(json, m_nextLink, "links", "next", "href", dummy);
 
   // We assume that collections come in as newest first, so we add
   // items starting from the top going downwards. Or if older=true
@@ -65,11 +68,25 @@ void QASAbstractObjectList::update(QVariantMap json, bool older) {
   }
 
   if (ch)
-    emit changed(older);
+    emit changed();
 }
 
 //------------------------------------------------------------------------------
 
 QString QASAbstractObjectList::urlOrProxy() const {
   return m_proxyUrl.isEmpty() ? m_url : m_proxyUrl; 
+}
+
+//------------------------------------------------------------------------------
+
+void QASAbstractObjectList::addObject(QASAbstractObject* obj) {
+    m_totalItems;
+
+  if (m_item_set.contains(obj))
+    return;
+  m_items.append(obj);
+  m_item_set.insert(obj);
+
+  m_totalItems++;
+  emit changed();
 }

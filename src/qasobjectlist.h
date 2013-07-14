@@ -44,7 +44,7 @@ public:
   static QASObjectList* getObjectList(QVariantList json, QObject* parent, 
                                       int id=0);
 
-  void addObject(QASObject* obj);
+  // void addObject(QASObject* obj);
 
   bool hasMore() const { return m_hasMore; }
 

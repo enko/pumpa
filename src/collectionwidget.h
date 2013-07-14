@@ -21,7 +21,7 @@
 #define _COLLECTIONWIDGET_H_
 
 #include "qactivitystreams.h"
-
+#include "activitywidget.h"
 #include "aswidget.h"
 
 //------------------------------------------------------------------------------
@@ -36,11 +36,13 @@ public:
   void fetchOlder();
 
 private slots:
-  void update(bool older);
+  void update();
 
 private:
+  QASActivity* activityAt(int idx);
+
   QSet<QASActivity*> m_activity_set;
-  QSet<QASObject*> m_shown_objects;
+  // QSet<QASObject*> m_shown_objects;
 
   QASCollection* m_collection;
 };

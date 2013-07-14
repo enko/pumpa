@@ -69,7 +69,7 @@ void QASActorList::addActor(QASActor* actor) {
 
   m_items.append(actor);
   m_totalItems++;
-  emit changed(false);
+  emit changed();
 }
 
 //------------------------------------------------------------------------------
@@ -77,7 +77,7 @@ void QASActorList::addActor(QASActor* actor) {
 void QASActorList::removeActor(QASActor* actor) {
   m_items.removeAll(actor);
   m_totalItems--;
-  emit changed(false);
+  emit changed();
 }
 
 //------------------------------------------------------------------------------

@@ -53,8 +53,7 @@ public:
   QString urlOrProxy() const;
   virtual QString apiLink() const { return urlOrProxy(); }
 
-signals:
-  void changed(bool);
+  void addObject(QASAbstractObject*);
 
 protected:
   virtual QASAbstractObject* getAbstractObject(QVariantMap json,

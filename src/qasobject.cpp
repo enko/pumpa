@@ -24,6 +24,8 @@
 #include "qasactorlist.h"
 #include "util.h"
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 QMap<QString, QASObject*> QASObject::s_objects;

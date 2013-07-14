@@ -38,6 +38,7 @@ public:
   ActivityWidget(QASActivity* a, QWidget* parent=0);
 
   virtual QString getId() const { return m_activity->id(); }
+  QASActivity* activity() const { return m_activity; }
 
   void refreshTimeLabels();
 

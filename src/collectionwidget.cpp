@@ -37,7 +37,7 @@ void CollectionWidget::setEndpoint(QString endpoint) {
 
   m_collection = QASCollection::initCollection(endpoint,
                                                parent()->parent()->parent());
-  connect(m_collection, SIGNAL(changed(bool)), this, SLOT(update(bool)),
+  connect(m_collection, SIGNAL(changed()), this, SLOT(update()),
           Qt::UniqueConnection);
   connect(m_collection, SIGNAL(request(QString, int)),
           this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
@@ -59,30 +59,54 @@ void CollectionWidget::fetchOlder() {
 
 //------------------------------------------------------------------------------
 
-void CollectionWidget::update(bool older) {
+QASActivity* CollectionWidget::activityAt(int idx) {
+  QLayoutItem* item = m_itemLayout->itemAt(idx);
+
+  if (dynamic_cast<QWidgetItem*>(item)) {
+    ActivityWidget* aw = qobject_cast<ActivityWidget*>(item->widget());
+    if (aw)
+      return aw->activity();
+  }
+
+  return NULL;
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::update() {
   /* 
-     We assume m_collection contains all objects, but new ones might
-     have been added. Go through from top (newest) to bottom. Add any
-     non-existing to top (going down from there).
+     We assume m_collection contains all activities, but new ones
+     might have been added either (or both) to the top or end. Go
+     through from top (newest) to bottom. If the activity doesn't
+     exist add it, if it does increment the counter (go further down
+     both in the collection and widget list).
   */
 
-  int li = older ? m_itemLayout->count() : 0;
+  int li = 0; 
   int newCount = 0;
 
   for (size_t i=0; i<m_collection->size(); i++) {
-    QASActivity* activity = m_collection->at(i);
+    QASActivity* cAct = m_collection->at(i);
 
-    QASObject* obj = activity->object();
+    QASObject* obj = cAct->object();
     if (obj->isDeleted())
       continue;
 
-    if (m_activity_set.contains(activity))
+    QASActivity* wAct = activityAt(li);
+    if (wAct == cAct) {
+      li++;
       continue;
-    m_activity_set.insert(activity);
+    }
 
-    QString verb = activity->verb();
+    if (m_activity_set.contains(cAct)) {
+      qDebug() << "THIS CAN'T BE HAPPENING";
+      continue;
+    }
+    m_activity_set.insert(cAct);
+
+    QString verb = cAct->verb();
     
-    ActivityWidget* aw = new ActivityWidget(activity, this);
+    ActivityWidget* aw = new ActivityWidget(cAct, this);
     ObjectWidgetWithSignals::connectSignals(aw, this);
     connect(aw, SIGNAL(showContext(QASObject*)),
             this, SIGNAL(showContext(QASObject*)));
@@ -93,9 +117,9 @@ void CollectionWidget::update(bool older) {
     
     m_itemLayout->insertWidget(li++, aw);
 
-    m_shown_objects.insert(obj);
+    // m_shown_objects.insert(obj);
 
-    if (!activity->actor()->isYou())
+    if (!cAct->actor()->isYou())
       newCount++;
   }
 

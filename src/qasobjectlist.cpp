@@ -22,6 +22,8 @@
 #include "qasactor.h"
 #include "util.h"
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 QMap<QString, QASObjectList*> QASObjectList::s_objectLists;
@@ -136,15 +138,4 @@ QASObjectList* QASObjectList::getObjectList(QVariantList json, QObject* parent,
 
   return getObjectList(jmap, parent, id);
 }
-
-//------------------------------------------------------------------------------
-
-void QASObjectList::addObject(QASObject* obj) {
-  if (m_items.contains(obj))
-    return;
-  m_items.append(obj);
-  m_totalItems++;
-  emit changed(false);
-}
-
 

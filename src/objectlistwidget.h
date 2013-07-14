@@ -36,7 +36,7 @@ public:
   void fetchOlder();
 
 private slots:
-  void update(bool older=false);
+  void update();
 
 private:
   QSet<QASObject*> m_object_set;
