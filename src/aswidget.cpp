@@ -18,7 +18,6 @@
 */
 
 #include "aswidget.h"
-// #include "pumpa_defines.h"
 #include "activitywidget.h"
 #include <QScrollBar>
 #include <QDebug>
@@ -27,7 +26,8 @@
 
 ASWidget::ASWidget(QWidget* parent) :
   QScrollArea(parent),
-  m_firstTime(true)
+  m_firstTime(true),
+  m_list(NULL)
 {
   m_itemLayout = new QVBoxLayout;
   m_itemLayout->setSpacing(10);
@@ -88,3 +88,69 @@ void ASWidget::keyPressEvent(QKeyEvent* event) {
     QScrollArea::keyPressEvent(event);
   }
 }
+
+//------------------------------------------------------------------------------
+
+QASAbstractObject* ASWidget::objectAt(int idx) {
+  QLayoutItem* item = m_itemLayout->itemAt(idx);
+
+  if (dynamic_cast<QWidgetItem*>(item)) {
+    // not the most elegant solution...
+    ActivityWidget* aw = qobject_cast<ActivityWidget*>(item->widget());
+    if (aw)
+      return aw->activity();
+
+    ObjectWidget* ow = qobject_cast<ObjectWidget*>(item->widget());
+    if (ow)
+      return ow->object();
+  }
+
+  return NULL;
+}
+
+//------------------------------------------------------------------------------
+
+void ASWidget::update() {
+  /* 
+     We assume m_list contains all objects, but new ones might have
+     been added either (or both) to the top or end. Go through from
+     top (newest) to bottom. If the object doesn't exist add it, if it
+     does increment the counter (go further down both in the
+     collection and widget list).
+  */
+
+  int li = 0; 
+  int newCount = 0;
+
+  for (size_t i=0; i<m_list->size(); i++) {
+    QASAbstractObject* cObj = m_list->at(i);
+
+    if (cObj->isDeleted())
+      continue;
+
+    QASAbstractObject* wObj = objectAt(li);
+    if (wObj == cObj) {
+      li++;
+      continue;
+    }
+
+    if (m_object_set.contains(cObj)) {
+      qDebug() << "update() an object exists but not in correct order!";
+      continue;
+    }
+    m_object_set.insert(cObj);
+
+    bool countAsNew = false;
+    ObjectWidgetWithSignals* ow = createWidget(cObj, countAsNew);
+    ObjectWidgetWithSignals::connectSignals(ow, this);
+    m_itemLayout->insertWidget(li++, ow);
+
+    if (!countAsNew)
+      newCount++;
+  }
+
+  if (newCount && !isVisible() && !m_firstTime)
+    emit highlightMe();
+  m_firstTime = false;
+}
+

@@ -82,7 +82,7 @@ public:
   // favouriting the object
   QVariantMap toJson() const;
 
-  bool isDeleted() const { return !m_deleted.isNull(); }
+  virtual bool isDeleted() const { return !m_deleted.isNull(); }
 
 protected:
   QString m_id;

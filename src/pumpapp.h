@@ -179,6 +179,7 @@ private:
   CollectionWidget* m_inboxMinorWidget;
   ContextWidget* m_contextWidget;
   ObjectListWidget* m_followersWidget;
+  ObjectListWidget* m_followingWidget;
 
   QASActor* m_selfActor;
 

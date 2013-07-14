@@ -84,6 +84,9 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_followersWidget = new ObjectListWidget(this);
   connectCollection(m_followersWidget);
 
+  m_followingWidget = new ObjectListWidget(this);
+  connectCollection(m_followingWidget);
+
   m_tabWidget = new TabWidget(this);
   connect(m_tabWidget, SIGNAL(currentChanged(int)),
           this, SLOT(tabSelected(int)));
@@ -92,6 +95,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget->addTab(m_directMajorWidget, "&direct");
   m_tabWidget->addTab(m_inboxMinorWidget, "mean&while");
   m_tabWidget->addTab(m_followersWidget, "&followers");
+  m_tabWidget->addTab(m_followingWidget, "f&ollowing");
 
   m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
   m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);
@@ -149,12 +153,13 @@ void PumpApp::startPumping() {
   m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"));
   m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
   m_followersWidget->setEndpoint(apiUrl(apiUser("followers")));
+  m_followingWidget->setEndpoint(apiUrl(apiUser("following")), QAS_FOLLOW);
 
   show();
 
   request("/api/user/" + m_s->userName(), QAS_SELF_PROFILE);
-  request("/api/user/" + m_s->userName() + "/following",
-          QAS_ACTORLIST | QAS_FOLLOW);
+  // request("/api/user/" + m_s->userName() + "/following",
+  //         QAS_ACTORLIST | QAS_FOLLOW);
   fetchAll();
 
   resetTimer();
@@ -533,6 +538,7 @@ void PumpApp::fetchAll() {
   m_directMajorWidget->fetchNewer();
   m_inboxMinorWidget->fetchNewer();
   m_followersWidget->fetchNewer();
+  m_followingWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
@@ -897,17 +903,18 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
       }
     }
   } else if (sid == QAS_OBJECTLIST) {
-    QASObjectList::getObjectList(json, this, id);
+    QASObjectList* ol = QASObjectList::getObjectList(json, this, id);
+    if (ol && (id & QAS_FOLLOW)) {
+      for (size_t i=0; i<ol->size(); ++i) {
+        QASActor* actor = ol->at(i)->asActor();
+        if (actor)
+          actor->setFollowed(true);
+      }
+    }
   } else if (sid == QAS_OBJECT) {
     QASObject::getObject(json, this);
   } else if (sid == QAS_ACTORLIST) {
-    QASActorList* al = QASActorList::getActorList(json, this);
-    if (al && (id & QAS_FOLLOW)) {
-      for (size_t i=0; i<al->size(); ++i)
-        al->at(i)->setFollowed(true);
-      if (!al->nextLink().isEmpty())
-        request(al->nextLink(), QAS_ACTORLIST | QAS_FOLLOW);
-    }
+    QASActorList::getActorList(json, this);
   } else if (sid == QAS_SELF_PROFILE) {
     m_selfActor = QASActor::getActor(json["profile"].toMap(), this);
     m_selfActor->setYou();

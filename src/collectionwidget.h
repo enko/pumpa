@@ -35,16 +35,10 @@ public:
   void fetchNewer();
   void fetchOlder();
 
-private slots:
-  void update();
+protected:
+  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj,
+                                                bool& countAsNew);
 
-private:
-  QASActivity* activityAt(int idx);
-
-  QSet<QASActivity*> m_activity_set;
-  // QSet<QASObject*> m_shown_objects;
-
-  QASCollection* m_collection;
 };
 
 #endif /* _COLLECTIONWIDGET_H_ */

@@ -31,17 +31,17 @@ class ObjectListWidget : public ASWidget {
 
 public:
   ObjectListWidget(QWidget* parent);
-  void setEndpoint(QString endpoint);
+  void setEndpoint(QString endpoint, int asMode = -1);
   void fetchNewer();
   void fetchOlder();
 
-private slots:
-  void update();
+protected:
+  virtual void update();
+  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj,
+                                                bool& countAsNew);
 
 private:
-  QSet<QASObject*> m_object_set;
-
-  QASObjectList* m_objectList;
+  int m_asMode;
 };
 
 #endif /* _OBJECTLISTWIDGET_H_ */

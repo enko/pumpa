@@ -35,6 +35,7 @@ class QASAbstractObject : public QObject {
 public:
   virtual void refresh();
   virtual QString apiLink() const { return ""; }
+  virtual bool isDeleted() const { return false; }
 
 signals:
   void changed();

@@ -27,67 +27,61 @@
 
 ObjectListWidget::ObjectListWidget(QWidget* parent) :
   ASWidget(parent),
-  m_objectList(NULL)
+  m_asMode(QAS_NULL)
 {}
 
 //------------------------------------------------------------------------------
 
-void ObjectListWidget::setEndpoint(QString endpoint) {
+void ObjectListWidget::setEndpoint(QString endpoint, int asMode) {
   clear();
+  m_asMode = QAS_OBJECTLIST;
+  
+  if (asMode != -1)
+    m_asMode |= asMode;
 
-  m_objectList = QASObjectList::initObjectList(endpoint,
+  m_list = QASObjectList::initObjectList(endpoint,
                                                parent()->parent()->parent());
-  connect(m_objectList, SIGNAL(changed()),
+  connect(m_list, SIGNAL(changed()),
           this, SLOT(update()), Qt::UniqueConnection);
-  connect(m_objectList, SIGNAL(request(QString, int)),
+  connect(m_list, SIGNAL(request(QString, int)),
           this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
 }
 
 //------------------------------------------------------------------------------
 
 void ObjectListWidget::fetchNewer() {
-  emit request(m_objectList->prevLink(), QAS_OBJECTLIST | QAS_NEWER);
+  emit request(m_list->prevLink(), m_asMode | QAS_NEWER);
 }
 
 //------------------------------------------------------------------------------
 
 void ObjectListWidget::fetchOlder() {
-  QString nextLink = m_objectList->nextLink();
+  QString nextLink = m_list->nextLink();
   if (!nextLink.isEmpty())
-    emit request(nextLink, QAS_OBJECTLIST | QAS_OLDER);
+    emit request(nextLink, m_asMode | QAS_OLDER);
 }
 
 //------------------------------------------------------------------------------
 
 void ObjectListWidget::update() {
-  // FIXME: this should be merged with almost exactly same function in
-  // collectionwidget
-
-  int li = 0;
-  int newCount = 0;
-
-  for (size_t i=0; i<m_objectList->size(); i++) {
-    QASObject* obj = m_objectList->at(i);
-    if (obj->isDeleted())
-      continue;
-
-    if (m_object_set.contains(obj))
-      continue;
-    m_object_set.insert(obj);
-
-    ObjectWidget* ow = new ObjectWidget(obj, this);
-    ObjectWidgetWithSignals::connectSignals(ow, this);
-    connect(obj, SIGNAL(request(QString, int)), 
-            this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
-    
-    m_itemLayout->insertWidget(li++, ow);
-    newCount++;
-  }
-
-  if (newCount && !isVisible() && !m_firstTime) // && !older)
-    emit highlightMe();
-  m_firstTime = false;
-
+  ASWidget::update();
   fetchOlder();
 }
 
+//------------------------------------------------------------------------------
+
+ObjectWidgetWithSignals*
+ObjectListWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
+  QASObject* obj = qobject_cast<QASObject*>(aObj);
+  if (!obj) {
+    qDebug() << "ERROR ObjectListWidget::createWidget passed non-object";
+    return NULL;
+  }
+
+  ObjectWidget* ow = new ObjectWidget(obj, this);
+  connect(obj, SIGNAL(request(QString, int)), 
+          this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
+
+  countAsNew = true;
+  return ow;
+}

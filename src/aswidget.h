@@ -21,6 +21,7 @@
 #define _ASWIDGET_H_
 
 #include "qactivitystreams.h"
+#include "objectwidgetwithsignals.h"
 
 #include <QWidget>
 #include <QScrollArea>
@@ -45,13 +46,23 @@ signals:
   void showContext(QASObject*);
   void follow(QString, bool);
 
+protected slots:
+  virtual void update();
+
 protected:
+  QASAbstractObject* objectAt(int idx);
+  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj,
+                                                bool& countAsNew) = 0;
+
   void keyPressEvent(QKeyEvent* event);
   void clear();
 
   QVBoxLayout* m_itemLayout;
   QWidget* m_listContainer;
   bool m_firstTime;
+
+  QSet<QASAbstractObject*> m_object_set;
+  QASAbstractObjectList* m_list;
 };
 
 #endif /* _ASWIDGET_H_ */

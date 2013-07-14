@@ -26,8 +26,7 @@
 //------------------------------------------------------------------------------
 
 CollectionWidget::CollectionWidget(QWidget* parent) :
-  ASWidget(parent),
-  m_collection(NULL)
+  ASWidget(parent)
 {}
 
 //------------------------------------------------------------------------------
@@ -35,96 +34,47 @@ CollectionWidget::CollectionWidget(QWidget* parent) :
 void CollectionWidget::setEndpoint(QString endpoint) {
   clear();
 
-  m_collection = QASCollection::initCollection(endpoint,
-                                               parent()->parent()->parent());
-  connect(m_collection, SIGNAL(changed()), this, SLOT(update()),
+  m_list = QASCollection::initCollection(endpoint,
+                                         parent()->parent()->parent());
+  connect(m_list, SIGNAL(changed()), this, SLOT(update()),
           Qt::UniqueConnection);
-  connect(m_collection, SIGNAL(request(QString, int)),
+  connect(m_list, SIGNAL(request(QString, int)),
           this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
 }
 
 //------------------------------------------------------------------------------
 
 void CollectionWidget::fetchNewer() {
-  emit request(m_collection->prevLink(), QAS_COLLECTION | QAS_NEWER);
+  emit request(m_list->prevLink(), QAS_COLLECTION | QAS_NEWER);
 }
 
 //------------------------------------------------------------------------------
 
 void CollectionWidget::fetchOlder() {
-  QString nextLink = m_collection->nextLink();
+  QString nextLink = m_list->nextLink();
   if (!nextLink.isEmpty())
     emit request(nextLink, QAS_COLLECTION | QAS_OLDER);
 }
 
 //------------------------------------------------------------------------------
 
-QASActivity* CollectionWidget::activityAt(int idx) {
-  QLayoutItem* item = m_itemLayout->itemAt(idx);
-
-  if (dynamic_cast<QWidgetItem*>(item)) {
-    ActivityWidget* aw = qobject_cast<ActivityWidget*>(item->widget());
-    if (aw)
-      return aw->activity();
+ObjectWidgetWithSignals*
+CollectionWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
+  QASActivity* act = qobject_cast<QASActivity*>(aObj);
+  if (!act) {
+    qDebug() << "ERROR CollectionWidget::createWidget passed non-activity";
+    return NULL;
   }
 
-  return NULL;
+  ActivityWidget* aw = new ActivityWidget(act, this);
+  connect(aw, SIGNAL(showContext(QASObject*)),
+          this, SIGNAL(showContext(QASObject*)));
+
+  QASObject* obj = act->object();
+  if (obj)
+    connect(obj, SIGNAL(request(QString, int)), 
+            this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
+
+  countAsNew = !act->actor()->isYou();
+  return aw;
 }
-
-//------------------------------------------------------------------------------
-
-void CollectionWidget::update() {
-  /* 
-     We assume m_collection contains all activities, but new ones
-     might have been added either (or both) to the top or end. Go
-     through from top (newest) to bottom. If the activity doesn't
-     exist add it, if it does increment the counter (go further down
-     both in the collection and widget list).
-  */
-
-  int li = 0; 
-  int newCount = 0;
-
-  for (size_t i=0; i<m_collection->size(); i++) {
-    QASActivity* cAct = m_collection->at(i);
-
-    QASObject* obj = cAct->object();
-    if (obj->isDeleted())
-      continue;
-
-    QASActivity* wAct = activityAt(li);
-    if (wAct == cAct) {
-      li++;
-      continue;
-    }
-
-    if (m_activity_set.contains(cAct)) {
-      qDebug() << "THIS CAN'T BE HAPPENING";
-      continue;
-    }
-    m_activity_set.insert(cAct);
-
-    QString verb = cAct->verb();
-    
-    ActivityWidget* aw = new ActivityWidget(cAct, this);
-    ObjectWidgetWithSignals::connectSignals(aw, this);
-    connect(aw, SIGNAL(showContext(QASObject*)),
-            this, SIGNAL(showContext(QASObject*)));
-
-    if (obj)
-      connect(obj, SIGNAL(request(QString, int)), 
-              this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
-    
-    m_itemLayout->insertWidget(li++, aw);
-
-    // m_shown_objects.insert(obj);
-
-    if (!cAct->actor()->isYou())
-      newCount++;
-  }
-
-  if (newCount && !isVisible() && !m_firstTime)
-    emit highlightMe();
-  m_firstTime = false;
-}
-

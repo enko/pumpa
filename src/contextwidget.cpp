@@ -59,3 +59,7 @@ void ContextWidget::update() {
 
 //------------------------------------------------------------------------------
 
+ObjectWidgetWithSignals*
+ContextWidget::createWidget(QASAbstractObject* /*obj*/, bool& /*countAsNew*/) {
+  return NULL;
+}

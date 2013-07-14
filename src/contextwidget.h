@@ -21,7 +21,6 @@
 #define _CONTEXTWIDGET_H_
 
 #include "qactivitystreams.h"
-
 #include "aswidget.h"
 
 //------------------------------------------------------------------------------
@@ -34,8 +33,10 @@ public:
 
   void setObject(QASObject* obj);
 
-private:
-  void update();
+protected:
+  virtual void update();
+  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* obj,
+                                                bool& countAsNew);
 
   QASObject* m_object;
 };
