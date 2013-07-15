@@ -30,7 +30,8 @@ QASAbstractObjectList::QASAbstractObjectList(int asType, QString url,
   QASAbstractObject(asType, parent),
   m_url(url),
   m_totalItems(0),
-  m_hasMore(false)
+  m_hasMore(false),
+  m_firstTime(true)
 {}
 
 //------------------------------------------------------------------------------
@@ -43,9 +44,31 @@ void QASAbstractObjectList::update(QVariantMap json, bool older) {
   updateVar(json, m_totalItems, "totalItems", ch);
   updateVar(json, m_proxyUrl, "pump_io", "proxyURL", ch);
 
-  m_nextLink = "";
-  updateVar(json, m_prevLink, "links", "prev", "href", ch);
-  updateVar(json, m_nextLink, "links", "next", "href", dummy);
+  // In pump.io the next link goes "next" in the UI, i.e. to older
+  // stuff, so:
+  // next => older
+  // prev => newer
+  //
+  // If we are loading older stuff, update only the next link. If it
+  // is empty it means we have reached the oldest stuff.
+  //
+  // If we are loading newer stuff, update only the prev link, except
+  // if it is empty, then don't touch it. (That means there's no newer
+  // stuff, but there's bound to be more later :-)
+  //
+  // And a special case is when we load it the first time, then both
+  // next and prev links should be updated.
+  
+  if (older || m_firstTime) {
+    m_nextLink = ""; // it's left as empty if it doesn't exist in the
+                     // json
+    updateVar(json, m_nextLink, "links", "next", "href", dummy);
+  } 
+  if (!older || m_firstTime) {
+    // updateVar doesn't touch it if it is empty in the json
+    updateVar(json, m_prevLink, "links", "prev", "href", dummy);
+  }
+
 
   // We assume that collections come in as newest first, so we add
   // items starting from the top going downwards. Or if older=true
@@ -76,6 +99,7 @@ void QASAbstractObjectList::update(QVariantMap json, bool older) {
   // hack indeed :)
   m_hasMore = !json.contains("displayName") && size() < m_totalItems;
 
+  m_firstTime = false;
   if (ch)
     emit changed();
 }

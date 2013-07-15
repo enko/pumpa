@@ -75,6 +75,8 @@ protected:
   QSet<QASAbstractObject*> m_item_set;
 
   QString m_prevLink, m_nextLink;
+
+  bool m_firstTime;
 };
 
 #endif /* _QASABSTRACTOBJECTLIST_H_ */
