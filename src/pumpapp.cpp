@@ -85,7 +85,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   connectCollection(m_followersWidget);
 
   m_followingWidget = new ObjectListWidget(this);
-  connectCollection(m_followingWidget);
+  connectCollection(m_followingWidget, false);
 
   m_tabWidget = new TabWidget(this);
   connect(m_tabWidget, SIGNAL(currentChanged(int)),
@@ -165,14 +165,15 @@ void PumpApp::startPumping() {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::connectCollection(ASWidget* w) {
+void PumpApp::connectCollection(ASWidget* w, bool highlight) {
   connect(w, SIGNAL(request(QString, int)), this, SLOT(request(QString, int)));
   connect(w, SIGNAL(newReply(QASObject*)), this, SLOT(newNote(QASObject*)));
   connect(w, SIGNAL(linkHovered(const QString&)),
           this, SLOT(statusMessage(const QString&)));
   connect(w, SIGNAL(like(QASObject*)), this, SLOT(onLike(QASObject*)));
   connect(w, SIGNAL(share(QASObject*)), this, SLOT(onShare(QASObject*)));
-  connect(w, SIGNAL(highlightMe()), m_notifyMap, SLOT(map()));
+  if (highlight)
+    connect(w, SIGNAL(highlightMe()), m_notifyMap, SLOT(map()));
   connect(w, SIGNAL(showContext(QASObject*)), 
           this, SLOT(onShowContext(QASObject*)));
   connect(w, SIGNAL(follow(QString, bool)), this, SLOT(follow(QString, bool)));

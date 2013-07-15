@@ -45,7 +45,7 @@ void CollectionWidget::setEndpoint(QString endpoint) {
 //------------------------------------------------------------------------------
 
 void CollectionWidget::fetchNewer() {
-  emit request(m_list->prevLink(), QAS_COLLECTION | QAS_NEWER);
+  emit request(m_list->url(), QAS_COLLECTION | QAS_NEWER);
 }
 
 //------------------------------------------------------------------------------

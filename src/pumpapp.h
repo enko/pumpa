@@ -132,7 +132,7 @@ private:
   QString showHideText(bool);
   QString showHideText() { return showHideText(isVisible()); }
 
-  void connectCollection(ASWidget* w);
+  void connectCollection(ASWidget* w, bool highlight=true);
 
   bool haveOAuth();
 

@@ -50,7 +50,7 @@ void ObjectListWidget::setEndpoint(QString endpoint, int asMode) {
 //------------------------------------------------------------------------------
 
 void ObjectListWidget::fetchNewer() {
-  emit request(m_list->prevLink(), m_asMode | QAS_NEWER);
+  emit request(m_list->url(), m_asMode | QAS_NEWER);
 }
 
 //------------------------------------------------------------------------------
