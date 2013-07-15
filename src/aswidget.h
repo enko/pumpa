@@ -34,7 +34,7 @@ class ASWidget : public QScrollArea {
 
 public:
   ASWidget(QWidget* parent);
-  void refreshTimeLabels();
+  virtual void refreshTimeLabels();
 
 signals:
   void highlightMe();  
@@ -51,6 +51,7 @@ protected slots:
 
 protected:
   QASAbstractObject* objectAt(int idx);
+  ObjectWidgetWithSignals* widgetAt(int idx);
   virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj,
                                                 bool& countAsNew) = 0;
 

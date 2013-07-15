@@ -23,6 +23,8 @@
 
 ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) : 
   ObjectWidgetWithSignals(parent),
+  m_objectWidget(NULL),
+  m_shortObjectWidget(NULL),
   m_contextLabel(NULL),
   m_contextButton(NULL),
   m_topLayout(NULL),

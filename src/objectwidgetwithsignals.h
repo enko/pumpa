@@ -32,6 +32,8 @@ public:
   ObjectWidgetWithSignals(QWidget* parent = 0);
 
   static void connectSignals(ObjectWidgetWithSignals* ow, QWidget* w);
+
+  virtual void refreshTimeLabels() = 0;
   
 signals:
   void linkHovered(const QString&);

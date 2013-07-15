@@ -526,6 +526,8 @@ void PumpApp::newPicture() {
 
 void PumpApp::reload() {
   fetchAll();
+  refreshTimeLabels();
+
 }
 
 //------------------------------------------------------------------------------

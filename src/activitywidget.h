@@ -28,6 +28,7 @@
 #include "richtextlabel.h"
 #include "qactivitystreams.h"
 #include "objectwidget.h"
+#include "objectwidgetwithsignals.h"
 
 //------------------------------------------------------------------------------
 
@@ -40,7 +41,7 @@ public:
   virtual QString getId() const { return m_activity->id(); }
   QASActivity* activity() const { return m_activity; }
 
-  void refreshTimeLabels();
+  virtual void refreshTimeLabels();
 
 public slots:
   virtual void onObjectChanged();

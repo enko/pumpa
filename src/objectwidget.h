@@ -28,6 +28,7 @@
 #include "fullobjectwidget.h"
 #include "texttoolbutton.h"
 #include "richtextlabel.h"
+#include "objectwidgetwithsignals.h"
 
 //------------------------------------------------------------------------------
 
@@ -40,7 +41,7 @@ public:
 
   QASObject* object() const { return m_object; }
 
-  void refreshTimeLabels();
+  virtual void refreshTimeLabels();
 
 signals:
   void moreClicked();

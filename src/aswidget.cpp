@@ -31,7 +31,6 @@ ASWidget::ASWidget(QWidget* parent) :
 {
   m_itemLayout = new QVBoxLayout;
   m_itemLayout->setSpacing(10);
-  // m_itemLayout->addStretch();
 
   m_listContainer = new QWidget;
   m_listContainer->setLayout(m_itemLayout);
@@ -55,23 +54,16 @@ void ASWidget::clear() {
   }
 
   m_firstTime = true;
+  m_itemLayout->addStretch();
 }
 
 //------------------------------------------------------------------------------
 
 void ASWidget::refreshTimeLabels() {
   for (int i=0; i<m_itemLayout->count(); i++) {
-    QLayoutItem* const li = m_itemLayout->itemAt(i);
-    if (dynamic_cast<QWidgetItem*>(li)) {
-      ActivityWidget* aw = qobject_cast<ActivityWidget*>(li->widget());
-      if (aw) {
-        aw->refreshTimeLabels();
-      } else {
-        ObjectWidget* ow = qobject_cast<ObjectWidget*>(li->widget());
-        if (ow)
-          ow->refreshTimeLabels();
-      }
-    }
+    ObjectWidgetWithSignals* ow = widgetAt(i);
+    if (ow)
+      ow->refreshTimeLabels();
   }
 }
 
@@ -91,19 +83,29 @@ void ASWidget::keyPressEvent(QKeyEvent* event) {
 
 //------------------------------------------------------------------------------
 
-QASAbstractObject* ASWidget::objectAt(int idx) {
+ObjectWidgetWithSignals* ASWidget::widgetAt(int idx) {
   QLayoutItem* item = m_itemLayout->itemAt(idx);
 
-  if (dynamic_cast<QWidgetItem*>(item)) {
-    // not the most elegant solution...
-    ActivityWidget* aw = qobject_cast<ActivityWidget*>(item->widget());
-    if (aw)
-      return aw->activity();
+  if (dynamic_cast<QWidgetItem*>(item))
+    return qobject_cast<ObjectWidgetWithSignals*>(item->widget());
 
-    ObjectWidget* ow = qobject_cast<ObjectWidget*>(item->widget());
-    if (ow)
-      return ow->object();
-  }
+  return NULL;
+}
+
+//------------------------------------------------------------------------------
+
+QASAbstractObject* ASWidget::objectAt(int idx) {
+  ObjectWidgetWithSignals* ows = widgetAt(idx);
+  if (!ows)
+    return NULL;
+  
+  ActivityWidget* aw = qobject_cast<ActivityWidget*>(ows);
+  if (aw)
+    return aw->activity();
+
+  ObjectWidget* ow = qobject_cast<ObjectWidget*>(ows);
+  if (ow)
+    return ow->object();
 
   return NULL;
 }

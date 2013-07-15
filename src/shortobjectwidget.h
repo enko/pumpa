@@ -39,7 +39,7 @@ public:
 
   static QString objectExcerpt(QASObject* obj);
 
-  void refreshTimeLabels() {};
+  virtual void refreshTimeLabels() {};
 
 signals:
   void moreClicked();

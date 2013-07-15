@@ -41,7 +41,7 @@ public:
 
   QASObject* object() const { return m_object; }
 
-  void refreshTimeLabels() { updateInfoText(); }
+  virtual void refreshTimeLabels() { updateInfoText(); }
 
 private slots:
   void onChanged();
