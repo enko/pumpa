@@ -249,8 +249,7 @@ bool FullObjectWidget::isFollowable(QASObject* obj) const {
     return false;
 
   QASActor* actor = obj->asActor();
-  return obj->type() == "person" && obj->id().startsWith("acct:") &&
-    actor && !actor->isYou();
+  return obj->type() == "person" && actor && !actor->isYou();
 }
 
 //------------------------------------------------------------------------------
@@ -417,9 +416,6 @@ void FullObjectWidget::addObjectList(QASObjectList* ol) {
   }
 
   if (ol->hasMore() && (qulonglong)m_repliesList.size() < ol->totalItems()) {
-    // qDebug() << "[DEBUG]:" << "addHasMoreButton:"
-    //          << ol->hasMore() << (qulonglong)m_repliesList.size()
-    //          << ol->totalItems();
     addHasMoreButton(ol, li_before);
   } else if (m_hasMoreButton != NULL) {
     m_commentsLayout->removeWidget(m_hasMoreButton);

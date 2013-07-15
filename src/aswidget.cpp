@@ -121,6 +121,7 @@ void ASWidget::update() {
 
   int li = 0; 
   int newCount = 0;
+  bool older = false;
 
   for (size_t i=0; i<m_list->size(); i++) {
     QASAbstractObject* cObj = m_list->at(i);
@@ -131,6 +132,7 @@ void ASWidget::update() {
     QASAbstractObject* wObj = objectAt(li);
     if (wObj == cObj) {
       li++;
+      older = true;
       continue;
     }
 
@@ -145,7 +147,7 @@ void ASWidget::update() {
     ObjectWidgetWithSignals::connectSignals(ow, this);
     m_itemLayout->insertWidget(li++, ow);
 
-    if (!countAsNew)
+    if (countAsNew && !older)
       newCount++;
   }
 
