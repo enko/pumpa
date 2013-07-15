@@ -158,8 +158,6 @@ void PumpApp::startPumping() {
   show();
 
   request("/api/user/" + m_s->userName(), QAS_SELF_PROFILE);
-  // request("/api/user/" + m_s->userName() + "/following",
-  //         QAS_ACTORLIST | QAS_FOLLOW);
   fetchAll();
 
   resetTimer();

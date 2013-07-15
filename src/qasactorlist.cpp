@@ -63,25 +63,6 @@ QASActor* QASActorList::at(size_t i) const {
 
 //------------------------------------------------------------------------------
 
-void QASActorList::addActor(QASActor* actor) {
-  if (m_items.contains(actor))
-    return;
-
-  m_items.append(actor);
-  m_totalItems++;
-  emit changed();
-}
-
-//------------------------------------------------------------------------------
-
-void QASActorList::removeActor(QASActor* actor) {
-  m_items.removeAll(actor);
-  m_totalItems--;
-  emit changed();
-}
-
-//------------------------------------------------------------------------------
-
 QString QASActorList::actorNames() const {
   QString text;
   for (size_t i=0; i<size(); i++) {

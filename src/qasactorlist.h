@@ -36,8 +36,8 @@ public:
 
   virtual QASActor* at(size_t i) const;
 
-  void addActor(QASActor* actor);
-  void removeActor(QASActor* actor);
+  void addActor(QASActor* actor) { addObject(actor); }
+  void removeActor(QASActor* actor) { removeObject(actor); }
 
   bool onlyYou() const { return size()==1 && at(0)->isYou(); }
 

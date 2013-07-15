@@ -29,7 +29,8 @@ QASAbstractObjectList::QASAbstractObjectList(int asType, QString url,
                                              QObject* parent) :
   QASAbstractObject(asType, parent),
   m_url(url),
-  m_totalItems(0)
+  m_totalItems(0),
+  m_hasMore(false)
 {}
 
 //------------------------------------------------------------------------------
@@ -67,6 +68,14 @@ void QASAbstractObjectList::update(QVariantMap json, bool older) {
     ch = true;
   }
 
+  // In theory, there should be more to be fetched if size <
+  // totalItems.  Sometimes those missing items still do not appear in
+  // the fetched list, and we will have a perpetual "load more"
+  // button. It turns out that the fetched replies lists has a
+  // displayName, while the short one has not... this is a very ugly
+  // hack indeed :)
+  m_hasMore = !json.contains("displayName") && size() < m_totalItems;
+
   if (ch)
     emit changed();
 }
@@ -80,13 +89,21 @@ QString QASAbstractObjectList::urlOrProxy() const {
 //------------------------------------------------------------------------------
 
 void QASAbstractObjectList::addObject(QASAbstractObject* obj) {
-    m_totalItems;
-
   if (m_item_set.contains(obj))
     return;
   m_items.append(obj);
   m_item_set.insert(obj);
 
   m_totalItems++;
+  emit changed();
+}
+
+//------------------------------------------------------------------------------
+
+void QASAbstractObjectList::removeObject(QASAbstractObject* obj) {
+  m_items.removeAll(obj);
+  m_item_set.remove(obj);
+
+  m_totalItems--;
   emit changed();
 }

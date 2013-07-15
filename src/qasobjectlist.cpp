@@ -32,62 +32,12 @@ void QASObjectList::clearCache() { deleteMap<QASObjectList*>(s_objectLists); }
 //------------------------------------------------------------------------------
 
 QASObjectList::QASObjectList(QString url, QObject* parent) :
-  QASAbstractObjectList(QAS_OBJECTLIST, url, parent),
-  m_hasMore(false)
+  QASAbstractObjectList(QAS_OBJECTLIST, url, parent)
 {
 #if DEBUG >= 1
   qDebug() << "new ObjectList" << m_url;
 #endif
 }
-
-//------------------------------------------------------------------------------
-
-// void QASObjectList::update(QVariantMap json, bool older) {
-// #if DEBUG >= 1
-//   qDebug() << "updating ObjectList" << m_url;
-// #endif
-//   bool ch = false;
-
-//   updateVar(json, m_totalItems, "totalItems", ch);
-//   updateVar(json, m_proxyUrl, "pump_io", "proxyURL", ch);
-
-//   m_nextLink = "";
-//   updateVar(json, m_nextLink, "links", "next", "href", ch);
-//   updateVar(json, m_prevLink, "links", "prev", "href", ch);
-
-
-//   if (json.contains("items")) {
-//     // m_items.clear();
-//     QVariantList items_json = json["items"].toList();
-//     for (int i=0; i<items_json.count(); i++) {
-//       QVariantMap item = items_json[i].toMap();
-//       QASObject* obj;
-//       if (item["objectType"].toString() == "person")
-//         obj = QASActor::getActor(item, parent());
-//       else
-//         obj = QASObject::getObject(item, parent());
-
-//       if (m_item_set.contains(obj))
-//         continue;
-
-//       m_items.append(obj);
-//       m_item_set.insert(obj);
-
-//       connectSignals(obj, false, true);
-//       ch = true;
-//     }
-//   }
-//   // set to false if number of items < total, and if we have already
-//   // fetched it - that seems to have a displayName element
-//   // ^^ FFFUUUGLY HACK !!!
-//   // bool old_hasMore = m_hasMore;
-//   m_hasMore = !json.contains("displayName") && size() < m_totalItems;
-//   // if (!old_hasMore && m_hasMore)
-//   //   qDebug() << "[DEBUG]: set hasMore" << m_url << m_proxyUrl << urlOrProxy();
-
-//   if (ch)
-//     emit changed(older);
-// }
 
 //------------------------------------------------------------------------------
 

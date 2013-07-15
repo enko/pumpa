@@ -24,8 +24,6 @@
 #include "qasabstractobjectlist.h"
 #include "qasobject.h"
 
-#include <QSet>
-
 //------------------------------------------------------------------------------
 
 class QASObjectList : public QASAbstractObjectList {
@@ -44,23 +42,13 @@ public:
   static QASObjectList* getObjectList(QVariantList json, QObject* parent, 
                                       int id=0);
 
-  // void addObject(QASObject* obj);
-
-  bool hasMore() const { return m_hasMore; }
-
   QASObject* at(size_t i) const {
     return qobject_cast<QASObject*>(QASAbstractObjectList::at(i));
-  }
-
-  bool contains(QASObject* obj) const {
-    return m_items.contains(obj);
   }
 
 protected:
   virtual QASAbstractObject* getAbstractObject(QVariantMap json,
                                                QObject* parent);
-
-  bool m_hasMore;
 
 private:
   static QMap<QString, QASObjectList*> s_objectLists;

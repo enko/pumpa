@@ -24,8 +24,6 @@
 #include "qasabstractobject.h"
 #include "qasabstractobjectlist.h"
 
-#include <QSet>
-
 //------------------------------------------------------------------------------
 
 class QASCollection : public QASAbstractObjectList {

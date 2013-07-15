@@ -52,8 +52,13 @@ public:
   QString url() const { return m_url; }
   QString urlOrProxy() const;
   virtual QString apiLink() const { return urlOrProxy(); }
+  bool hasMore() const { return m_hasMore; }
 
   void addObject(QASAbstractObject*);
+  void removeObject(QASAbstractObject*);
+  bool contains(QASAbstractObject* obj) const {
+    return m_item_set.contains(obj);
+  }
 
 protected:
   virtual QASAbstractObject* getAbstractObject(QVariantMap json,
@@ -63,6 +68,8 @@ protected:
   QString m_url;
   qulonglong m_totalItems;
   QString m_proxyUrl;
+
+  bool m_hasMore;
 
   QList<QASAbstractObject*> m_items;
   QSet<QASAbstractObject*> m_item_set;
