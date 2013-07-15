@@ -46,20 +46,20 @@ void ContextWidget::setObject(QASObject* obj) {
 
   m_itemLayout->insertWidget(0, ow);
   m_itemLayout->addStretch();
-  
+
+  if (m_object->replies())
+    m_object->replies()->refresh();
+
   m_firstTime = false;
 }
 
 //------------------------------------------------------------------------------
 
 void ContextWidget::update() {
+  QASAbstractObject *aObj = qobject_cast<QASAbstractObject*>(sender());
+  qDebug() << "ContextWidget::update()" << aObj->apiLink();
+
   if (!isVisible())
     emit highlightMe();
 }
 
-//------------------------------------------------------------------------------
-
-ObjectWidgetWithSignals*
-ContextWidget::createWidget(QASAbstractObject* /*obj*/, bool& /*countAsNew*/) {
-  return NULL;
-}

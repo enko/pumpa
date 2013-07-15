@@ -44,12 +44,14 @@ public:
   bool isYou() const { return m_isYou; }
   void setYou() { m_isYou = true; }
   bool followed() const { return m_followed; }
+  bool followedJson() const { return m_followed_json; }
   void setFollowed(bool b);
   QString summary() const { return m_summary; }
   QString location() const { return m_location; }
 
 private:
   bool m_followed;
+  bool m_followed_json;
   bool m_isYou;
   QString m_summary;
   QString m_location;

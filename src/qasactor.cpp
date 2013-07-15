@@ -20,12 +20,14 @@
 #include "qasactor.h"
 
 #include <QRegExp>
+#include <QDebug>
 
 //------------------------------------------------------------------------------
 
 QASActor::QASActor(QString id, QObject* parent) :
   QASObject(id, parent),
   m_followed(false),
+  m_followed_json(false),
   m_isYou(false)
 {
 #if DEBUG >= 1
@@ -40,6 +42,7 @@ void QASActor::update(QVariantMap json) {
   qDebug() << "updating Actor" << m_id;
 #endif
   bool ch = false;
+  bool dummy = false;
 
   m_author = NULL;
 
@@ -48,11 +51,12 @@ void QASActor::update(QVariantMap json) {
   updateVar(json, m_objectType, "objectType", ch);
 
   // this seems to be unreliable
-  // updateVar(json, m_followed, "pump_io", "followed", ch);
+  updateVar(json, m_followed_json, "pump_io", "followed", dummy);
 
   updateVar(json, m_summary, "summary", ch);
   updateVar(json, m_location, "location", "displayName", ch);
 
+  QString oldUrl = m_imageUrl;
   if (json.contains("image")) {
     QVariantMap im = json["image"].toMap();
     updateUrlOrProxy(im, m_imageUrl, ch);

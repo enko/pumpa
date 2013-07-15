@@ -95,7 +95,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget->addTab(m_directMajorWidget, "&direct");
   m_tabWidget->addTab(m_inboxMinorWidget, "mean&while");
   m_tabWidget->addTab(m_followersWidget, "&followers");
-  m_tabWidget->addTab(m_followingWidget, "f&ollowing");
+  m_tabWidget->addTab(m_followingWidget, "f&ollowing", false);
 
   m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
   m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);
@@ -148,10 +148,10 @@ void PumpApp::startPumping() {
   resetActivityStreams();
 
   // Setup endpoints for our timeline widgets
-  m_inboxWidget->setEndpoint(inboxEndpoint("major"));
+  m_inboxWidget->setEndpoint(inboxEndpoint("major"), QAS_FOLLOW);
   m_inboxMinorWidget->setEndpoint(inboxEndpoint("minor"));
-  m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"));
-  m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
+  m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"), QAS_FOLLOW);
+  m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"), QAS_FOLLOW);
   m_followersWidget->setEndpoint(apiUrl(apiUser("followers")));
   m_followingWidget->setEndpoint(apiUrl(apiUser("following")), QAS_FOLLOW);
 
@@ -886,7 +886,17 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     return;
 
   if (sid == QAS_COLLECTION) {
-    QASCollection::getCollection(json, this, id);
+    QASCollection* coll = QASCollection::getCollection(json, this, id);
+    if (coll && (id & QAS_FOLLOW)) {
+      for (size_t i=0; i<coll->size(); ++i) {
+        QASActor* actor = coll->at(i)->actor();
+        if (actor && actor->followedJson() && !actor->followed()) {
+          actor->setFollowed(true);
+          // qDebug() << "[WARNING] Setting followed "
+          //          << actor->id() << " according to feed.";
+        }
+      }
+    }
   } else if (sid == QAS_ACTIVITY) {
     QASActivity* act = QASActivity::getActivity(json, this);
 

@@ -26,39 +26,15 @@
 //------------------------------------------------------------------------------
 
 ObjectListWidget::ObjectListWidget(QWidget* parent) :
-  ASWidget(parent),
-  m_asMode(QAS_NULL)
+  ASWidget(parent)
 {}
 
 //------------------------------------------------------------------------------
 
-void ObjectListWidget::setEndpoint(QString endpoint, int asMode) {
-  clear();
+QASAbstractObjectList* ObjectListWidget::initList(QString endpoint, 
+                                                  QObject* parent) {
   m_asMode = QAS_OBJECTLIST;
-  
-  if (asMode != -1)
-    m_asMode |= asMode;
-
-  m_list = QASObjectList::initObjectList(endpoint,
-                                               parent()->parent()->parent());
-  connect(m_list, SIGNAL(changed()),
-          this, SLOT(update()), Qt::UniqueConnection);
-  connect(m_list, SIGNAL(request(QString, int)),
-          this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
-}
-
-//------------------------------------------------------------------------------
-
-void ObjectListWidget::fetchNewer() {
-  emit request(m_list->url(), m_asMode | QAS_NEWER);
-}
-
-//------------------------------------------------------------------------------
-
-void ObjectListWidget::fetchOlder() {
-  QString nextLink = m_list->nextLink();
-  if (!nextLink.isEmpty())
-    emit request(nextLink, m_asMode | QAS_OLDER);
+  return QASObjectList::initObjectList(endpoint, parent);
 }
 
 //------------------------------------------------------------------------------

@@ -501,7 +501,7 @@ QString FullObjectWidget::processText(QString old_text, bool getImages) {
     s_allowedTags 
       << "br" << "p" << "b" << "i" << "blockquote" << "div"
       << "code" << "h1" << "h2" << "h3" << "h4" << "h5"
-      << "em" << "ol" << "li" << "ul" << "hr" << "strong";
+      << "em" << "ol" << "li" << "ul" << "hr" << "strong" << "u";
     s_allowedTags << "pre";
     s_allowedTags << "a";
     s_allowedTags << "img";
@@ -535,7 +535,7 @@ QString FullObjectWidget::processText(QString old_text, bool getImages) {
   while ((pos = rx.indexIn(text, pos)) != -1) {
     int len = rx.matchedLength();
     QString slash = rx.cap(1);
-    QString tag = rx.cap(2);
+    QString tag = rx.cap(2).toLower();
     QString inside = rx.cap(3);
 
     if (tag == "img") { // Replace img's with placeholder

@@ -35,6 +35,9 @@ class ASWidget : public QScrollArea {
 public:
   ASWidget(QWidget* parent);
   virtual void refreshTimeLabels();
+  virtual void fetchNewer();
+  virtual void fetchOlder();
+  void setEndpoint(QString endpoint, int asMode=-1);
 
 signals:
   void highlightMe();  
@@ -50,10 +53,12 @@ protected slots:
   virtual void update();
 
 protected:
+  virtual QASAbstractObjectList* initList(QString endpoint, QObject* parent);
+
   QASAbstractObject* objectAt(int idx);
   ObjectWidgetWithSignals* widgetAt(int idx);
   virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj,
-                                                bool& countAsNew) = 0;
+                                                bool& countAsNew);
 
   void keyPressEvent(QKeyEvent* event);
   void clear();
@@ -64,6 +69,8 @@ protected:
 
   QSet<QASAbstractObject*> m_object_set;
   QASAbstractObjectList* m_list;
+
+  int m_asMode;
 };
 
 #endif /* _ASWIDGET_H_ */

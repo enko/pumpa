@@ -41,7 +41,7 @@ void QASAbstractObjectList::update(QVariantMap json, bool older) {
   bool dummy = false;
 
   updateVar(json, m_displayName, "displayName", ch);
-  updateVar(json, m_totalItems, "totalItems", ch);
+  updateVar(json, m_totalItems, "totalItems", ch, true);
   updateVar(json, m_proxyUrl, "pump_io", "proxyURL", ch);
 
   // In pump.io the next link goes "next" in the UI, i.e. to older
@@ -69,7 +69,6 @@ void QASAbstractObjectList::update(QVariantMap json, bool older) {
     updateVar(json, m_prevLink, "links", "prev", "href", dummy);
   }
 
-
   // We assume that collections come in as newest first, so we add
   // items starting from the top going downwards. Or if older=true
   // starting from the end and going downwards (appending).
@@ -81,6 +80,14 @@ void QASAbstractObjectList::update(QVariantMap json, bool older) {
   for (int i=0; i<items_json.count(); i++) {
     QASAbstractObject* obj = getAbstractObject(items_json.at(i).toMap(),
                                                parent());
+    if (mi < m_items.size()) {
+      QASAbstractObject* mObj = m_items[mi];
+      if (mObj == obj) {
+        mi++;
+        continue;
+      }
+    }
+
     if (m_item_set.contains(obj))
       continue;
 
@@ -115,10 +122,11 @@ QString QASAbstractObjectList::urlOrProxy() const {
 void QASAbstractObjectList::addObject(QASAbstractObject* obj) {
   if (m_item_set.contains(obj))
     return;
+
   m_items.append(obj);
   m_item_set.insert(obj);
 
-  m_totalItems++;
+  // m_totalItems++;
   emit changed();
 }
 
@@ -128,6 +136,6 @@ void QASAbstractObjectList::removeObject(QASAbstractObject* obj) {
   m_items.removeAll(obj);
   m_item_set.remove(obj);
 
-  m_totalItems--;
+  // m_totalItems--;
   emit changed();
 }

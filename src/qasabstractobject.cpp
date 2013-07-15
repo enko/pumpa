@@ -90,11 +90,13 @@ void QASAbstractObject::updateVar(QVariantMap obj, bool& var, QString name,
 //------------------------------------------------------------------------------
 
 void QASAbstractObject::updateVar(QVariantMap obj, qulonglong& var,
-                                  QString name, bool& changed) {
+                                  QString name, bool& changed,
+                                  bool ignoreDecrease) {
   qulonglong oldVar = var;
   if (obj.contains(name))
     var = obj[name].toULongLong();
-  if (oldVar != var) changed = true;
+  if ((var > oldVar) || ((var < oldVar) && !ignoreDecrease))
+    changed = true;
 }
 
 //------------------------------------------------------------------------------
@@ -147,6 +149,10 @@ void QASAbstractObject::updateUrlOrProxy(QVariantMap obj, QString& var,
   bool dummy;
   updateVar(obj, var, "url", dummy);
   updateVar(obj, var, "pump_io", "proxyURL", dummy);
+
+  if (oldVar.contains("/api/proxy/") && !var.contains("/api/proxy/"))
+    var = oldVar;
+
   if (oldVar != var) changed = true;
 }
 

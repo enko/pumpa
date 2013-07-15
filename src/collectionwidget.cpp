@@ -31,29 +31,10 @@ CollectionWidget::CollectionWidget(QWidget* parent) :
 
 //------------------------------------------------------------------------------
 
-void CollectionWidget::setEndpoint(QString endpoint) {
-  clear();
-
-  m_list = QASCollection::initCollection(endpoint,
-                                         parent()->parent()->parent());
-  connect(m_list, SIGNAL(changed()), this, SLOT(update()),
-          Qt::UniqueConnection);
-  connect(m_list, SIGNAL(request(QString, int)),
-          this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
-}
-
-//------------------------------------------------------------------------------
-
-void CollectionWidget::fetchNewer() {
-  emit request(m_list->url(), QAS_COLLECTION | QAS_NEWER);
-}
-
-//------------------------------------------------------------------------------
-
-void CollectionWidget::fetchOlder() {
-  QString nextLink = m_list->nextLink();
-  if (!nextLink.isEmpty())
-    emit request(nextLink, QAS_COLLECTION | QAS_OLDER);
+QASAbstractObjectList* CollectionWidget::initList(QString endpoint,
+                                                  QObject* parent) {
+  m_asMode = QAS_COLLECTION;
+  return QASCollection::initCollection(endpoint, parent);
 }
 
 //------------------------------------------------------------------------------
@@ -77,4 +58,10 @@ CollectionWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
 
   countAsNew = !act->actor()->isYou();
   return aw;
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::fetchNewer() {
+  emit request(m_list->url(), m_asMode | QAS_NEWER);
 }

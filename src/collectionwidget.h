@@ -31,11 +31,10 @@ class CollectionWidget : public ASWidget {
 
 public:
   CollectionWidget(QWidget* parent);
-  void setEndpoint(QString endpoint);
-  void fetchNewer();
-  void fetchOlder();
+  virtual void fetchNewer();
 
 protected:
+  virtual QASAbstractObjectList* initList(QString endpoint, QObject* parent);
   virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj,
                                                 bool& countAsNew);
 

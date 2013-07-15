@@ -27,7 +27,8 @@
 ASWidget::ASWidget(QWidget* parent) :
   QScrollArea(parent),
   m_firstTime(true),
-  m_list(NULL)
+  m_list(NULL),
+  m_asMode(QAS_NULL)
 {
   m_itemLayout = new QVBoxLayout;
   m_itemLayout->setSpacing(10);
@@ -55,6 +56,35 @@ void ASWidget::clear() {
 
   m_firstTime = true;
   m_itemLayout->addStretch();
+}
+
+//------------------------------------------------------------------------------
+
+void ASWidget::setEndpoint(QString endpoint, int asMode) {
+  clear();
+  m_list = initList(endpoint, parent()->parent()->parent());
+  
+  if (asMode != -1)
+    m_asMode |= asMode;
+
+  connect(m_list, SIGNAL(changed()),
+          this, SLOT(update()), Qt::UniqueConnection);
+  connect(m_list, SIGNAL(request(QString, int)),
+          this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
+}
+
+//------------------------------------------------------------------------------
+
+void ASWidget::fetchNewer() {
+  emit request(m_list->prevLink(), m_asMode | QAS_NEWER);
+}
+
+//------------------------------------------------------------------------------
+
+void ASWidget::fetchOlder() {
+  QString nextLink = m_list->nextLink();
+  if (!nextLink.isEmpty())
+    emit request(nextLink, m_asMode | QAS_OLDER);
 }
 
 //------------------------------------------------------------------------------
@@ -158,3 +188,14 @@ void ASWidget::update() {
   m_firstTime = false;
 }
 
+//------------------------------------------------------------------------------
+
+ObjectWidgetWithSignals* ASWidget::createWidget(QASAbstractObject*, bool&) {
+  return NULL;
+}
+
+//------------------------------------------------------------------------------
+
+QASAbstractObjectList* ASWidget::initList(QString, QObject*) {
+  return NULL;
+}

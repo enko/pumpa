@@ -35,8 +35,6 @@ public:
 
 protected:
   virtual void update();
-  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* obj,
-                                                bool& countAsNew);
 
   QASObject* m_object;
 };
