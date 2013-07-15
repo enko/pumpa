@@ -31,7 +31,7 @@ class CollectionWidget : public ASWidget {
 
 public:
   CollectionWidget(QWidget* parent);
-  virtual void fetchNewer();
+  // virtual void fetchNewer();
 
 protected:
   virtual QASAbstractObjectList* initList(QString endpoint, QObject* parent);

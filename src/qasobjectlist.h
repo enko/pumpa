@@ -33,6 +33,8 @@ protected:
   QASObjectList(QString url, QObject* parent);
 
 public:
+  virtual void update(QVariantMap json, bool older);
+
   static void clearCache();
 
   static QASObjectList* initObjectList(QString url, QObject* parent);
@@ -46,12 +48,15 @@ public:
     return qobject_cast<QASObject*>(QASAbstractObjectList::at(i));
   }
 
+  void isReplies(bool b) { m_isReplies = b; }
+
 protected:
   virtual QASAbstractObject* getAbstractObject(QVariantMap json,
                                                QObject* parent);
 
 private:
   static QMap<QString, QASObjectList*> s_objectLists;
+  bool m_isReplies;
 };
 
 #endif /* _QASOBJECTLIST_H_ */

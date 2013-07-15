@@ -33,7 +33,7 @@ protected:
   QASAbstractObjectList(int asType, QString url, QObject* parent);
 
 public:
-  void update(QVariantMap json, bool older);
+  virtual void update(QVariantMap json, bool older);
 
   QString prevLink() const { 
     return m_prevLink.isEmpty() ? m_url : m_prevLink; 

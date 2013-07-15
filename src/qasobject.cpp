@@ -91,6 +91,7 @@ void QASObject::update(QVariantMap json) {
 
   if (json.contains("replies")) {
     m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
+    m_replies->isReplies(true);
     connectSignals(m_replies);
   }
 

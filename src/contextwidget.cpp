@@ -56,9 +56,6 @@ void ContextWidget::setObject(QASObject* obj) {
 //------------------------------------------------------------------------------
 
 void ContextWidget::update() {
-  QASAbstractObject *aObj = qobject_cast<QASAbstractObject*>(sender());
-  qDebug() << "ContextWidget::update()" << aObj->apiLink();
-
   if (!isVisible())
     emit highlightMe();
 }

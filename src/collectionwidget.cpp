@@ -62,6 +62,6 @@ CollectionWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
 
 //------------------------------------------------------------------------------
 
-void CollectionWidget::fetchNewer() {
-  emit request(m_list->url(), m_asMode | QAS_NEWER);
-}
+// void CollectionWidget::fetchNewer() {
+//   emit request(m_list->url(), m_asMode | QAS_NEWER);
+// }

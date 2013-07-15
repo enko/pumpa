@@ -32,7 +32,8 @@ void QASObjectList::clearCache() { deleteMap<QASObjectList*>(s_objectLists); }
 //------------------------------------------------------------------------------
 
 QASObjectList::QASObjectList(QString url, QObject* parent) :
-  QASAbstractObjectList(QAS_OBJECTLIST, url, parent)
+  QASAbstractObjectList(QAS_OBJECTLIST, url, parent),
+  m_isReplies(false)
 {
 #if DEBUG >= 1
   qDebug() << "new ObjectList" << m_url;
@@ -89,3 +90,12 @@ QASObjectList* QASObjectList::getObjectList(QVariantList json, QObject* parent,
   return getObjectList(jmap, parent, id);
 }
 
+//------------------------------------------------------------------------------
+
+void QASObjectList::update(QVariantMap json, bool older) {
+  if (m_isReplies && json.contains("items")) {
+    m_item_set.clear();
+    m_items.clear();
+  }
+  QASAbstractObjectList::update(json, older);
+}
