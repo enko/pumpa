@@ -27,6 +27,8 @@
 #include "pumpa_defines.h"
 #include "json.h"
 
+#define DEBUG 0
+
 //------------------------------------------------------------------------------
 
 class QASAbstractObject : public QObject {

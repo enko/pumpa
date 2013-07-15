@@ -21,6 +21,8 @@
 
 #include "util.h"
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 QMap<QString, QASCollection*> QASCollection::s_collections;

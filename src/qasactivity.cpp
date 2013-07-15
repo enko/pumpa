@@ -20,6 +20,8 @@
 #include "qasactivity.h"
 #include "util.h"
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 QMap<QString, QASActivity*> QASActivity::s_activities;

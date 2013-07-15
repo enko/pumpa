@@ -37,6 +37,10 @@ QASAbstractObjectList::QASAbstractObjectList(int asType, QString url,
 //------------------------------------------------------------------------------
 
 void QASAbstractObjectList::update(QVariantMap json, bool older) {
+#if DEBUG >= 1
+  qDebug() << "updating AbstractObjectList" << m_url;
+#endif
+
   bool ch = false;
   bool dummy = false;
 
@@ -123,6 +127,10 @@ void QASAbstractObjectList::addObject(QASAbstractObject* obj) {
   if (m_item_set.contains(obj))
     return;
 
+#if DEBUG >= 1
+  qDebug() << "addObject" << obj->apiLink();
+#endif
+
   m_items.append(obj);
   m_item_set.insert(obj);
 
@@ -135,6 +143,10 @@ void QASAbstractObjectList::addObject(QASAbstractObject* obj) {
 void QASAbstractObjectList::removeObject(QASAbstractObject* obj) {
   m_items.removeAll(obj);
   m_item_set.remove(obj);
+
+#if DEBUG >= 1
+  qDebug() << "removeObject" << obj->apiLink();
+#endif
 
   // m_totalItems--;
   emit changed();

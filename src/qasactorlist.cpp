@@ -21,6 +21,8 @@
 
 #include "util.h"
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 QMap<QString, QASActorList*> QASActorList::s_actorLists;

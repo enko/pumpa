@@ -83,8 +83,10 @@ QASActor* QASActor::getActor(QVariantMap json, QObject* parent) {
 //------------------------------------------------------------------------------
 
 void QASActor::setFollowed(bool b) { 
-  m_followed = b; 
-  emit changed();
+  if (b != m_followed) {
+    m_followed = b;
+    emit changed();
+  }
 }
 
 //------------------------------------------------------------------------------
