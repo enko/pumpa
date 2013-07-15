@@ -98,9 +98,9 @@ void ObjectWidget::showMore() {
   m_short = false;
   m_shortObjectWidget->setVisible(false);
   m_objectWidget->setVisible(true);
-  if (m_contextLabel)
+  if (m_contextLabel && !m_irtObject->url().isEmpty())
     m_contextLabel->setVisible(true);
-  if (m_contextButton)
+  if (m_contextButton && !m_irtObject->url().isEmpty())
     m_contextButton->setVisible(true);
   emit moreClicked();
 }
@@ -120,7 +120,7 @@ void ObjectWidget::updateContextLabel() {
   QString text = ShortObjectWidget::objectExcerpt(m_irtObject);
   m_contextLabel->setText("Re: " + text);
   m_contextButton->setText("Show context");
-  if (!m_short) {
+  if (!m_short && !m_irtObject->url().isEmpty()) {
     m_contextLabel->setVisible(true);
     m_contextButton->setVisible(true);
   }
