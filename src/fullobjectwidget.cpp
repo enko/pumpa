@@ -105,7 +105,7 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
     connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
     m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
 
-    m_commentButton = new TextToolButton("comment", this);
+    m_commentButton = new TextToolButton(tr("comment"), this);
     connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
     m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
   }
@@ -172,7 +172,7 @@ void FullObjectWidget::onChanged() {
   if (m_actor) {
     text = m_actor->summary();
     if (text.isEmpty())
-      text = "[No description]";
+      text = tr("[No description]");
   }
 
   setText(processText(text, true));
@@ -206,7 +206,7 @@ void FullObjectWidget::updateInfoText() {
     
     QString location = m_actor->location();
     if (!location.isEmpty())
-      infoStr += " at " + location;
+      infoStr += " " + tr("at") + " " + location;
   } else {
     infoStr = QString("<a href=\"%2\">%1</a>").
       arg(relativeFuzzyTime(m_object->published())).
@@ -214,7 +214,7 @@ void FullObjectWidget::updateInfoText() {
 
     QASActor* author = m_object->author();
     if (author)
-      infoStr = QString("<a href=\"%2\">%1</a> at ").
+      infoStr = QString("<a href=\"%2\">%1</a> " + tr("at") + " ").
         arg(author->displayName()).
         arg(author->url()) + infoStr;
   }
@@ -227,7 +227,7 @@ void FullObjectWidget::updateFavourButton(bool wait) {
   if (!m_favourButton)
     return;
 
-  QString text = m_object->liked() ? "unlike" : "like";
+  QString text = m_object->liked() ? tr("unlike") : tr("like");
   if (wait)
     text = "...";
   m_favourButton->setText(text);
@@ -239,7 +239,7 @@ void FullObjectWidget::updateShareButton(bool /*wait*/) {
   if (!m_shareButton)
     return;
 
-  m_shareButton->setText("share");
+  m_shareButton->setText(tr("share"));
 }
 
 //------------------------------------------------------------------------------
@@ -264,7 +264,8 @@ void FullObjectWidget::updateFollowButton(bool /*wait*/) {
   }
 
   m_followButton->setVisible(true);
-  m_followButton->setText(m_actor->followed() ? "Stop following" : "Follow");
+  m_followButton->setText(m_actor->followed() ? tr("Stop following") :
+                          tr("Follow"));
 }
 
 //------------------------------------------------------------------------------
@@ -280,7 +281,8 @@ void FullObjectWidget::updateFollowAuthorButton(bool /*wait*/) {
 
   m_followAuthorButton->setVisible(true);
 
-  QString text = m_author->followed() ? "Stop following " : "Follow ";
+  QString text = (m_author->followed() ? tr("Stop following") : tr("Follow"))
+    + " ";
   text += m_author->displayNameOrWebFingerShort();
 
   m_followAuthorButton->setText(text);
@@ -320,8 +322,8 @@ void FullObjectWidget::updateLikes() {
   }
 
   text = likes->actorNames();
-  text += (nl==1 && !likes->onlyYou()) ? " likes" : " like";
-  text += " this.";
+  text += " " + ((nl==1 && !likes->onlyYou()) ? tr("likes this.") :
+                 tr("like this."));
   
   m_likesLabel->setText(text);
 }
@@ -350,15 +352,17 @@ void FullObjectWidget::updateShares() {
   if (m_object->shares()->size()) {
     text = m_object->shares()->actorNames();
     int others = ns-m_object->shares()->size();
-    if (others > 0)
-      text += QString(" and %1 other %2").arg(others).
-        arg(others > 1 ? "persons" : "person");
-    text += " shared this.";
+    if (others == 1)
+      text += " " +tr("and 1 other person");
+    else if (others > 1)
+      text += " " + QString(tr("and %1 other persons")).
+        arg(others);
+    text += " " + tr("shared this.");
   } else {
     if (ns == 1)
-      text = "1 person shared this.";
+      text = tr("1 person shared this.");
     else
-      text = QString("%1 persons shared this.").arg(ns);
+      text = QString(tr("%1 persons shared this.")).arg(ns);
   }
   
   m_sharesLabel->setText(text);
@@ -427,7 +431,7 @@ void FullObjectWidget::addObjectList(QASObjectList* ol) {
 //------------------------------------------------------------------------------
 
 void FullObjectWidget::addHasMoreButton(QASObjectList* ol, int li) {
-  QString buttonText = QString("Show all %1 replies").
+  QString buttonText = QString(tr("Show all %1 replies")).
     arg(ol->totalItems());
   if (m_hasMoreButton == NULL) {
     m_hasMoreButton = new QPushButton(this);
@@ -480,7 +484,7 @@ void FullObjectWidget::onFollow() {
 void FullObjectWidget::onFollowAuthor() {
   bool doFollow = !m_author->followed();
   if (!doFollow) {
-    QString msg = "Are you sure you want to stop following " +
+    QString msg = tr("Are you sure you want to stop following") + " " +
       m_author->displayNameOrWebFinger();
     int ret = QMessageBox::warning(this, CLIENT_FANCY_NAME, msg,
                                    QMessageBox::Cancel | QMessageBox::Yes,
