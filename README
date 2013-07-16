@@ -1,4 +1,4 @@
-# Pumpa v0.5
+# Pumpa v0.6
 
 Greetings, fellow pumpkins!
 
@@ -124,8 +124,9 @@ configuration file:
 
     link_color=#333
 
-The text after the equals sign can be [any text string that Qt can
-parse as a colour][11].
+The text after the equals sign can be
+[any text string that Qt can parse as a colour][11]. (Yes I know
+colour is spelt wrong in the config name :-)
 
 [11]: http://qt-project.org/doc/qt-4.8/qcolor.html#setNamedColor
 [12]: http://qt-project.org/doc/qt-4.8/qsettings.html#locations-where-application-settings-are-stored
