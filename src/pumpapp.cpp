@@ -18,6 +18,7 @@
 */
 
 #include <QStatusBar>
+#include <QPalette>
 
 #include "pumpapp.h"
 
@@ -42,7 +43,20 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_settingsDialog = new PumpaSettingsDialog(m_s, this);
   connect(m_settingsDialog, SIGNAL(newAccount()),
           this, SLOT(launchOAuthWizard()));
-  
+
+  QString linkColorStr = m_s->linkColor();
+  if (!linkColorStr.isEmpty()) {
+    QColor linkColor(linkColorStr);
+    if (linkColor.isValid()) {
+      QPalette pal(qApp->palette());
+      pal.setColor(QPalette::Link, linkColor);
+      pal.setColor(QPalette::LinkVisited, linkColor);
+      qApp->setPalette(pal);
+    } else {
+      qDebug() << "[ERROR] cannot parse link_color \"" + linkColorStr + "\"";
+    }
+  }
+
   m_nam = new QNetworkAccessManager(this);
 
   oaRequest = new KQOAuthRequest(this);

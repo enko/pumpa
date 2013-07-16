@@ -71,6 +71,8 @@ public:
 
   int defaultToAddress() const { return getValue("default_to", 1).toInt(); }
 
+  QString linkColor() const { return getValue("link_color", "").toString(); }
+
   // setters
   void siteUrl(QString s) { setValue("site_url", s, "Account"); }
   void userName(QString s) { setValue("username", s, "Account"); }
