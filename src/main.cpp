@@ -41,9 +41,7 @@ int main(int argc, char** argv) {
   QString settingsFile;
   if (argc > 1) {
     QString arg(argv[1]);
-    if (arg == "test") 
-      settingsFile = "pumpa-test.conf";
-    else if (arg == "testmarkup")
+    if (arg == "testmarkup")
       return testMarkup(argc > 2 ? argv[2] : "");
     else if (arg == "testfeedint") {
       qDebug() << PumpaSettingsDialog::feedIntToComboIndex(atoi(argv[2]));
@@ -80,6 +78,10 @@ int main(int argc, char** argv) {
     }
     else if (arg == "-c" && argc == 3) {
       settingsFile = argv[2];
+    }
+    else {
+      qDebug() << "Usage: ./pumpa [-c alternative.conf]";
+      return 0;
     }
   }
 
