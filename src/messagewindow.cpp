@@ -20,51 +20,47 @@
 #include "messagewindow.h"
 #include "pumpa_defines.h"
 
-#include <QFormLayout>
-
 //------------------------------------------------------------------------------
 
-MessageWindow::MessageWindow(QASObject* obj, const PumpaSettings* s,
+MessageWindow::MessageWindow(const PumpaSettings* s,
                              QWidget* parent) :
-  QDialog(parent), m_toComboBox(NULL), m_ccComboBox(NULL),
-  m_obj(obj), m_s(s)
+  QDialog(parent),
+  m_toComboBox(NULL),
+  m_ccComboBox(NULL),
+  m_addressLayout(NULL),
+  m_obj(NULL),
+  m_s(s)
 {
   setMinimumSize(QSize(400,400));
 
-  infoLabel = new QLabel(this);
-  infoLabel->setText(QString("Post a %1").arg(obj == NULL ? "note" : "reply"));
+  m_infoLabel = new QLabel(this);
 
-  markupLabel = new QLabel(this);
-  markupLabel->setText(QString("<a href=\"%2\">[markup]</a>").
+  m_markupLabel = new QLabel(this);
+  m_markupLabel->setText(QString("<a href=\"%2\">[markup]</a>").
                        arg(MARKUP_DOC_URL));
-  markupLabel->setOpenExternalLinks(true);
-  markupLabel->setTextInteractionFlags(Qt::TextSelectableByMouse |
+  m_markupLabel->setOpenExternalLinks(true);
+  m_markupLabel->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                        Qt::LinksAccessibleByMouse);
 
   infoLayout = new QHBoxLayout;
-  infoLayout->addWidget(infoLabel);
+  infoLayout->addWidget(m_infoLabel);
   infoLayout->addStretch();
-  infoLayout->addWidget(markupLabel);
+  infoLayout->addWidget(m_markupLabel);
 
-  QFormLayout* addressLayout = NULL;
-  if (m_obj == NULL) {
-    QStringList addressItems;
-    addressItems << ""
-                 << "Public"
-                 << "Followers";
-
-    m_toComboBox = new QComboBox(this);
-    m_toComboBox->addItems(addressItems);
-    m_toComboBox->setCurrentIndex(m_s->defaultToAddress());
-
-    m_ccComboBox = new QComboBox(this);
-    m_ccComboBox->addItems(addressItems);
-    m_ccComboBox->setCurrentIndex(2);
-
-    addressLayout = new QFormLayout;
-    addressLayout->addRow("To:", m_toComboBox);
-    addressLayout->addRow("Cc:", m_ccComboBox);
-  }
+  QStringList addressItems;
+  addressItems << ""
+               << "Public"
+               << "Followers";
+  
+  m_toComboBox = new QComboBox(this);
+  m_toComboBox->addItems(addressItems);
+  
+  m_ccComboBox = new QComboBox(this);
+  m_ccComboBox->addItems(addressItems);
+  
+  m_addressLayout = new QFormLayout;
+  m_addressLayout->addRow("To:", m_toComboBox);
+  m_addressLayout->addRow("Cc:", m_ccComboBox);
 
   textEdit = new MessageEdit(this);
 
@@ -72,8 +68,8 @@ MessageWindow::MessageWindow(QASObject* obj, const PumpaSettings* s,
 
   layout = new QVBoxLayout;
   layout->addLayout(infoLayout);
-  if (addressLayout)
-    layout->addLayout(addressLayout);
+  if (m_addressLayout)
+    layout->addLayout(m_addressLayout);
   layout->addWidget(textEdit);
 
   cancelButton = new QPushButton("Cancel");
@@ -99,8 +95,27 @@ MessageWindow::MessageWindow(QASObject* obj, const PumpaSettings* s,
 
 //------------------------------------------------------------------------------
 
+void MessageWindow::newMessage(QASObject* obj) {
+  bool isReply = (obj != NULL);
+  m_obj = obj;
+  m_infoLabel->setText(QString("Post a %1").
+                       arg(obj == NULL ? "note" : "reply"));
+  m_toComboBox->setCurrentIndex(m_s->defaultToAddress());
+  m_ccComboBox->setCurrentIndex(2);
+
+  textEdit->clear();
+
+  m_toComboBox->setVisible(!isReply);
+  m_addressLayout->labelForField(m_toComboBox)->setVisible(!isReply);
+  m_ccComboBox->setVisible(!isReply);
+  m_addressLayout->labelForField(m_ccComboBox)->setVisible(!isReply);
+}
+
+//------------------------------------------------------------------------------
+
 void MessageWindow::showEvent(QShowEvent*) {
   textEdit->setFocus(Qt::OtherFocusReason);
+  textEdit->selectAll();
   activateWindow();
 }
 

@@ -63,6 +63,7 @@
 #define QAS_TOGGLE_LIKE  (1 << 11)
 #define QAS_FOLLOW       (1 << 12)
 #define QAS_UNFOLLOW     (1 << 13)
+#define QAS_POST         (1 << 14)
 
 //------------------------------------------------------------------------------
 

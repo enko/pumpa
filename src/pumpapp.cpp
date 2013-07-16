@@ -23,7 +23,6 @@
 
 #include "json.h"
 #include "util.h"
-#include "messagewindow.h"
 #include "filedownloader.h"
 
 //------------------------------------------------------------------------------
@@ -32,6 +31,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   QMainWindow(parent),
   m_contextWidget(NULL),
   m_wiz(NULL),
+  m_messageWindow(NULL),
   m_trayIcon(NULL),
   m_requests(0)
 {
@@ -90,12 +90,12 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget = new TabWidget(this);
   connect(m_tabWidget, SIGNAL(currentChanged(int)),
           this, SLOT(tabSelected(int)));
-  m_tabWidget->addTab(m_inboxWidget, "&inbox");
-  m_tabWidget->addTab(m_directMinorWidget, "&mentions");
-  m_tabWidget->addTab(m_directMajorWidget, "&direct");
-  m_tabWidget->addTab(m_inboxMinorWidget, "mean&while");
-  m_tabWidget->addTab(m_followersWidget, "&followers");
-  m_tabWidget->addTab(m_followingWidget, "f&ollowing", false);
+  m_tabWidget->addTab(m_inboxWidget, tr("&inbox"));
+  m_tabWidget->addTab(m_directMinorWidget, tr("&mentions"));
+  m_tabWidget->addTab(m_directMajorWidget, tr("&direct"));
+  m_tabWidget->addTab(m_inboxMinorWidget, tr("mean&while"));
+  m_tabWidget->addTab(m_followersWidget, tr("&followers"));
+  m_tabWidget->addTab(m_followingWidget, tr("f&ollowing"), false);
 
   m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
   m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);
@@ -275,7 +275,7 @@ void PumpApp::timelineHighlighted(int feed) {
     m_trayIcon->setIcon(QIcon(":/images/pumpa_glow.png"));
 
   if (feed & m_s->popupFeeds())
-    sendNotification(CLIENT_FANCY_NAME, "New messages.");
+    sendNotification(CLIENT_FANCY_NAME, tr("You have new messages."));
 }
 
 //------------------------------------------------------------------------------
@@ -324,7 +324,7 @@ bool PumpApp::sendNotification(QString summary, QString text) {
 //------------------------------------------------------------------------------
 
 void PumpApp::errorMessage(QString msg) {
-  statusMessage("Error: " + msg);
+  statusMessage(tr("Error: ") + msg);
   qDebug() << "[ERROR]:" << msg;
 }
 
@@ -376,7 +376,7 @@ void PumpApp::trayIconActivated(QSystemTrayIcon::ActivationReason reason) {
 //------------------------------------------------------------------------------
 
 QString PumpApp::showHideText(bool visible) {
-  return QString("%1 &Window").arg(visible ? "Hide" : "Show" );
+  return QString(tr("%1 &Window")).arg(visible ? tr("Hide") : tr("Show") );
 }
 
 //------------------------------------------------------------------------------
@@ -412,7 +412,7 @@ void PumpApp::createActions() {
   aboutAction = new QAction(tr("&About"), this);
   connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
 
-  aboutQtAction = new QAction("About &Qt", this);
+  aboutQtAction = new QAction(tr("About &Qt"), this);
   connect(aboutQtAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
   newNoteAction = new QAction(tr("New &Note"), this);
@@ -487,17 +487,17 @@ void PumpApp::about() {
     "created by Joshua Taylor</a> for the "
     "<a href=\"http://lpc.opengameart.org/\">Liberated Pixel Cup</a>."
     "The logo is copyrighted by the artist and is dual licensed under the "
-    "CC-BY-SA 3.0 license and the GNU GPL 3.0.";
-
+       "CC-BY-SA 3.0 license and the GNU GPL 3.0.";
+  
   QString mainText = QString("<p><b>%1 %2</b> - %3<br/>"
                              "<a href=\"%4\">%4</a><br/>"
                              "Copyright &copy; 2013 Mats Sj&ouml;berg.</p>")
     .arg(CLIENT_FANCY_NAME)
     .arg(CLIENT_VERSION)
-    .arg("A simple Qt-based pump.io client.")
+    .arg(tr("A simple Qt-based pump.io client."))
     .arg(WEBSITE_URL);
 
-  QMessageBox::about(this, tr("About " CLIENT_FANCY_NAME), 
+  QMessageBox::about(this, "About " CLIENT_FANCY_NAME, 
                      mainText + GPL);
 }
 
@@ -510,12 +510,15 @@ void PumpApp::newNote(QASObject* obj) {
     qDebug() << "[DEBUG] Opening reply window to" << obj->type() << obj->id();
   }
 
-  MessageWindow* w = new MessageWindow(obj, m_s, this);
-  connect(w, SIGNAL(sendMessage(QString, int, int)),
-          this, SLOT(postNote(QString, int, int)));
-  connect(w, SIGNAL(sendReply(QASObject*, QString)),
-          this, SLOT(postReply(QASObject*, QString)));
-  w->show();
+  if (!m_messageWindow) {
+    m_messageWindow = new MessageWindow(m_s, this);
+    connect(m_messageWindow, SIGNAL(sendMessage(QString, int, int)),
+            this, SLOT(postNote(QString, int, int)));
+    connect(m_messageWindow, SIGNAL(sendReply(QASObject*, QString)),
+            this, SLOT(postReply(QASObject*, QString)));
+  }
+  m_messageWindow->newMessage(obj);
+  m_messageWindow->show();
 }
 
 //------------------------------------------------------------------------------
@@ -554,7 +557,7 @@ void PumpApp::loadOlder() {
 
 QString PumpApp::inboxEndpoint(QString path) {
   if (m_s->siteUrl().isEmpty()) {
-    errorMessage("Site not configured yet!");
+    errorMessage(tr("Site not configured yet!"));
     return "";
   }
   return m_s->siteUrl() + "/api/user/" + m_s->userName() + "/inbox/" + path;
@@ -584,8 +587,8 @@ void PumpApp::errorBox(QString msg) {
 void PumpApp::followDialog() {
   bool ok;
   QString text =
-    QInputDialog::getText(this, "Follow pump.io user",
-                          "Enter webfinger ID of person to follow: ",
+    QInputDialog::getText(this, tr("Follow pump.io user"),
+                          tr("Enter webfinger ID of person to follow: "),
                           QLineEdit::Normal, "evan@e14n.com", &ok);
 
   if (!ok || text.isEmpty())
@@ -595,12 +598,12 @@ void PumpApp::followDialog() {
   QString error;
 
   if (!splitWebfingerId(text, username, server))
-    error = "Sorry, that doesn't even look like a webfinger ID!";
+    error = tr("Sorry, that doesn't even look like a webfinger ID!");
 
   QASObject* obj = QASObject::getObject("acct:" + username + "@" + server);
   QASActor* actor = obj ? obj->asActor() : NULL;
   if (actor && actor->followed())
-    error = "Sorry, you are already following that person!";
+    error = tr("Sorry, you are already following that person!");
 
   if (!error.isEmpty())
     return errorBox(error);
@@ -632,14 +635,14 @@ void PumpApp::userTestDoneAndFollow() {
   QString userId = reply->url().queryItemValue("resource");
 
   if (reply->error() != QNetworkReply::NoError)
-    return errorBox("Invalid user (cannot find webfinger): " + userId);
+    return errorBox(tr("Invalid user: ") + userId);
 
   int redirs = reply->property("pumpa_redirects").toInt();
 
   QUrl loc = reply->header(QNetworkRequest::LocationHeader).toUrl();
   if (loc.isValid()) {
     if (redirs > 5)
-      return errorBox("Invalid user (infinite redirections): " + userId);
+      return errorBox(tr("Invalid user (cannot check site): ") + userId);
     reply->deleteLater();
     
     QNetworkRequest rec(loc);
@@ -658,7 +661,7 @@ void PumpApp::onShowContext(QASObject* obj) {
   if (!m_contextWidget) {
     m_contextWidget = new ContextWidget(this);
     connectCollection(m_contextWidget);
-    m_tabWidget->addTab(m_contextWidget, "&context");
+    m_tabWidget->addTab(m_contextWidget, tr("&context"));
   }
 
   m_contextWidget->setObject(obj);
@@ -698,18 +701,6 @@ QString PumpApp::addTextMarkup(QString text) {
   text = linkifyUrls(text);
 
   qDebug() << "\n[DEBUG] MARKUP (linkify plain URLs)\n" << text;
-
-  // text.replace("\n", "<br/>");
-  
-  // text = changePairedTags(text, "\\*\\*", "\\*\\*",
-  //                            "<strong>", "</strong>");
-  // text = changePairedTags(text, "\\*", "\\*", "<em>", "</em>");
-
-  // text = changePairedTags(text, "__", "__", "<strong>", "</strong>");
-  // text = changePairedTags(text, "_", "_", "<em>", "</em>");
-
-  // text = changePairedTags(text, "``", "``", "<pre>", "</pre>", "`");
-  // text = changePairedTags(text, "`", "`", "<code>", "</code>");
   
   return text;
 }
@@ -724,7 +715,7 @@ void PumpApp::postNote(QString content, int to, int cc) {
   obj["objectType"] = "note";
   obj["content"] = addTextMarkup(content);
 
-  feed("post", obj, QAS_OBJECT | QAS_REFRESH, to, cc);
+  feed("post", obj, QAS_OBJECT | QAS_REFRESH | QAS_POST, to, cc);
 }
 
 //------------------------------------------------------------------------------
@@ -742,7 +733,7 @@ void PumpApp::postReply(QASObject* replyToObj, QString content) {
   noteObj["objectType"] = replyToObj->type();
   obj["inReplyTo"] = noteObj;
 
-  feed("post", obj, QAS_ACTIVITY | QAS_REFRESH);
+  feed("post", obj, QAS_ACTIVITY | QAS_REFRESH | QAS_POST);
 }
 
 //------------------------------------------------------------------------------
@@ -862,7 +853,7 @@ void PumpApp::request(QString endpoint, int response_id,
 
   oaManager->executeAuthorizedRequest(oaRequest, response_id);
   
-  notifyMessage("Loading ...");
+  notifyMessage(tr("Loading ..."));
   m_requests++;
 }
 
@@ -871,16 +862,20 @@ void PumpApp::request(QString endpoint, int response_id,
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   m_requests--;
   if (!m_requests) 
-    notifyMessage("Ready!");
+    notifyMessage(tr("Ready!"));
 
   int sid = id & 0xFF;
 
   if (oaManager->lastError()) {
-    if (sid != QAS_OBJECT)
-      errorMessage(QString("Network or authorisation error [id=%1] [%2].").
-                   arg(oaManager->lastError()).arg(id));
-    else
+    if (id & QAS_POST) {
+      errorMessage(tr("Unable to post message!"));
+      m_messageWindow->show();
+    } else if (sid == QAS_OBJECT) {
       qDebug() << "[WARNING] unable to fetch context for object.";
+    } else {
+      errorMessage(QString(tr("Network or authorisation error [%1/%2].")).
+                   arg(oaManager->lastError()).arg(id));
+    }
     return;
   }
 
@@ -914,8 +909,8 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
       if (actor) {
         bool doFollow = (id & QAS_FOLLOW);
         actor->setFollowed(doFollow);
-        notifyMessage(QString("Successfully %1followed ").
-                      arg(doFollow?"":"un") +
+        notifyMessage(QString(doFollow ? tr("Successfully followed ") :
+                              tr("Successfully unfollowed ")) +
                       actor->displayNameOrWebFinger());
       }
     }
@@ -937,7 +932,8 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     m_selfActor->setYou();
   }
 
-  if (id & QAS_REFRESH) 
+  if (id & QAS_REFRESH) { 
     fetchAll();
+  }
 }
 

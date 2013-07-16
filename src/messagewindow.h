@@ -27,6 +27,7 @@
 #include <QHBoxLayout>
 #include <QPushButton>
 #include <QComboBox>
+#include <QFormLayout>
 
 #include "messageedit.h"
 #include "qactivitystreams.h"
@@ -38,9 +39,10 @@ class MessageWindow : public QDialog {
   Q_OBJECT
 
 public:
-  MessageWindow(QASObject* obj, const PumpaSettings* s, QWidget* parent=0);
-
+  MessageWindow(const PumpaSettings* s, QWidget* parent=0);
   virtual void accept();
+
+  void newMessage(QASObject* obj);
 
 protected:
   virtual void showEvent(QShowEvent*);
@@ -52,12 +54,13 @@ signals:
 private:
   QVBoxLayout* layout;
 
-  QLabel* infoLabel;
-  QLabel* markupLabel;
+  QLabel* m_infoLabel;
+  QLabel* m_markupLabel;
   QHBoxLayout* infoLayout;
 
   QComboBox* m_toComboBox;
   QComboBox* m_ccComboBox;
+  QFormLayout* m_addressLayout;
 
   MessageEdit* textEdit;
   QHBoxLayout* buttonLayout;

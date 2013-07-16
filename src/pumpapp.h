@@ -46,6 +46,7 @@
 #include "pumpasettings.h"
 #include "contextwidget.h"
 #include "objectlistwidget.h"
+#include "messagewindow.h"
 
 //------------------------------------------------------------------------------
 
@@ -184,6 +185,8 @@ private:
   QASActor* m_selfActor;
 
   OAuthWizard* m_wiz;
+
+  MessageWindow* m_messageWindow;
 
   QSystemTrayIcon* m_trayIcon;
   QMenu* m_trayIconMenu;
