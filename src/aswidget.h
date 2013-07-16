@@ -61,7 +61,7 @@ protected:
                                                 bool& countAsNew);
 
   void keyPressEvent(QKeyEvent* event);
-  void clear();
+  virtual void clear();
 
   QVBoxLayout* m_itemLayout;
   QWidget* m_listContainer;

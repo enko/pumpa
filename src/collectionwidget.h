@@ -33,11 +33,18 @@ public:
   CollectionWidget(QWidget* parent);
   // virtual void fetchNewer();
 
+protected slots:
+  virtual void update();
+  void onLoadOlderClicked();
+
 protected:
+  void updateLoadOlderButton(bool wait=false);
   virtual QASAbstractObjectList* initList(QString endpoint, QObject* parent);
   virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj,
                                                 bool& countAsNew);
+  virtual void clear();
 
+  QPushButton* m_loadOlderButton;
 };
 
 #endif /* _COLLECTIONWIDGET_H_ */

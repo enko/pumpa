@@ -26,7 +26,8 @@
 //------------------------------------------------------------------------------
 
 CollectionWidget::CollectionWidget(QWidget* parent) :
-  ASWidget(parent)
+  ASWidget(parent),
+  m_loadOlderButton(NULL)
 {}
 
 //------------------------------------------------------------------------------
@@ -35,6 +36,49 @@ QASAbstractObjectList* CollectionWidget::initList(QString endpoint,
                                                   QObject* parent) {
   m_asMode = QAS_COLLECTION;
   return QASCollection::initCollection(endpoint, parent);
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::clear() {
+  ASWidget::clear();
+  if (!m_loadOlderButton) {
+    m_loadOlderButton = new QPushButton(this);
+    m_loadOlderButton->setFocusPolicy(Qt::NoFocus);
+    connect(m_loadOlderButton, SIGNAL(clicked()),
+            this, SLOT(onLoadOlderClicked()));
+    m_loadOlderButton->setVisible(false);
+  }
+  m_itemLayout->addWidget(m_loadOlderButton);
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::onLoadOlderClicked() {
+  updateLoadOlderButton(true);
+  fetchOlder();
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::updateLoadOlderButton(bool wait) {
+  if (!m_list->size() || m_list->nextLink().isEmpty()) {
+    m_loadOlderButton->setVisible(false);
+    return;
+  }
+  QString text = "Load older";
+  if (wait)
+    text = "...";
+
+  m_loadOlderButton->setText(text);
+  m_loadOlderButton->setVisible(true);
+}
+
+//------------------------------------------------------------------------------
+
+void CollectionWidget::update() {
+  ASWidget::update();
+  updateLoadOlderButton();
 }
 
 //------------------------------------------------------------------------------
