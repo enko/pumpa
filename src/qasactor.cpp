@@ -30,7 +30,7 @@ QASActor::QASActor(QString id, QObject* parent) :
   m_followed_json(false),
   m_isYou(false)
 {
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "new Actor" << m_id;
 #endif
 }
@@ -38,7 +38,7 @@ QASActor::QASActor(QString id, QObject* parent) :
 //------------------------------------------------------------------------------
 
 void QASActor::update(QVariantMap json) {
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "updating Actor" << m_id;
 #endif
   bool ch = false;

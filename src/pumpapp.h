@@ -178,6 +178,7 @@ private:
   CollectionWidget* m_directMajorWidget;
   CollectionWidget* m_directMinorWidget;
   CollectionWidget* m_inboxMinorWidget;
+  CollectionWidget* m_firehoseWidget;
   ContextWidget* m_contextWidget;
   ObjectListWidget* m_followersWidget;
   ObjectListWidget* m_followingWidget;

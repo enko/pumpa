@@ -37,7 +37,7 @@ QASAbstractObjectList::QASAbstractObjectList(int asType, QString url,
 //------------------------------------------------------------------------------
 
 void QASAbstractObjectList::update(QVariantMap json, bool older) {
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "updating AbstractObjectList" << m_url;
 #endif
 
@@ -127,7 +127,7 @@ void QASAbstractObjectList::addObject(QASAbstractObject* obj) {
   if (m_item_set.contains(obj))
     return;
 
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "addObject" << obj->apiLink();
 #endif
 
@@ -144,7 +144,7 @@ void QASAbstractObjectList::removeObject(QASAbstractObject* obj) {
   m_items.removeAll(obj);
   m_item_set.remove(obj);
 
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "removeObject" << obj->apiLink();
 #endif
 

@@ -38,7 +38,7 @@ QASActivity::QASActivity(QString id, QObject* parent) :
   m_to(NULL),
   m_cc(NULL)
 {
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "new Activity" << m_id;
 #endif
 }
@@ -46,11 +46,8 @@ QASActivity::QASActivity(QString id, QObject* parent) :
 //------------------------------------------------------------------------------
 
 void QASActivity::update(QVariantMap json) {
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "updating Activity" << m_id;
-#endif
-#if DEBUG >= 3
-  qDebug() << debugDumpJson(json, "QASActivity");
 #endif
   bool ch = false;
 

@@ -45,7 +45,7 @@ QASObject::QASObject(QString id, QObject* parent) :
   m_likes(NULL),
   m_shares(NULL)
 {
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "new Object" << m_id;
 #endif
 }
@@ -53,7 +53,7 @@ QASObject::QASObject(QString id, QObject* parent) :
 //------------------------------------------------------------------------------
 
 void QASObject::update(QVariantMap json) {
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "updating Object" << m_id;
 #endif
   bool ch = false;
@@ -140,7 +140,7 @@ void QASObject::addReply(QASObject* obj) {
     connectSignals(m_replies);
   }
   m_replies->addObject(obj);
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "addReply" << obj->id() << "to" << id();
 #endif
 }

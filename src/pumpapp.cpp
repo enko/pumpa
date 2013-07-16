@@ -101,6 +101,9 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_followingWidget = new ObjectListWidget(this);
   connectCollection(m_followingWidget, false);
 
+  m_firehoseWidget = new CollectionWidget(this);
+  connectCollection(m_firehoseWidget);
+
   m_tabWidget = new TabWidget(this);
   connect(m_tabWidget, SIGNAL(currentChanged(int)),
           this, SLOT(tabSelected(int)));
@@ -108,6 +111,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget->addTab(m_directMinorWidget, tr("&mentions"));
   m_tabWidget->addTab(m_directMajorWidget, tr("&direct"));
   m_tabWidget->addTab(m_inboxMinorWidget, tr("mean&while"));
+  m_tabWidget->addTab(m_firehoseWidget, tr("f&irehose"), false);
   m_tabWidget->addTab(m_followersWidget, tr("&followers"));
   m_tabWidget->addTab(m_followingWidget, tr("f&ollowing"), false);
 
@@ -168,7 +172,7 @@ void PumpApp::startPumping() {
   m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
   m_followersWidget->setEndpoint(apiUrl(apiUser("followers")));
   m_followingWidget->setEndpoint(apiUrl(apiUser("following")), QAS_FOLLOW);
-
+  m_firehoseWidget->setEndpoint(m_s->firehoseUrl());
   show();
 
   request("/api/user/" + m_s->userName(), QAS_SELF_PROFILE);
@@ -259,6 +263,7 @@ void PumpApp::refreshTimeLabels() {
   m_directMinorWidget->refreshTimeLabels();
   m_directMajorWidget->refreshTimeLabels();
   m_inboxMinorWidget->refreshTimeLabels();
+  m_firehoseWidget->refreshTimeLabels();
 }
 
 //------------------------------------------------------------------------------
@@ -557,6 +562,7 @@ void PumpApp::fetchAll() {
   m_inboxMinorWidget->fetchNewer();
   m_followersWidget->fetchNewer();
   m_followingWidget->fetchNewer();
+  m_firehoseWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
@@ -829,7 +835,8 @@ void PumpApp::request(QString endpoint, int response_id,
                       QVariantMap data) {
   endpoint = apiUrl(endpoint);
 
-  if (!endpoint.startsWith(m_s->siteUrl())) {
+  bool firehose = (endpoint == m_s->firehoseUrl());
+  if (!endpoint.startsWith(m_s->siteUrl()) && !firehose) {
     qDebug() << "[DEBUG] dropping request for" << endpoint;
     return;
   }
@@ -892,7 +899,6 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     }
     return;
   }
-
 
   QVariantMap json = parseJson(response);
   if (sid == QAS_NULL)

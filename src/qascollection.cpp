@@ -34,7 +34,7 @@ void QASCollection::clearCache() { deleteMap<QASCollection*>(s_collections); }
 QASCollection::QASCollection(QString url, QObject* parent) :
   QASAbstractObjectList(QAS_COLLECTION, url, parent)
 {
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "new Collection" << m_url;
 #endif
 }
@@ -52,7 +52,9 @@ QASCollection* QASCollection::getCollection(QVariantMap json, QObject* parent,
                                             int id) {
   QString url = json["url"].toString();
   if (url.isEmpty())
-    return NULL;
+     url = json["id"].toString();
+  // if (url.isEmpty())
+  //   return NULL;
 
   QASCollection* coll = s_collections.contains(url) ? s_collections[url] :
     new QASCollection(url, parent);

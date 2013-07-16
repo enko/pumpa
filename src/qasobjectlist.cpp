@@ -35,7 +35,7 @@ QASObjectList::QASObjectList(QString url, QObject* parent) :
   QASAbstractObjectList(QAS_OBJECTLIST, url, parent),
   m_isReplies(false)
 {
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "new ObjectList" << m_url;
 #endif
 }

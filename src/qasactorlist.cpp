@@ -34,7 +34,7 @@ QASActorList::QASActorList(QString url, QObject* parent) :
   QASObjectList(url, parent)
 {
   m_asType = QAS_OBJECTLIST;
-#if DEBUG >= 1
+#ifdef DEBUG_QAS
   qDebug() << "new ActorList" << m_url;
 #endif
 }

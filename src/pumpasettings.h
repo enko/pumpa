@@ -73,6 +73,11 @@ public:
 
   QString linkColor() const { return getValue("link_color", "").toString(); }
 
+  QString firehoseUrl() const { 
+    return getValue("firehose_url",
+                    "https://ofirehose.com/feed.json").toString(); 
+  }
+
   // setters
   void siteUrl(QString s) { setValue("site_url", s, "Account"); }
   void userName(QString s) { setValue("username", s, "Account"); }
