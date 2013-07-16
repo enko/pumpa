@@ -873,13 +873,17 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   if (!m_requests) 
     notifyMessage("Ready!");
 
+  int sid = id & 0xFF;
+
   if (oaManager->lastError()) {
-    errorMessage(QString("Network or authorisation error [id=%1] [%2].").
-                 arg(oaManager->lastError()).arg(id));
+    if (sid != QAS_OBJECT)
+      errorMessage(QString("Network or authorisation error [id=%1] [%2].").
+                   arg(oaManager->lastError()).arg(id));
+    else
+      qDebug() << "[WARNING] unable to fetch context for object.";
     return;
   }
 
-  int sid = id & 0xFF;
 
   QVariantMap json = parseJson(response);
   if (sid == QAS_NULL)
