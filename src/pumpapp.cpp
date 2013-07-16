@@ -150,8 +150,8 @@ void PumpApp::startPumping() {
   // Setup endpoints for our timeline widgets
   m_inboxWidget->setEndpoint(inboxEndpoint("major"), QAS_FOLLOW);
   m_inboxMinorWidget->setEndpoint(inboxEndpoint("minor"));
-  m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"), QAS_FOLLOW);
-  m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"), QAS_FOLLOW);
+  m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"));
+  m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
   m_followersWidget->setEndpoint(apiUrl(apiUser("followers")));
   m_followingWidget->setEndpoint(apiUrl(apiUser("following")), QAS_FOLLOW);
 
@@ -889,8 +889,10 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     QASCollection* coll = QASCollection::getCollection(json, this, id);
     if (coll && (id & QAS_FOLLOW)) {
       for (size_t i=0; i<coll->size(); ++i) {
-        QASActor* actor = coll->at(i)->actor();
-        if (actor && actor->followedJson() && !actor->followed()) {
+        QASActivity* activity = coll->at(i);
+        QASActor* actor = activity->actor();
+        if (activity->verb() == "post" && actor &&
+            actor->followedJson() && !actor->followed()) {
           actor->setFollowed(true);
           // qDebug() << "[WARNING] Setting followed "
           //          << actor->id() << " according to feed.";
