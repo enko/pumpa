@@ -42,7 +42,7 @@ Pumpa should build with Qt 4.8 or Qt 5.0 or newer. If you are using Qt
 For example on Debian 7.0 "wheezy" the following command should
 install everything needed to build the code:
 
-    aptitude install qt4-qmake libqt4-dev libqjson-dev git
+    aptitude install qt4-qmake libqt4-dev libqjson-dev
 
 If you want spell checking install the aspell library as well:
 
@@ -50,7 +50,7 @@ If you want spell checking install the aspell library as well:
 
 On Fedora this should install what you need (courtesy of [Dick Turpin][10]):
 
-    yum install qt4-qmake libqt4-dev libqjson-dev gcc-c++ qt-devel qt-config qjson-devel git
+    yum install qt4-qmake libqt4-dev libqjson-dev gcc-c++ qt-devel qt-config qjson-devel
 
 [6]: http://qjson.sourceforge.net/
 [10]: https://microca.st/dick_turpin/note/toJY8CHTQlqinra0Hr6lFA
@@ -94,14 +94,50 @@ HTML which will be very messy...
 
 [7]: http://daringfireball.net/projects/markdown/syntax
 
+## Configuration
+
+Most features and configuration options should be obvious from the
+graphical user interface, but some are a bit hidden.  For example,
+while Pumpa doesn't support multiple accounts, you can always start it
+with a different configuration file (which can specify another pump.io
+account for example) like this:
+
+    ./pumpa -c path_to_alternative.conf
+
+If you are setting up a new account you can give the path to a
+non-existent conf-file and Pumpa will run the setup wizard and create
+the conf-file for you with the name you specified.
+
+The location of the default configuration file depends on Qt, which
+[tries to pick a location that makes sense for your operating system][12].
+E.g. in GNU/Linux systems it is typically in:
+
+    ~/.config/pumpa/pumpa.conf
+
+Most configuration options are exposed via the preferences dialog in
+Pumpa, except for setting the link colour.  The link colour is
+supposed to be automatically set by the theme settings of your desktop
+environment, but several people requested a way to override this.
+
+You can add a line like this under the `[%General]` section in the
+configuration file:
+
+    link_color=#333
+
+The text after the equals sign can be [any text string that Qt can
+parse as a colour][11].
+
+[11]: http://qt-project.org/doc/qt-4.8/qcolor.html#setNamedColor
+[12]: http://qt-project.org/doc/qt-4.8/qsettings.html#locations-where-application-settings-are-stored
+
 ## Missing features
 
 There are still several missing features.  This list contains some of
 them, not necessarily in order of importance:
 
-* Ability to post images
+* Posting images
 * Ability to post to a particular user or user list
-* Possibly a WYSIWYG post editor (as an option)
+* Deleting posts
 
 Feel free to suggest other features, however my intention is to keep
 Pumpa as simple as possible, so I might not be interested in
