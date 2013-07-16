@@ -169,7 +169,8 @@ void ASWidget::update() {
     }
 
     if (m_object_set.contains(cObj)) {
-      qDebug() << "update() an object exists but not in correct order!";
+      qDebug() << "[WARNING]" << cObj->apiLink() << "in wrong order in list"
+               << m_list->url();
       continue;
     }
     m_object_set.insert(cObj);

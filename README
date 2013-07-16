@@ -53,7 +53,7 @@ On Fedora this should install what you need (courtesy of [Dick Turpin][10]):
     yum install qt4-qmake libqt4-dev libqjson-dev gcc-c++ qt-devel qt-config qjson-devel git
 
 [6]: http://qjson.sourceforge.net/
-[10]: https://microca.st/dick_turpin/note/Te5-LixOSCWCWf5JK4GOUg
+[10]: https://microca.st/dick_turpin/note/toJY8CHTQlqinra0Hr6lFA
 
 ## Building
 
