@@ -90,9 +90,14 @@ void QASObject::update(QVariantMap json) {
   }
 
   if (json.contains("replies")) {
-    m_replies = QASObjectList::getObjectList(json["replies"].toMap(), parent());
-    m_replies->isReplies(true);
-    connectSignals(m_replies);
+    QVariantMap repliesMap = json["replies"].toMap();
+
+    // don't replace a list with an empty one...
+    if (repliesMap["items"].toList().size()) {
+      m_replies = QASObjectList::getObjectList(repliesMap, parent());
+      m_replies->isReplies(true);
+      connectSignals(m_replies);
+    }
   }
 
   if (json.contains("likes")) {
@@ -129,9 +134,15 @@ QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
 //------------------------------------------------------------------------------
 
 void QASObject::addReply(QASObject* obj) {
-  if (!m_replies)
-    return;
+  if (!m_replies) {
+    m_replies = QASObjectList::initObjectList(id() + "/replies", parent());
+    m_replies->isReplies(true);
+    connectSignals(m_replies);
+  }
   m_replies->addObject(obj);
+#if DEBUG >= 1
+  qDebug() << "addReply" << obj->id() << "to" << id();
+#endif
 }
 
 //------------------------------------------------------------------------------
