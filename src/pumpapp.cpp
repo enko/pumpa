@@ -195,6 +195,8 @@ void PumpApp::connectCollection(ASWidget* w, bool highlight) {
   connect(w, SIGNAL(showContext(QASObject*)), 
           this, SLOT(onShowContext(QASObject*)));
   connect(w, SIGNAL(follow(QString, bool)), this, SLOT(follow(QString, bool)));
+  connect(w, SIGNAL(deleteObject(QASObject*)),
+          this, SLOT(onDeleteObject(QASObject*)));
 }
 
 //------------------------------------------------------------------------------
@@ -770,6 +772,16 @@ void PumpApp::follow(QString acctId, bool follow) {
     mode |= QAS_UNFOLLOW;
 
   feed(follow ? "follow" : "stop-following", obj, mode);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::onDeleteObject(QASObject* obj) {
+  QVariantMap json;
+  json["id"] = obj->id();
+  json["objectType"] = obj->type();
+
+  feed("delete", json, QAS_OBJECT);
 }
 
 //------------------------------------------------------------------------------

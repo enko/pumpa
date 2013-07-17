@@ -44,6 +44,7 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
   m_commentButton(NULL),
   m_followButton(NULL),
   m_followAuthorButton(NULL),
+  m_deleteButton(NULL),
   m_object(obj),
   m_actor(NULL),
   m_author(NULL),
@@ -89,6 +90,8 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
           this, SIGNAL(linkHovered(const QString&)));
   m_contentLayout->addWidget(m_infoLabel, 0, Qt::AlignTop);
 
+  m_author = m_object->author();
+  
   m_buttonLayout = new QHBoxLayout;
 
   if (objType == "note" || objType == "comment" || objType == "image") {
@@ -108,6 +111,12 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
     m_commentButton = new TextToolButton(tr("comment"), this);
     connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
     m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
+
+    if (m_author && m_author->isYou()) {
+      m_deleteButton = new TextToolButton(tr("delete"), this);
+      connect(m_deleteButton, SIGNAL(clicked()), this, SLOT(onDeleteClicked()));
+      m_buttonLayout->addWidget(m_deleteButton, 0, Qt::AlignTop);
+    }
   }
 
   if (objType == "person") {
@@ -117,8 +126,6 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
     m_actor = m_object->asActor();
   }
 
-  m_author = m_object->author();
-  
   m_buttonLayout->addStretch();
 
   m_commentsLayout = new QVBoxLayout;
@@ -469,6 +476,13 @@ void FullObjectWidget::repeat() {
 
 void FullObjectWidget::reply() {
   emit newReply(m_object);
+}
+
+//------------------------------------------------------------------------------
+
+void FullObjectWidget::onDeleteClicked() {
+  // FIXME: ask here
+  emit deleteObject(m_object);
 }
 
 //------------------------------------------------------------------------------

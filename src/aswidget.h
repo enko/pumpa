@@ -48,6 +48,7 @@ signals:
   void share(QASObject*);
   void showContext(QASObject*);
   void follow(QString, bool);
+  void deleteObject(QASObject*);
 
 protected slots:
   virtual void update();

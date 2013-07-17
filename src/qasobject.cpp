@@ -111,6 +111,11 @@ void QASObject::update(QVariantMap json, bool ignoreLike) {
     connectSignals(m_shares);
   }
 
+  if (isDeleted()) {
+    m_content = "";
+    ch = true;
+  }
+
   if (ch)
     emit changed();
 }

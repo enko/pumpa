@@ -158,8 +158,8 @@ void ASWidget::update() {
   for (size_t i=0; i<m_list->size(); i++) {
     QASAbstractObject* cObj = m_list->at(i);
 
-    if (cObj->isDeleted())
-      continue;
+    // if (cObj->isDeleted())
+    //   continue;
 
     QASAbstractObject* wObj = objectAt(li);
     if (wObj == cObj) {

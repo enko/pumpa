@@ -41,6 +41,7 @@ signals:
   void share(QASObject*);
   void newReply(QASObject*);
   void follow(QString, bool);
+  void deleteObject(QASObject*);
 };
 
 #endif /* _OBJECTWIDGETWITHSIGNALS_H_ */

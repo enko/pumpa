@@ -76,6 +76,8 @@ private slots:
   void postNote(QString note, int to, int cc);
   void postReply(QASObject* replyToObj, QString content);
   void follow(QString acctId, bool follow);
+  void onDeleteObject(QASObject* obj);
+
   void errorMessage(QString msg);
   void notifyMessage(QString msg);
   void statusMessage(const QString& msg);

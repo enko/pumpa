@@ -63,9 +63,9 @@ public:
             verb == "unfavorite" || verb == "unlike");
   }
 
-  virtual bool isDeleted() const { 
-    return m_object ? m_object->isDeleted() : false;
-  }
+  // virtual bool isDeleted() const { 
+  //   return m_object ? m_object->isDeleted() : false;
+  // }
 
 private:
   QString m_id;

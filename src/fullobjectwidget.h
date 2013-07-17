@@ -55,6 +55,7 @@ private slots:
   void onFollow();
   void onFollowAuthor();
   void updateFollowAuthorButton(bool wait = false);
+  void onDeleteClicked();
 
 private:
   bool hasValidIrtObject();
@@ -93,6 +94,7 @@ private:
   TextToolButton* m_commentButton;
   TextToolButton* m_followButton;
   TextToolButton* m_followAuthorButton;
+  TextToolButton* m_deleteButton;
 
   QVBoxLayout* m_contentLayout;
   QHBoxLayout* m_buttonLayout;
