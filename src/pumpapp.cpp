@@ -781,7 +781,7 @@ void PumpApp::onDeleteObject(QASObject* obj) {
   json["id"] = obj->id();
   json["objectType"] = obj->type();
 
-  feed("delete", json, QAS_OBJECT);
+  feed("delete", json, QAS_ACTIVITY);
 }
 
 //------------------------------------------------------------------------------

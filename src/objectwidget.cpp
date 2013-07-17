@@ -108,7 +108,7 @@ void ObjectWidget::showMore() {
 //------------------------------------------------------------------------------
 
 void ObjectWidget::onChanged() {
-  setVisible(!m_object->url().isEmpty());
+  setVisible(!m_object->url().isEmpty() && !m_object->isDeleted());
 }
 
 //------------------------------------------------------------------------------

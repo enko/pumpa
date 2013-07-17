@@ -57,6 +57,7 @@ void QASObject::update(QVariantMap json, bool ignoreLike) {
   qDebug() << "updating Object" << m_id;
 #endif
   bool ch = false;
+  bool wasDeleted = isDeleted();
 
   updateVar(json, m_objectType, "objectType", ch);
   updateVar(json, m_url, "url", ch);
@@ -113,7 +114,9 @@ void QASObject::update(QVariantMap json, bool ignoreLike) {
 
   if (isDeleted()) {
     m_content = "";
-    ch = true;
+    m_displayName = "";
+    if (!wasDeleted)
+      ch = true;
   }
 
   if (ch)
