@@ -54,6 +54,13 @@ exists( /usr/include/aspell.h ) {
   DEFINES += USE_ASPELL
 }
 
+# Optionally use etags
+exists( /usr/bin/etags ) {
+  message("Using etags")
+  PRE_TARGETDEPS += etags
+}
+
+
 ######################################################################
 # Main sources 
 ######################################################################
@@ -72,6 +79,8 @@ OBJECT_HEADERS = pumpapp.h qactivitystreams.h aswidget.h		\
 	qasactivity.h qasobjectlist.h qasactorlist.h qascollection.h	\
 	qasabstractobjectlist.h
 
+OBJECT_SOURCES = $$replace(OBJECT_HEADERS, \\.h, .cpp)
+OBJECT_ALL = $$OBJECT_HEADERS $$OBJECT_SOURCES
 
 SUNDOWN_HEADERS = sundown/markdown.h sundown/html.h sundown/buffer.h
 
@@ -81,7 +90,7 @@ SUNDOWN_SOURCES = sundown/autolink.c sundown/buffer.c		\
 
 HEADERS += $$OBJECT_HEADERS $$SUNDOWN_HEADERS pumpa_defines.h
 SOURCES += main.cpp
-SOURCES += $$replace(OBJECT_HEADERS, \\.h, .cpp) $$SUNDOWN_SOURCES
+SOURCES += $$OBJECT_SOURCES $$SUNDOWN_SOURCES
 
 
 ######################################################################
@@ -127,7 +136,16 @@ QMAKE_EXTRA_TARGETS += doc
 
 
 ######################################################################
+# Generate TAGS for GNU Emacs and others
+######################################################################
+
+ETAGS_INPUTS   = $$join(OBJECT_ALL, " src/", "src/")
+etags.depends  = $$ETAGS_INPUTS
+etags.commands = etags -o src/TAGS $$ETAGS_INPUTS
+QMAKE_EXTRA_TARGETS += etags
+
+######################################################################
 # Extra stuff to clean up
 ######################################################################
 
-QMAKE_CLEAN += $DOC_TARGETS
+QMAKE_CLEAN += $DOC_TARGETS src/TAGS
