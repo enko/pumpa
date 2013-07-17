@@ -52,7 +52,7 @@ QASObject::QASObject(QString id, QObject* parent) :
 
 //------------------------------------------------------------------------------
 
-void QASObject::update(QVariantMap json) {
+void QASObject::update(QVariantMap json, bool ignoreLike) {
 #ifdef DEBUG_QAS
   qDebug() << "updating Object" << m_id;
 #endif
@@ -61,7 +61,8 @@ void QASObject::update(QVariantMap json) {
   updateVar(json, m_objectType, "objectType", ch);
   updateVar(json, m_url, "url", ch);
   updateVar(json, m_content, "content", ch);
-  updateVar(json, m_liked, "liked", ch);
+  if (!ignoreLike)
+    updateVar(json, m_liked, "liked", ch);
   updateVar(json, m_displayName, "displayName", ch);
   updateVar(json, m_shared, "pump_io", "shared", ch);
 
@@ -116,7 +117,8 @@ void QASObject::update(QVariantMap json) {
 
 //------------------------------------------------------------------------------
 
-QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
+QASObject* QASObject::getObject(QVariantMap json, QObject* parent,
+                                bool ignoreLike) {
   QString id = json["id"].toString();
   Q_ASSERT_X(!id.isEmpty(), "getObject", serializeJsonC(json));
 
@@ -127,7 +129,7 @@ QASObject* QASObject::getObject(QVariantMap json, QObject* parent) {
     new QASObject(id, parent);
   s_objects.insert(id, obj);
 
-  obj->update(json);
+  obj->update(json, ignoreLike);
   return obj;
 }
 

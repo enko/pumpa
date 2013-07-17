@@ -37,11 +37,12 @@ protected:
 public:
   static void clearCache();
 
-  static QASObject* getObject(QVariantMap json, QObject* parent);
+  static QASObject* getObject(QVariantMap json, QObject* parent,
+                              bool ignoreLike=false);
   static QASObject* getObject(QString id) { 
     return s_objects.contains(id) ? s_objects[id] : NULL;
   }
-  virtual void update(QVariantMap json);
+  virtual void update(QVariantMap json, bool ignoreLike=false);
 
   QASActor* asActor();
 
