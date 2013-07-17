@@ -266,6 +266,8 @@ void PumpApp::refreshTimeLabels() {
   m_directMajorWidget->refreshTimeLabels();
   m_inboxMinorWidget->refreshTimeLabels();
   m_firehoseWidget->refreshTimeLabels();
+  if (m_contextWidget)
+    m_contextWidget->refreshTimeLabels();
 }
 
 //------------------------------------------------------------------------------
@@ -503,6 +505,10 @@ void PumpApp::about() {
     "<p>The <a href=\"https://github.com/kypeli/kQOAuth\">kQOAuth library</a> "
     "is copyrighted by <a href=\"http://www.johanpaul.com/\">Johan Paul</a> "
     "and licensed under LGPL 2.1.</p>"
+    "<p>The <a href=\"https://github.com/vmg/sundown\">sundown Markdown "
+    "library</a> is copyrighted by Natacha Port&eacute;, Vicent Marti and "
+    "others, and <a href=\"https://github.com/vmg/sundown#license\">"
+    "permissively licensed</a>.</p>"
     "<p>The Pumpa logo was "
     "<a href=\"http://opengameart.org/content/fruit-and-veggie-inventory\">"
     "created by Joshua Taylor</a> for the "
