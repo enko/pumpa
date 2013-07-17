@@ -21,6 +21,7 @@
 #include "actorwidget.h"
 #include "pumpa_defines.h"
 #include "util.h"
+#include "shortobjectwidget.h"
 
 #include <QDesktopServices>
 #include <QMessageBox>
@@ -481,8 +482,22 @@ void FullObjectWidget::reply() {
 //------------------------------------------------------------------------------
 
 void FullObjectWidget::onDeleteClicked() {
-  // FIXME: ask here
-  emit deleteObject(m_object);
+  const int max_len = 40;
+  QString excerpt = ShortObjectWidget::objectExcerpt(m_object).
+    replace(QRegExp("\\s+"), " ");
+  if (excerpt.count() > max_len) {
+    excerpt.truncate(max_len-4);
+    excerpt += " ...";
+  }
+  
+  QString msg = QString(tr("Are you sure you want to delete this %1?")).
+    arg(m_object->type()) + "\n\"" + excerpt.trimmed() + "\"";
+
+  int ret = QMessageBox::warning(this, CLIENT_FANCY_NAME, msg,
+                                 QMessageBox::Cancel | QMessageBox::Yes,
+                                 QMessageBox::Cancel);
+  if (ret == QMessageBox::Yes)
+    emit deleteObject(m_object);
 }
 
 //------------------------------------------------------------------------------
@@ -503,7 +518,7 @@ void FullObjectWidget::onFollowAuthor() {
     int ret = QMessageBox::warning(this, CLIENT_FANCY_NAME, msg,
                                    QMessageBox::Cancel | QMessageBox::Yes,
                                    QMessageBox::Cancel);
-    if (ret == QMessageBox::Cancel)
+    if (ret != QMessageBox::Yes)
       return;
   }
 
