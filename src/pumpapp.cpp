@@ -19,6 +19,8 @@
 
 #include <QStatusBar>
 #include <QPalette>
+#include <QInputDialog>
+#include <QLineEdit>
 
 #include "pumpapp.h"
 
@@ -660,8 +662,12 @@ void PumpApp::userTestDoneAndFollow() {
   QString error;
 
   QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+#ifdef QT5
+  QUrlQuery replyQuery(reply->url().query());
+  QString userId = replyQuery.queryItemValue("resource");
+#else
   QString userId = reply->url().queryItemValue("resource");
-
+#endif
   if (reply->error() != QNetworkReply::NoError)
     return errorBox(tr("Invalid user: ") + userId);
 
