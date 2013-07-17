@@ -111,7 +111,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget->addTab(m_directMinorWidget, tr("&mentions"));
   m_tabWidget->addTab(m_directMajorWidget, tr("&direct"));
   m_tabWidget->addTab(m_inboxMinorWidget, tr("mean&while"));
-  m_tabWidget->addTab(m_firehoseWidget, tr("f&irehose"), false);
+  m_tabWidget->addTab(m_firehoseWidget, tr("f&irehose"));
   m_tabWidget->addTab(m_followersWidget, tr("&followers"));
   m_tabWidget->addTab(m_followingWidget, tr("f&ollowing"), false);
 
