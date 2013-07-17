@@ -109,15 +109,15 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
     connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
     m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
 
-    m_commentButton = new TextToolButton(tr("comment"), this);
-    connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
-    m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
-
     if (m_author && m_author->isYou()) {
       m_deleteButton = new TextToolButton(tr("delete"), this);
       connect(m_deleteButton, SIGNAL(clicked()), this, SLOT(onDeleteClicked()));
       m_buttonLayout->addWidget(m_deleteButton, 0, Qt::AlignTop);
     }
+
+    m_commentButton = new TextToolButton(tr("comment"), this);
+    connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
+    m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
   }
 
   if (objType == "person") {
