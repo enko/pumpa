@@ -270,6 +270,9 @@ void PumpApp::refreshTimeLabels() {
   m_firehoseWidget->refreshTimeLabels();
   if (m_contextWidget)
     m_contextWidget->refreshTimeLabels();
+
+  qDebug() << "meanwhile items:" << m_inboxMinorWidget->count();
+  qDebug() << "firehose items:" << m_firehoseWidget->count();
 }
 
 //------------------------------------------------------------------------------
