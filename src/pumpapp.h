@@ -97,7 +97,7 @@ private slots:
   void about();
   void preferences();
   void newNote(QASObject* obj = NULL);
-  void newPicture();
+  // void newPicture();
   void reload();
   void loadOlder();
 
@@ -160,7 +160,7 @@ private:
   void createMenu();
 
   QAction* newNoteAction;
-  QAction* newPictureAction;
+  // QAction* newPictureAction;
   QAction* reloadAction;
   QAction* followAction;
   QAction* loadOlderAction;

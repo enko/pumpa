@@ -376,7 +376,7 @@ void PumpApp::updateTrayIcon() {
 void PumpApp::createTrayIcon() {
   m_trayIconMenu = new QMenu(this);
   m_trayIconMenu->addAction(newNoteAction);
-  m_trayIconMenu->addAction(newPictureAction);
+  // m_trayIconMenu->addAction(newPictureAction);
   m_trayIconMenu->addSeparator();
   m_trayIconMenu->addAction(m_showHideAction);
   m_trayIconMenu->addAction(exitAction);
@@ -444,9 +444,9 @@ void PumpApp::createActions() {
   newNoteAction->setShortcut(tr("Ctrl+N"));
   connect(newNoteAction, SIGNAL(triggered()), this, SLOT(newNote()));
 
-  newPictureAction = new QAction(tr("New &Picture"), this);
-  newPictureAction->setShortcut(tr("Ctrl+P"));
-  connect(newPictureAction, SIGNAL(triggered()), this, SLOT(newPicture()));
+  // newPictureAction = new QAction(tr("New &Picture"), this);
+  // newPictureAction->setShortcut(tr("Ctrl+P"));
+  // connect(newPictureAction, SIGNAL(triggered()), this, SLOT(newPicture()));
 
   m_showHideAction = new QAction(showHideText(true), this);
   connect(m_showHideAction, SIGNAL(triggered()), this, SLOT(toggleVisible()));
@@ -457,11 +457,12 @@ void PumpApp::createActions() {
 void PumpApp::createMenu() {
   fileMenu = new QMenu(tr("&Pumpa"), this);
   fileMenu->addAction(newNoteAction);
-  fileMenu->addAction(newPictureAction);
+  fileMenu->addSeparator();
+  // fileMenu->addAction(newPictureAction);
   fileMenu->addAction(followAction);
   // fileMenu->addSeparator();
   fileMenu->addAction(reloadAction);
-  fileMenu->addAction(loadOlderAction);
+  // fileMenu->addAction(loadOlderAction);
   // fileMenu->addAction(pauseAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openPrefsAction);
@@ -549,8 +550,8 @@ void PumpApp::newNote(QASObject* obj) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::newPicture() {
-}
+// void PumpApp::newPicture() {
+// }
 
 //------------------------------------------------------------------------------
 
