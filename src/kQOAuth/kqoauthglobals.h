@@ -22,6 +22,13 @@
 
 #include <QtCore/qglobal.h>
 
+// The Q_DECL_EXPORT/Q_DECL_IMPORT things are only needed when compiling
+// a shared library or against one in Windows. We aren't doing either in
+// Pumpa.
+//
+// Credit goes to Tim Schumacher <tim.schumacher@tourevo.com> for finding
+// a solution for this.
+
 #define KQOAUTH_EXPORT
 
 // #if defined(KQOAUTH)
