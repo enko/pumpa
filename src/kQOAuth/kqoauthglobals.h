@@ -22,11 +22,13 @@
 
 #include <QtCore/qglobal.h>
 
-#if defined(KQOAUTH)
-#  define KQOAUTH_EXPORT Q_DECL_EXPORT
-#else
-#  define KQOAUTH_EXPORT Q_DECL_IMPORT
-#endif
+#define KQOAUTH_EXPORT
+
+// #if defined(KQOAUTH)
+// #  define KQOAUTH_EXPORT Q_DECL_EXPORT
+// #else
+// #  define KQOAUTH_EXPORT Q_DECL_IMPORT
+// #endif
 
 //////////// Static constant definitions ///////////
 const QString OAUTH_KEY_CONSUMER("oauth_consumer");
