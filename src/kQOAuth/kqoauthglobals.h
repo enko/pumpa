@@ -22,10 +22,14 @@
 
 #include <QtCore/qglobal.h>
 
+#ifdef Q_OS_WIN
+#  define KQOAUTH_EXPORT
+#else
 #if defined(KQOAUTH)
 #  define KQOAUTH_EXPORT Q_DECL_EXPORT
 #else
 #  define KQOAUTH_EXPORT Q_DECL_IMPORT
+#endif
 #endif
 
 //////////// Static constant definitions ///////////
