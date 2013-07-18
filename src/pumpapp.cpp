@@ -109,13 +109,13 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget = new TabWidget(this);
   connect(m_tabWidget, SIGNAL(currentChanged(int)),
           this, SLOT(tabSelected(int)));
-  m_tabWidget->addTab(m_inboxWidget, tr("&inbox"));
-  m_tabWidget->addTab(m_directMinorWidget, tr("&mentions"));
-  m_tabWidget->addTab(m_directMajorWidget, tr("&direct"));
-  m_tabWidget->addTab(m_inboxMinorWidget, tr("mean&while"));
-  m_tabWidget->addTab(m_firehoseWidget, tr("f&irehose"));
-  m_tabWidget->addTab(m_followersWidget, tr("&followers"));
-  m_tabWidget->addTab(m_followingWidget, tr("f&ollowing"), false);
+  m_tabWidget->addTab(m_inboxWidget, tr("&Inbox"));
+  m_tabWidget->addTab(m_directMinorWidget, tr("&Mentions"));
+  m_tabWidget->addTab(m_directMajorWidget, tr("&Direct"));
+  m_tabWidget->addTab(m_inboxMinorWidget, tr("Mean&while"));
+  m_tabWidget->addTab(m_firehoseWidget, tr("Fi&rehose"));
+  m_tabWidget->addTab(m_followersWidget, tr("&Followers"));
+  m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false);
 
   m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
   m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);
@@ -427,11 +427,11 @@ void PumpApp::createActions() {
           this, SLOT(reload()));
 
   loadOlderAction = new QAction(tr("Load older in timeline"), this);
-  // loadOlderAction->setShortcut(tr("Ctrl+O"));
+  loadOlderAction->setShortcut(tr("Ctrl+O"));
   connect(loadOlderAction, SIGNAL(triggered()), this, SLOT(loadOlder()));
 
   followAction = new QAction(tr("F&ollow an account"), this);
-  followAction->setShortcut(tr("Ctrl+O"));
+  followAction->setShortcut(tr("Ctrl+L"));
   connect(followAction, SIGNAL(triggered()), this, SLOT(followDialog()));
 
   aboutAction = new QAction(tr("&About"), this);

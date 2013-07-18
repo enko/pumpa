@@ -22,15 +22,20 @@
 
 #include <QtCore/qglobal.h>
 
-#ifdef Q_OS_WIN
-#  define KQOAUTH_EXPORT
-#else
-#if defined(KQOAUTH)
-#  define KQOAUTH_EXPORT Q_DECL_EXPORT
-#else
-#  define KQOAUTH_EXPORT Q_DECL_IMPORT
-#endif
-#endif
+// The Q_DECL_EXPORT/Q_DECL_IMPORT things are only needed when compiling
+// a shared library or against one in Windows. We aren't doing either in
+// Pumpa.
+//
+// Credit goes to Tim Schumacher <tim.schumacher@tourevo.com> for finding
+// a solution for this.
+
+#define KQOAUTH_EXPORT
+
+// #if defined(KQOAUTH)
+// #  define KQOAUTH_EXPORT Q_DECL_EXPORT
+// #else
+// #  define KQOAUTH_EXPORT Q_DECL_IMPORT
+// #endif
 
 //////////// Static constant definitions ///////////
 const QString OAUTH_KEY_CONSUMER("oauth_consumer");

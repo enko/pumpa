@@ -272,8 +272,8 @@ void FullObjectWidget::updateFollowButton(bool /*wait*/) {
   }
 
   m_followButton->setVisible(true);
-  m_followButton->setText(m_actor->followed() ? tr("Stop following") :
-                          tr("Follow"));
+  m_followButton->setText(m_actor->followed() ? tr("stop following") :
+                          tr("follow"));
 }
 
 //------------------------------------------------------------------------------
@@ -289,7 +289,7 @@ void FullObjectWidget::updateFollowAuthorButton(bool /*wait*/) {
 
   m_followAuthorButton->setVisible(true);
 
-  QString text = (m_author->followed() ? tr("Stop following") : tr("Follow"))
+  QString text = (m_author->followed() ? tr("stop following") : tr("follow"))
     + " ";
   text += m_author->displayNameOrWebFingerShort();
 
