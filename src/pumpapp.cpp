@@ -113,7 +113,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget->addTab(m_directMinorWidget, tr("&mentions"));
   m_tabWidget->addTab(m_directMajorWidget, tr("&direct"));
   m_tabWidget->addTab(m_inboxMinorWidget, tr("mean&while"));
-  m_tabWidget->addTab(m_firehoseWidget, tr("f&irehose"));
+  m_tabWidget->addTab(m_firehoseWidget, tr("fi&rehose"));
   m_tabWidget->addTab(m_followersWidget, tr("&followers"));
   m_tabWidget->addTab(m_followingWidget, tr("f&ollowing"), false);
 
@@ -427,11 +427,11 @@ void PumpApp::createActions() {
           this, SLOT(reload()));
 
   loadOlderAction = new QAction(tr("Load older in timeline"), this);
-  // loadOlderAction->setShortcut(tr("Ctrl+O"));
+  loadOlderAction->setShortcut(tr("Ctrl+O"));
   connect(loadOlderAction, SIGNAL(triggered()), this, SLOT(loadOlder()));
 
   followAction = new QAction(tr("F&ollow an account"), this);
-  followAction->setShortcut(tr("Ctrl+O"));
+  followAction->setShortcut(tr("Ctrl+L"));
   connect(followAction, SIGNAL(triggered()), this, SLOT(followDialog()));
 
   aboutAction = new QAction(tr("&About"), this);
