@@ -22,6 +22,10 @@
 
 //------------------------------------------------------------------------------
 
+const int max_picture_size = 160;
+
+//------------------------------------------------------------------------------
+
 MessageWindow::MessageWindow(const PumpaSettings* s,
                              QWidget* parent) :
   QDialog(parent),
@@ -49,8 +53,8 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
 
   QStringList addressItems;
   addressItems << ""
-               << "Public"
-               << "Followers";
+               << tr("Public")
+               << tr("Followers");
   
   m_toComboBox = new QComboBox(this);
   m_toComboBox->addItems(addressItems);
@@ -59,10 +63,29 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
   m_ccComboBox->addItems(addressItems);
   
   m_addressLayout = new QFormLayout;
-  m_addressLayout->addRow("To:", m_toComboBox);
-  m_addressLayout->addRow("Cc:", m_ccComboBox);
+  m_addressLayout->addRow(tr("To:"), m_toComboBox);
+  m_addressLayout->addRow(tr("Cc:"), m_ccComboBox);
 
-  m_addPictureButton = new TextToolButton("Add picture", this);
+  m_addPictureButton = new TextToolButton(this);
+  connect(m_addPictureButton, SIGNAL(clicked()), this, SLOT(onAddPicture()));
+
+  m_removePictureButton = new TextToolButton(tr("&Remove picture"), this);
+  connect(m_removePictureButton, SIGNAL(clicked()),
+          this, SLOT(onRemovePicture()));
+
+  m_pictureButtonLayout = new QHBoxLayout;
+  m_pictureButtonLayout->addWidget(m_addPictureButton, 0, Qt::AlignTop);
+  m_pictureButtonLayout->addWidget(m_removePictureButton, 0, Qt::AlignTop);
+  m_pictureButtonLayout->addStretch();
+
+  m_pictureLabel = new QLabel(this);
+  m_pictureLabel->setScaledContents(true);
+  m_pictureLabel->setMaximumSize(max_picture_size, max_picture_size);
+  m_pictureLabel->setFocusPolicy(Qt::NoFocus);
+  m_pictureLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+
+  m_pictureTitle = new QLineEdit(this);
+  m_pictureTitle->setPlaceholderText(tr("Picture title (optional)"));
 
   textEdit = new MessageEdit(this);
 
@@ -71,13 +94,15 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
   layout = new QVBoxLayout;
   layout->addLayout(infoLayout);
   layout->addLayout(m_addressLayout);
-  layout->addWidget(m_addPictureButton);
+  layout->addLayout(m_pictureButtonLayout);
+  layout->addWidget(m_pictureLabel, 0, Qt::AlignHCenter);
+  layout->addWidget(m_pictureTitle);
   layout->addWidget(textEdit);
 
-  cancelButton = new QPushButton("Cancel");
+  cancelButton = new QPushButton(tr("Cancel"));
   connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
   
-  sendButton = new QPushButton("Send message");
+  sendButton = new QPushButton(tr("Send message"));
   connect(sendButton, SIGNAL(clicked()), this, SLOT(accept()));
   sendButton->setDefault(true);
 
@@ -100,8 +125,9 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
 void MessageWindow::newMessage(QASObject* obj) {
   bool isReply = (obj != NULL);
   m_obj = obj;
-  m_infoLabel->setText(QString("Post a %1").
-                       arg(obj == NULL ? "note" : "reply"));
+  m_imageFileName = "";
+
+  m_infoLabel->setText(obj == NULL ? tr("Post a note") : tr("Post a reply"));
   m_toComboBox->setCurrentIndex(m_s->defaultToAddress());
   m_ccComboBox->setCurrentIndex(2);
 
@@ -112,7 +138,7 @@ void MessageWindow::newMessage(QASObject* obj) {
   m_ccComboBox->setVisible(!isReply);
   m_addressLayout->labelForField(m_ccComboBox)->setVisible(!isReply);
 
-  m_addPictureButton->setVisible(!isReply);
+  updateAddPicture();
 }
 
 //------------------------------------------------------------------------------
@@ -131,10 +157,65 @@ void MessageWindow::accept() {
   if (m_obj == NULL) {
     int to = m_toComboBox->currentIndex();
     int cc = m_ccComboBox->currentIndex();
-    emit sendMessage(msg, to, cc);
+
+    if (m_imageFileName.isEmpty()) {
+      emit sendMessage(msg, to, cc);
+    } else {
+      QString title = m_pictureTitle->text();
+      emit sendImage(msg, title, m_imageFileName, to, cc);
+    }
   } else {
     emit sendReply(m_obj, msg);
   }
 
   QDialog::accept();
+}
+
+//------------------------------------------------------------------------------
+
+void MessageWindow::onAddPicture() {
+  QString fileName =
+    QFileDialog::getOpenFileName(this, tr("Select Image"), "",
+                                 tr("Image files (*.png *.jpg *.jpeg *.gif)"
+                                    ";;All files (*.*)"));
+
+  if (!fileName.isEmpty()) {
+    m_imageFileName = fileName;
+    updateAddPicture();
+  }
+}
+
+//------------------------------------------------------------------------------
+
+void MessageWindow::onRemovePicture() {
+  m_imageFileName = "";
+  updateAddPicture();
+}
+
+//------------------------------------------------------------------------------
+
+void MessageWindow::updateAddPicture() {
+  if (m_obj != NULL) { // if reply just hide everything
+    m_addPictureButton->setVisible(false);
+    m_removePictureButton->setVisible(false);
+    m_pictureLabel->setVisible(false);
+    m_pictureTitle->setVisible(false);
+    m_removePictureButton->setVisible(false);
+    return;
+  }
+
+  m_addPictureButton->setVisible(true);
+  if (m_imageFileName.isEmpty()) {
+    m_addPictureButton->setText(tr("&Add picture"));
+    m_removePictureButton->setVisible(false);
+    m_pictureLabel->setVisible(false);
+    m_pictureTitle->setVisible(false);
+  } else {
+    QPixmap p(m_imageFileName);
+    m_pictureLabel->setPixmap(p);
+    m_addPictureButton->setText(tr("&Change picture"));
+    m_removePictureButton->setVisible(true);
+    m_pictureLabel->setVisible(true);
+    m_pictureTitle->setVisible(true);
+  }
 }

@@ -53,6 +53,8 @@
 #define QAS_ACTORLIST    5
 // #define QAS_ACTOR        6
 #define QAS_SELF_PROFILE 7
+#define QAS_IMAGE_UPLOAD 8
+#define QAS_IMAGE_UPDATE 9
 
 // The higher bits can be used for info for the whatever method is
 // handling the further processing.

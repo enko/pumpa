@@ -50,9 +50,16 @@ protected:
 
 signals:
   void sendMessage(QString, int, int);
+  void sendImage(QString, QString, QString, int, int);
   void sendReply(QASObject*, QString);
 
+private slots:
+  void onAddPicture();
+  void onRemovePicture();
+
 private:
+  void updateAddPicture();
+
   QVBoxLayout* layout;
 
   QLabel* m_infoLabel;
@@ -66,9 +73,17 @@ private:
   MessageEdit* textEdit;
   QHBoxLayout* buttonLayout;
 
+  QHBoxLayout* m_pictureButtonLayout;
   TextToolButton* m_addPictureButton;
+  TextToolButton* m_removePictureButton;
+
+  QLabel* m_pictureLabel;
+  QLineEdit* m_pictureTitle;
+
   QPushButton* cancelButton;
   QPushButton* sendButton;
+
+  QString m_imageFileName;
 
   QASObject* m_obj;
   const PumpaSettings* m_s;

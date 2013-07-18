@@ -541,6 +541,9 @@ void PumpApp::newNote(QASObject* obj) {
     m_messageWindow = new MessageWindow(m_s, this);
     connect(m_messageWindow, SIGNAL(sendMessage(QString, int, int)),
             this, SLOT(postNote(QString, int, int)));
+    connect(m_messageWindow, 
+            SIGNAL(sendImage(QString, QString, QString, int, int)),
+            this, SLOT(postImage(QString, QString, QString, int, int)));
     connect(m_messageWindow, SIGNAL(sendReply(QASObject*, QString)),
             this, SLOT(postReply(QASObject*, QString)));
   }
@@ -752,6 +755,76 @@ void PumpApp::postNote(QString content, int to, int cc) {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::postImage(QString msg,
+                        QString title,
+                        QString imageFile,
+                        int to,
+                        int cc) {
+  m_imageObject.clear();
+  m_imageObject["content"] = addTextMarkup(msg);
+  m_imageObject["displayName"] = title;
+
+  m_imageTo = to;
+  m_imageCc = cc;
+
+  uploadFile(imageFile);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::uploadFile(QString filename) {
+  QString lcfn = filename.toLower();
+  QString mimeType;
+  if (lcfn.endsWith(".jpg") || lcfn.endsWith(".jpeg"))
+    mimeType = "image/jpeg";
+  else if (lcfn.endsWith(".png"))
+    mimeType = "image/png";
+  else if (lcfn.endsWith(".gif"))
+    mimeType = "image/gif";
+  else {
+    qDebug() << "Cannot determine mime type of file" << filename;
+    return;
+  }
+
+  QFile fp(filename);
+  if (!fp.open(QIODevice::ReadOnly)) {
+    qDebug() << "Unable to read file" << filename;
+      return;
+  }
+
+  QByteArray ba = fp.readAll();
+  
+  initRequest(apiUrl(apiUser("uploads")), KQOAuthRequest::POST);
+  oaRequest->setContentType(mimeType);
+  // oaRequest->setContentLength(ba.count());
+  oaRequest->setRawData(ba);
+
+  connect(oaManager, SIGNAL(uploadProgress(qint64, qint64)),
+          this, SLOT(uploadProgress(qint64, qint64)));
+  oaManager->executeAuthorizedRequest(oaRequest, QAS_IMAGE_UPLOAD);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::updatePostedImage(QVariantMap obj) {
+  feed("update", m_imageObject, QAS_ACTIVITY | QAS_REFRESH | QAS_POST);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::postImageActivity(QVariantMap obj) {
+  m_imageObject.unite(obj);
+  feed("post", obj, QAS_IMAGE_UPDATE, m_imageTo, m_imageCc);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::uploadProgress(qint64 bytesSent, qint64 bytesTotal) {
+  qDebug() << "uploadProgress" << bytesSent << bytesTotal;
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::postReply(QASObject* replyToObj, QString content) {
   if (content.isEmpty())
     return;
@@ -852,6 +925,18 @@ QString PumpApp::apiUser(QString path) {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::initRequest(QString endpoint,
+                          KQOAuthRequest::RequestHttpMethod method) {
+  oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, QUrl(endpoint));
+  oaRequest->setConsumerKey(m_s->clientId());
+  oaRequest->setConsumerSecretKey(m_s->clientSecret());
+  oaRequest->setToken(m_s->token());
+  oaRequest->setTokenSecret(m_s->tokenSecret());
+  oaRequest->setHttpMethod(method); 
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::request(QString endpoint, int response_id,
                       KQOAuthRequest::RequestHttpMethod method,
                       QVariantMap data) {
@@ -859,18 +944,19 @@ void PumpApp::request(QString endpoint, int response_id,
 
   bool firehose = (endpoint == m_s->firehoseUrl());
   if (!endpoint.startsWith(m_s->siteUrl()) && !firehose) {
+#ifdef DEBUG_NET
     qDebug() << "[DEBUG] dropping request for" << endpoint;
+#endif
     return;
   }
 
+#ifdef DEBUG_NET
   qDebug() << (method == KQOAuthRequest::GET ? "[GET]" : "[POST]") 
            << response_id << ":" << endpoint;
+#endif
 
   QStringList epl = endpoint.split("?");
-  oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, 
-                         QUrl(epl[0]));
-  oaRequest->setConsumerKey(m_s->clientId());
-  oaRequest->setConsumerSecretKey(m_s->clientSecret());
+  initRequest(epl[0], method);
 
   // I have no idea why this is the only way that seems to
   // work. Incredibly frustrating and ugly :-/
@@ -884,11 +970,6 @@ void PumpApp::request(QString endpoint, int response_id,
     oaRequest->setAdditionalParameters(params);
   }
   
-  oaRequest->setToken(m_s->token());
-  oaRequest->setTokenSecret(m_s->tokenSecret());
-
-  oaRequest->setHttpMethod(method); 
-
   if (method == KQOAuthRequest::POST) {
     oaRequest->setContentType("application/json");
     oaRequest->setRawData(serializeJson(data));
@@ -903,6 +984,11 @@ void PumpApp::request(QString endpoint, int response_id,
 //------------------------------------------------------------------------------
 
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
+#ifdef DEBUG_NET
+  qDebug() << "[DEBUG] request done [" << id << "]"
+           << response.count() << "bytes";
+#endif
+
   m_requests--;
   if (!m_requests) 
     notifyMessage(tr("Ready!"));
@@ -972,6 +1058,10 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   } else if (sid == QAS_SELF_PROFILE) {
     m_selfActor = QASActor::getActor(json["profile"].toMap(), this);
     m_selfActor->setYou();
+  } else if (sid == QAS_IMAGE_UPLOAD) {
+    postImageActivity(json);
+  } else if (sid == QAS_IMAGE_UPDATE) {
+    updatePostedImage(json);
   }
 
   if (id & QAS_REFRESH) { 
