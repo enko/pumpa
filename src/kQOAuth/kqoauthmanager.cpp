@@ -357,6 +357,8 @@ void KQOAuthManager::executeAuthorizedRequest(KQOAuthRequest *request, int id) {
           reply = d->networkManager->post(networkRequest, request->requestBody());
         } else {
           reply = d->networkManager->post(networkRequest, request->rawData());
+          connect(reply, SIGNAL(uploadProgress(qint64, qint64)),
+                  this, SIGNAL(uploadProgress(qint64, qint64)));
         }
 
         connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),

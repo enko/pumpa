@@ -173,6 +173,8 @@ Q_SIGNALS:
 
     void errorMessage(QString);
 
+    void uploadProgress(qint64, qint64);
+
 private Q_SLOTS:
     void onRequestReplyReceived( QNetworkReply *reply );
     void onAuthorizedRequestReplyReceived( QNetworkReply *reply );
