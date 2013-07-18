@@ -36,7 +36,8 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_wiz(NULL),
   m_messageWindow(NULL),
   m_trayIcon(NULL),
-  m_requests(0)
+  m_requests(0),
+  m_uploadDialog(NULL)
 {
   m_s = new PumpaSettings(settingsFile, this);
   resize(m_s->size());
@@ -711,7 +712,9 @@ void PumpApp::onShowContext(QASObject* obj) {
 QString PumpApp::addTextMarkup(QString text) {
   QString oldText = text;
 
+#ifdef DEBUG_MARKUP
   qDebug() << "\n[DEBUG] MARKUP\n" << text;
+#endif
 
   // Remove any inline HTML tags
   // text.replace(QRegExp(HTML_TAG_REGEX), "&lt;\\1&gt;");
@@ -730,15 +733,21 @@ QString PumpApp::addTextMarkup(QString text) {
       pos += newText.length();
     }
   }
+
+#ifdef DEBUG_MARKUP
   qDebug() << "\n[DEBUG] MARKUP (clean inline HTML)\n" << text;
+#endif
 
   text = markDown(text);
 
+#ifdef DEBUG_MARKUP
   qDebug() << "\n[DEBUG] MARKUP (apply Markdown)\n" << text;
-
+#endif
   text = linkifyUrls(text);
 
+#ifdef DEBUG_MARKUP
   qDebug() << "\n[DEBUG] MARKUP (linkify plain URLs)\n" << text;
+#endif
   
   return text;
 }
@@ -799,8 +808,15 @@ void PumpApp::uploadFile(QString filename) {
   
   initRequest(apiUrl(apiUser("uploads")), KQOAuthRequest::POST);
   oaRequest->setContentType(mimeType);
-  // oaRequest->setContentLength(ba.count());
   oaRequest->setRawData(ba);
+
+  if (m_uploadDialog == NULL) {
+    m_uploadDialog = new QProgressDialog("Uploading image...", "Abort", 0, 100,
+                                         this);
+    m_uploadDialog->setWindowModality(Qt::WindowModal);
+  }
+  m_uploadDialog->setValue(0);
+  m_uploadDialog->show();
 
   connect(oaManager, SIGNAL(uploadProgress(qint64, qint64)),
           this, SLOT(uploadProgress(qint64, qint64)));
@@ -809,7 +825,7 @@ void PumpApp::uploadFile(QString filename) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::updatePostedImage(QVariantMap obj) {
+void PumpApp::updatePostedImage(QVariantMap) {
   feed("update", m_imageObject, QAS_ACTIVITY | QAS_REFRESH | QAS_POST);
 }
 
@@ -817,13 +833,15 @@ void PumpApp::updatePostedImage(QVariantMap obj) {
 
 void PumpApp::postImageActivity(QVariantMap obj) {
   m_imageObject.unite(obj);
-  feed("post", obj, QAS_IMAGE_UPDATE, m_imageTo, m_imageCc);
+  feed("post", m_imageObject, QAS_IMAGE_UPDATE, m_imageTo, m_imageCc);
 }
 
 //------------------------------------------------------------------------------
 
 void PumpApp::uploadProgress(qint64 bytesSent, qint64 bytesTotal) {
-  qDebug() << "uploadProgress" << bytesSent << bytesTotal;
+  m_uploadDialog->setValue((100*bytesSent)/bytesTotal);
+  if (m_uploadDialog->wasCanceled())
+    qDebug() << "abort mission"; // FIXME: here call QNetworkReply::abort()
 }
 
 //------------------------------------------------------------------------------
@@ -897,13 +915,15 @@ void PumpApp::feed(QString verb, QVariantMap object, int response_id,
   QString endpoint = "api/user/" + m_s->userName() + "/feed";
 
   QVariantMap data;
-  if (!verb.isEmpty()) {
-    data["verb"] = verb;
-    data["object"] = object;
-  }
+  data["verb"] = verb;
+  data["object"] = object;
 
   addRecipient(data, "to", to);
   addRecipient(data, "cc", cc);
+
+#ifdef DEBUG_NET
+  qDebug() << "FEED" << data;
+#endif
 
   request(endpoint, response_id, KQOAuthRequest::POST, data);
 }

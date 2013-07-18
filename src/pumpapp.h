@@ -213,6 +213,8 @@ private:
   int m_imageTo;
   int m_imageCc;
 
+  QProgressDialog* m_uploadDialog;
+
   QNetworkAccessManager* m_nam;
 
   QSignalMapper* m_notifyMap;

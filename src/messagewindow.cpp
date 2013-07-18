@@ -132,6 +132,7 @@ void MessageWindow::newMessage(QASObject* obj) {
   m_ccComboBox->setCurrentIndex(2);
 
   textEdit->clear();
+  m_pictureTitle->clear();
 
   m_toComboBox->setVisible(!isReply);
   m_addressLayout->labelForField(m_toComboBox)->setVisible(!isReply);
