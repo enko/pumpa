@@ -446,7 +446,6 @@ void PumpApp::createActions() {
 
   newPictureAction = new QAction(tr("New &Picture"), this);
   newPictureAction->setShortcut(tr("Ctrl+P"));
-  newPictureAction->setEnabled(false);
   connect(newPictureAction, SIGNAL(triggered()), this, SLOT(newPicture()));
 
   m_showHideAction = new QAction(showHideText(true), this);
@@ -534,10 +533,8 @@ void PumpApp::about() {
 
 void PumpApp::newNote(QASObject* obj) {
   QASObject* irtObj = obj ? obj->inReplyTo() : NULL;
-  if (irtObj) {
+  if (irtObj)
     obj = irtObj;
-    qDebug() << "[DEBUG] Opening reply window to" << obj->type() << obj->id();
-  }
 
   if (!m_messageWindow) {
     m_messageWindow = new MessageWindow(m_s, this);

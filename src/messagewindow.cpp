@@ -62,14 +62,16 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
   m_addressLayout->addRow("To:", m_toComboBox);
   m_addressLayout->addRow("Cc:", m_ccComboBox);
 
+  m_addPictureButton = new TextToolButton("Add picture", this);
+
   textEdit = new MessageEdit(this);
 
   connect(textEdit, SIGNAL(ready()), this, SLOT(accept()));
 
   layout = new QVBoxLayout;
   layout->addLayout(infoLayout);
-  if (m_addressLayout)
-    layout->addLayout(m_addressLayout);
+  layout->addLayout(m_addressLayout);
+  layout->addWidget(m_addPictureButton);
   layout->addWidget(textEdit);
 
   cancelButton = new QPushButton("Cancel");
@@ -109,6 +111,8 @@ void MessageWindow::newMessage(QASObject* obj) {
   m_addressLayout->labelForField(m_toComboBox)->setVisible(!isReply);
   m_ccComboBox->setVisible(!isReply);
   m_addressLayout->labelForField(m_ccComboBox)->setVisible(!isReply);
+
+  m_addPictureButton->setVisible(!isReply);
 }
 
 //------------------------------------------------------------------------------

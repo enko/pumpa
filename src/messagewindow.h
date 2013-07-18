@@ -32,6 +32,7 @@
 #include "messageedit.h"
 #include "qactivitystreams.h"
 #include "pumpasettings.h"
+#include "texttoolbutton.h"
 
 //------------------------------------------------------------------------------
 
@@ -65,6 +66,7 @@ private:
   MessageEdit* textEdit;
   QHBoxLayout* buttonLayout;
 
+  TextToolButton* m_addPictureButton;
   QPushButton* cancelButton;
   QPushButton* sendButton;
 
