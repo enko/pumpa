@@ -140,7 +140,7 @@ QMAKE_EXTRA_TARGETS += doc
 ######################################################################
 
 ETAGS_INPUTS   = $$join(OBJECT_ALL, " src/", "src/")
-etags.depends  = $$ETAGS_INPUTS
+etags.depends  = $$split($$ETAGS_INPUTS)
 etags.commands = etags -o src/TAGS $$ETAGS_INPUTS
 QMAKE_EXTRA_TARGETS += etags
 
