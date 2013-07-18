@@ -28,6 +28,7 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QFormLayout>
+#include <QLineEdit>
 
 #include "messageedit.h"
 #include "qactivitystreams.h"

@@ -30,6 +30,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSystemTrayIcon>
+#include <QProgressDialog>
 
 #ifdef USE_DBUS
 #include <QDBusInterface>

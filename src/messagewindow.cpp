@@ -20,6 +20,8 @@
 #include "messagewindow.h"
 #include "pumpa_defines.h"
 
+#include <QFileDialog>
+
 //------------------------------------------------------------------------------
 
 const int max_picture_size = 160;
