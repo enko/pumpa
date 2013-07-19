@@ -36,7 +36,8 @@ public:
   static QASActor* getActor(QVariantMap json, QObject* parent);
   virtual void update(QVariantMap json);
 
-  QString webFinger() const;    
+  QString webFinger() const { return m_webFinger; }
+  QString webFingerName() const { return m_webFingerName; }
   QString displayNameOrWebFinger() const;
   QString displayNameOrWebFingerShort() const;
 
@@ -55,6 +56,9 @@ private:
   bool m_isYou;
   QString m_summary;
   QString m_location;
+
+  QString m_webFinger;
+  QString m_webFingerName;
 };
 
 #endif /* _QASACTOR_H_ */

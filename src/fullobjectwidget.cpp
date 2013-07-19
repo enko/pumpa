@@ -291,7 +291,7 @@ void FullObjectWidget::updateFollowAuthorButton(bool /*wait*/) {
 
   QString text = (m_author->followed() ? tr("stop following") : tr("follow"))
     + " ";
-  text += m_author->displayNameOrWebFingerShort();
+  text += m_author->webFingerName();
 
   m_followAuthorButton->setText(text);
 }
