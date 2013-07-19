@@ -214,7 +214,7 @@ void FullObjectWidget::updateInfoText() {
     
     QString location = m_actor->location();
     if (!location.isEmpty())
-      infoStr += " " + tr("at") + " " + location;
+      infoStr += " " + QString(tr("at %1")).arg(location) + " ";
   } else {
     infoStr = QString("<a href=\"%2\">%1</a>").
       arg(relativeFuzzyTime(m_object->published())).
@@ -222,9 +222,9 @@ void FullObjectWidget::updateInfoText() {
 
     QASActor* author = m_object->author();
     if (author)
-      infoStr = QString("<a href=\"%2\">%1</a> " + tr("at") + " ").
+      infoStr = QString("<a href=\"%2\">%1</a>").
         arg(author->displayName()).
-        arg(author->url()) + infoStr;
+        arg(author->url()) + " " + QString(tr("at %1")).arg(infoStr) + " ";
   }
   m_infoLabel->setText(infoStr);
 }
@@ -329,10 +329,13 @@ void FullObjectWidget::updateLikes() {
     m_contentLayout->addWidget(m_likesLabel);
   }
 
-  text = likes->actorNames();
-  text += " " + ((nl==1 && !likes->onlyYou()) ? tr("likes this.") :
-                 tr("like this."));
-  
+  QString nstr = likes->actorNames();
+  if (likes->onlyYou())
+    text = " " + QString(tr("%1 like this.")).arg(nstr);
+  else if (nl==1) 
+    text = " " + QString("%1 likes this.").arg(nstr);
+  else 
+    text = " " + QString("%1 like this.").arg(nstr);
   m_likesLabel->setText(text);
 }
 

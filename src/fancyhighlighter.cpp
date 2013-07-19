@@ -98,6 +98,6 @@ void FancyHighlighter::highlightBlock(const QString& text) {
   formatMarkup(text, "__", "__", strongFormat);
   formatMarkup(text, "([^_]|^)_", "_([^_]|$)", emphFormat);
 
-  formatMarkup(text, "``", "``", monoFormat, "`");
+  // formatMarkup(text, "``", "``", monoFormat, "`");
   formatMarkup(text, "`", "`", monoFormat);
 }

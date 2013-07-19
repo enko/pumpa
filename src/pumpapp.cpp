@@ -479,7 +479,7 @@ void PumpApp::createMenu() {
   fileMenu->addAction(followAction);
   // fileMenu->addSeparator();
   fileMenu->addAction(reloadAction);
-  // fileMenu->addAction(loadOlderAction);
+  fileMenu->addAction(loadOlderAction);
   // fileMenu->addAction(pauseAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openPrefsAction);

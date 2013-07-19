@@ -22,6 +22,9 @@
 #include "pumpapp.h"
 #include "util.h"
 
+#include <QTranslator>
+#include <QLocale>
+
 //------------------------------------------------------------------------------
 
 int testMarkup(QString str) {
@@ -37,6 +40,8 @@ int testMarkup(QString str) {
 
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
+
+  QString locale = QLocale::system().name();
 
   QString settingsFile;
   if (argc > 1) {
@@ -76,14 +81,24 @@ int main(int argc, char** argv) {
       Q_ASSERT(f(255) == 0);
       return 0;
     }
-    else if (arg == "-c" && argc == 3) {
+    else if (arg == "-l" && argc == 3) {
+      locale = argv[2];
+    } else if (arg == "-c" && argc == 3) {
       settingsFile = argv[2];
     }
     else {
-      qDebug() << "Usage: ./pumpa [-c alternative.conf]";
+      qDebug() << "Usage: ./pumpa [-c alternative.conf] [-l locale]";
       return 0;
     }
   }
+  qDebug() << "Using locale" << locale;
+
+  QTranslator translator;
+  bool ok = translator.load(QString("pumpa_%1").arg(locale));
+  app.installTranslator(&translator);
+
+  if (ok) 
+    qDebug() << "Successfully loaded translation";
 
   PumpApp papp(settingsFile);
   return app.exec();

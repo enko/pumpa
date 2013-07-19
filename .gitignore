@@ -5,6 +5,5 @@ moc_*.cpp
 /Makefile
 /pumpa
 /qrc_pumpa.cpp
-/pumpa.html
-/pumpa-test.conf
 /src/TAGS
+*.qm

@@ -159,7 +159,7 @@ void FileDownloader::onSslErrors(QNetworkReply* reply,
 
 void FileDownloader::replyFinished(QNetworkReply* nr) {
   if (nr->error()) {
-    emit networkError("Network error: "+nr->errorString());
+    emit networkError(tr("Network error: ")+nr->errorString());
     return;
   }
   onAuthorizedRequestReady(nr->readAll(), 0);
@@ -172,7 +172,7 @@ void FileDownloader::onAuthorizedRequestReady(QByteArray response, int) {
   m_downloading.remove(m_downloadingUrl);
 
   if (oaManager->lastError()) {
-    emit networkError(QString("Unable to download %1 (Error #%2).")
+    emit networkError(QString(tr("Unable to download %1 (Error #%2)."))
                       .arg(m_downloadingUrl)
                       .arg(oaManager->lastError()));
     return;
@@ -181,8 +181,8 @@ void FileDownloader::onAuthorizedRequestReady(QByteArray response, int) {
   QString fn = urlToPath(m_downloadingUrl);
   QFile* fp = new QFile(fn);
   if (!fp->open(QIODevice::WriteOnly)) {
-    emit networkError(QString("Could not open "+fn+" for writing: "+
-                              fp->errorString()));
+    emit networkError(QString(tr("Could not open file %1 for writing: ")).
+                      arg(fn) + fp->errorString());
     return;
   }
   fp->write(response);
