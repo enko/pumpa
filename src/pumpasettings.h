@@ -79,7 +79,7 @@ public:
   }
 
   int maxTimelineItems() const {
-    return getValue("max_timeline_items", 50).toInt();
+    return getValue("max_timeline_items", 100).toInt();
   }
 
   // setters
