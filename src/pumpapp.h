@@ -30,6 +30,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QSystemTrayIcon>
+#include <QProgressDialog>
 
 #ifdef USE_DBUS
 #include <QDBusInterface>
@@ -74,6 +75,7 @@ private slots:
   void onLike(QASObject* obj);
   void onShare(QASObject* obj);
   void postNote(QString note, int to, int cc);
+  void postImage(QString msg, QString title, QString imageFile, int to, int cc);
   void postReply(QASObject* replyToObj, QString content);
   void follow(QString acctId, bool follow);
   void onDeleteObject(QASObject* obj);
@@ -88,6 +90,8 @@ private slots:
   void onAccessTokenReceived(QString token, QString tokenSecret);
 
   void onAuthorizedRequestReady(QByteArray response, int id);
+
+  void uploadProgress(qint64 bytesSent, qint64 bytesTotal);
   
   void request(QString endpoint, int response_id,
                KQOAuthRequest::RequestHttpMethod method = KQOAuthRequest::GET,
@@ -97,7 +101,7 @@ private slots:
   void about();
   void preferences();
   void newNote(QASObject* obj = NULL);
-  void newPicture();
+  // void newPicture();
   void reload();
   void loadOlder();
 
@@ -118,6 +122,13 @@ protected:
   }
 
 private:
+  void initRequest(QString endpoint, KQOAuthRequest::RequestHttpMethod method);
+
+  void uploadFile(QString filename);
+
+  void updatePostedImage(QVariantMap obj);
+  void postImageActivity(QVariantMap obj);
+
   void errorBox(QString msg);
 
   void testUserAndFollow(QString username, QString server);
@@ -160,7 +171,7 @@ private:
   void createMenu();
 
   QAction* newNoteAction;
-  QAction* newPictureAction;
+  // QAction* newPictureAction;
   QAction* reloadAction;
   QAction* followAction;
   QAction* loadOlderAction;
@@ -198,6 +209,12 @@ private:
   int m_timerId;
   int m_timerCount;
   int m_requests;
+
+  QVariantMap m_imageObject;
+  int m_imageTo;
+  int m_imageCc;
+
+  QProgressDialog* m_uploadDialog;
 
   QNetworkAccessManager* m_nam;
 

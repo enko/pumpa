@@ -39,6 +39,8 @@ public:
   virtual void fetchOlder();
   void setEndpoint(QString endpoint, int asMode=-1);
 
+  int count() const { return m_list->size(); }
+
 signals:
   void highlightMe();  
   void request(QString, int);

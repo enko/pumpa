@@ -83,14 +83,14 @@ void ActivityWidget::updateText() {
 
   QString generatorName = m_activity->generatorName();
   if (!generatorName.isEmpty() && (verb != "share"))
-    text += " via " + generatorName;
+    text += QString(tr(" via %1")).arg(generatorName);
 
-  if (verb == "post" && objType == "note") {
+  if (verb == "post" && (objType == "note" || objType == "image")) {
     if (m_activity->hasTo())
-      text += " To: " + recipientsToString(m_activity->to());
+      text += " " + tr("To:") +" " + recipientsToString(m_activity->to());
     
     if (m_activity->hasCc())
-      text += " CC: " + recipientsToString(m_activity->cc());
+      text += " " + tr("CC:") + " " + recipientsToString(m_activity->cc());
   }
 
   m_textLabel->setText(text);
