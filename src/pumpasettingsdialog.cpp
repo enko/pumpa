@@ -31,70 +31,70 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
   m_layout = new QVBoxLayout;
 
   // Account
-  QGroupBox* accountGroupBox = new QGroupBox("Account");
+  QGroupBox* accountGroupBox = new QGroupBox(tr("Account"));
   QVBoxLayout* accountLayout = new QVBoxLayout;
 
-  m_currentAccountLabel = new QLabel("Not logged in currently.", this);
+  m_currentAccountLabel = new QLabel(tr("Not logged in currently."), this);
   accountLayout->addWidget(m_currentAccountLabel);
 
-  m_authButton = new QPushButton("Change account", this);
+  m_authButton = new QPushButton(tr("Change account"), this);
   connect(m_authButton, SIGNAL(clicked()), this, SLOT(onAuthButtonClicked()));
   accountLayout->addWidget(m_authButton);
 
   QLabel* acctInfoLabel = 
-    new QLabel("Clicking \"Change account\" will run the "
-               "authentication setup again for a new pump.io "
-               "account. This will remove the current login "
-               "credentials since Pumpa only supports one "
-               "account at a time.");
+    new QLabel(tr("Clicking \"Change account\" will run the "
+                  "authentication setup again for a new pump.io "
+                  "account. This will remove the current login "
+                  "credentials since Pumpa only supports one "
+                  "account at a time."));
   acctInfoLabel->setWordWrap(true);
   accountLayout->addWidget(acctInfoLabel);
 
   accountGroupBox->setLayout(accountLayout);
 
   // User interface
-  QGroupBox* uiGroupBox = new QGroupBox("Interface");
+  QGroupBox* uiGroupBox = new QGroupBox(tr("Interface"));
   QFormLayout* uiLayout = new QFormLayout;
 
   m_updateTimeSpinBox = new QSpinBox(this);
   m_updateTimeSpinBox->setMinimum(1);
   m_updateTimeSpinBox->setMaximum(30);
 
-  uiLayout->addRow("Update interval (in minutes):",
+  uiLayout->addRow(tr("Update interval (in minutes):"),
                        m_updateTimeSpinBox);
 
   QStringList addressItems;
   addressItems << ""
-               << "Public"
-               << "Followers";
+               << tr("Public")
+               << tr("Followers");
 
   m_defaultToComboBox = new QComboBox(this);
   m_defaultToComboBox->addItems(addressItems);
-  uiLayout->addRow("Default recipient:", m_defaultToComboBox);
+  uiLayout->addRow(tr("Default recipient:"), m_defaultToComboBox);
 
-  m_useIconCheckBox = new QCheckBox("Use icon in system tray", this);
+  m_useIconCheckBox = new QCheckBox(tr("Use icon in system tray"), this);
   uiLayout->addRow(m_useIconCheckBox);
 
   uiGroupBox->setLayout(uiLayout);
   
   // Notifications
-  QGroupBox* notifyGroupBox = new QGroupBox("Notifications");
+  QGroupBox* notifyGroupBox = new QGroupBox(tr("Notifications"));
   QFormLayout* notifyLayout = new QFormLayout;
 
   QStringList timelineList;
-  timelineList << "Never"
-               << "Direct only"
-               << "Direct or mention"
-               << "Direct, mention or inbox"
-               << "Anything";
+  timelineList << tr("Never")
+               << tr("Direct only")
+               << tr("Direct or mention")
+               << tr("Direct, mention or inbox")
+               << tr("Anything");
 
   m_highlightComboBox = new QComboBox(this);
   m_highlightComboBox->addItems(timelineList);
-  notifyLayout->addRow("Highlight tray icon on:", m_highlightComboBox);
+  notifyLayout->addRow(tr("Highlight tray icon on:"), m_highlightComboBox);
 
   m_popupComboBox = new QComboBox(this);
   m_popupComboBox->addItems(timelineList);
-  notifyLayout->addRow("Popup notification on:", m_popupComboBox);
+  notifyLayout->addRow(tr("Popup notification on:"), m_popupComboBox);
   
   notifyGroupBox->setLayout(notifyLayout);
 
@@ -153,7 +153,7 @@ int PumpaSettingsDialog::comboIndexConverter(int ci, bool backwards) {
 
 void PumpaSettingsDialog::updateUI() {
   QString accountId = siteUrlToAccountId(s->userName(), s->siteUrl());
-  m_currentAccountLabel->setText(QString("Currently logged in as %1.").
+  m_currentAccountLabel->setText(QString(tr("Currently logged in as %1.")).
                                  arg(accountId));
   
   m_updateTimeSpinBox->setValue(s->reloadTime());
