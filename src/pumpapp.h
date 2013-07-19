@@ -127,7 +127,7 @@ private:
 
   void uploadFile(QString filename);
 
-  void updatePostedImage(QVariantMap obj, QByteArray response);
+  void updatePostedImage(QVariantMap obj);
   void postImageActivity(QVariantMap obj);
 
   void errorBox(QString msg);

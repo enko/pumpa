@@ -167,6 +167,10 @@ void PumpApp::launchOAuthWizard() {
 void PumpApp::startPumping() {
   resetActivityStreams();
 
+  QString webFinger = siteUrlToAccountId(m_s->userName(), m_s->siteUrl());
+
+  setWindowTitle(QString("%1 - %2").arg(CLIENT_FANCY_NAME).arg(webFinger));
+
   // Setup endpoints for our timeline widgets
   m_inboxWidget->setEndpoint(inboxEndpoint("major"), QAS_FOLLOW);
   m_inboxMinorWidget->setEndpoint(inboxEndpoint("minor"));
@@ -826,13 +830,13 @@ void PumpApp::uploadFile(QString filename) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::updatePostedImage(QVariantMap obj) {
+void PumpApp::updatePostedImage(QVariantMap) {
   feed("update", m_imageObject, QAS_ACTIVITY | QAS_REFRESH | QAS_POST);
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::postImageActivity(QVariantMap) {
+void PumpApp::postImageActivity(QVariantMap obj) {
   m_imageObject.unite(obj);
   feed("post", m_imageObject, QAS_IMAGE_UPDATE, m_imageTo, m_imageCc);
 }
@@ -1017,7 +1021,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
 #ifdef DEBUG_NET
   qDebug() << "[DEBUG] request done [" << id << "]"
            << response.count() << "bytes";
-  qDebug() << response;
+  // qDebug() << response;
 #endif
 
   m_requests--;
