@@ -122,11 +122,12 @@ protected:
   }
 
 private:
-  void initRequest(QString endpoint, KQOAuthRequest::RequestHttpMethod method);
+  KQOAuthRequest* initRequest(QString endpoint,
+                              KQOAuthRequest::RequestHttpMethod method);
 
   void uploadFile(QString filename);
 
-  void updatePostedImage(QVariantMap obj);
+  void updatePostedImage(QVariantMap obj, QByteArray response);
   void postImageActivity(QVariantMap obj);
 
   void errorBox(QString msg);
@@ -184,7 +185,7 @@ private:
   QMenu* helpMenu;
 
   KQOAuthManager *oaManager;
-  KQOAuthRequest *oaRequest;
+  // KQOAuthRequest *oaRequest;
 
   TabWidget* m_tabWidget;
   CollectionWidget* m_inboxWidget;

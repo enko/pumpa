@@ -80,6 +80,10 @@ public:
     //The Content-Type HTTP header
     QString contentType;
 
+
+    //The Content-Length HTTP header
+    int contentLength;
+
     //Raw data to post if type is not url-encoded
     QByteArray postRawData;
 

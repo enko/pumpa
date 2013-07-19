@@ -472,6 +472,18 @@ void KQOAuthRequest::setContentType(const QString &contentType)
     d->contentType = contentType;
 }
 
+int KQOAuthRequest::contentLength()
+{
+    Q_D(const KQOAuthRequest);
+    return d->contentLength;
+}
+
+void KQOAuthRequest::setContentLength(int contentLength)
+{
+    Q_D(KQOAuthRequest);
+    d->contentLength = contentLength;
+}
+
 QByteArray KQOAuthRequest::rawData()
 {
     Q_D(const KQOAuthRequest);
