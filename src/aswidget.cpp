@@ -24,11 +24,16 @@
 
 //------------------------------------------------------------------------------
 
+#define PURGE_WAIT 20
+
+//------------------------------------------------------------------------------
+
 ASWidget::ASWidget(QWidget* parent) :
   QScrollArea(parent),
   m_firstTime(true),
   m_list(NULL),
-  m_asMode(QAS_NULL)
+  m_asMode(QAS_NULL),
+  m_purgeCounter(PURGE_WAIT)
 {
   m_itemLayout = new QVBoxLayout;
   m_itemLayout->setSpacing(10);
@@ -82,6 +87,7 @@ void ASWidget::fetchNewer() {
 //------------------------------------------------------------------------------
 
 void ASWidget::fetchOlder() {
+  m_purgeCounter = PURGE_WAIT;
   QString nextLink = m_list->nextLink();
   if (!nextLink.isEmpty())
     emit request(nextLink, m_asMode | QAS_OLDER);
@@ -206,6 +212,14 @@ QASAbstractObjectList* ASWidget::initList(QString, QObject*) {
 int ASWidget::purgeOldWidgets(int numToKeep) {
   int n = 0;
 
+  if (count() <= numToKeep)
+    return 0;
+
+  if (--m_purgeCounter > 0) {
+    qDebug() << "purgeCounter" << m_purgeCounter << m_list->url();
+    return 0;
+  }
+
   for (int idx = m_itemLayout->count()-1;
        count() > numToKeep && idx > 0;
        --idx) {
@@ -214,7 +228,7 @@ int ASWidget::purgeOldWidgets(int numToKeep) {
       continue;
 
     QASAbstractObject* obj = ow->asObject();
-    qDebug() << "Deleting widget " << idx << obj->apiLink();
+    qDebug() << "Deleting widget " << idx << obj->apiLink() << m_list->url();
 
     QLayoutItem* item = m_itemLayout->takeAt(idx);
     delete ow;

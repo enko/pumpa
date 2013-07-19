@@ -75,6 +75,7 @@ protected:
   QASAbstractObjectList* m_list;
 
   int m_asMode;
+  int m_purgeCounter;
 };
 
 #endif /* _ASWIDGET_H_ */
