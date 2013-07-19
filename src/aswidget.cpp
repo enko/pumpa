@@ -200,3 +200,28 @@ ObjectWidgetWithSignals* ASWidget::createWidget(QASAbstractObject*, bool&) {
 QASAbstractObjectList* ASWidget::initList(QString, QObject*) {
   return NULL;
 }
+
+//------------------------------------------------------------------------------
+
+int ASWidget::purgeOldWidgets(int numToKeep) {
+  int n = 0;
+
+  for (int idx = m_itemLayout->count()-1;
+       count() > numToKeep && idx > 0;
+       --idx) {
+    ObjectWidgetWithSignals* ow = widgetAt(idx);
+    if (!ow)
+      continue;
+
+    QASAbstractObject* obj = ow->asObject();
+    qDebug() << "Deleting widget " << idx << obj->apiLink();
+
+    QLayoutItem* item = m_itemLayout->takeAt(idx);
+    delete ow;
+    delete item;
+    m_object_set.remove(obj);
+
+    n++;
+  }
+  return n;
+}

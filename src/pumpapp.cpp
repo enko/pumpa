@@ -249,6 +249,8 @@ void PumpApp::timerEvent(QTimerEvent* event) {
     m_timerCount = 0;
     fetchAll();
   }
+  
+  purgeTimelines();
   refreshTimeLabels();
 }
 
@@ -263,6 +265,20 @@ void PumpApp::resetTimer() {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::purgeTimelines() {
+  int n = m_s->maxTimelineItems();
+  m_inboxWidget->purgeOldWidgets(n);
+  m_directMinorWidget->purgeOldWidgets(n);
+  m_directMajorWidget->purgeOldWidgets(n);
+  m_inboxMinorWidget->purgeOldWidgets(n);
+  m_firehoseWidget->purgeOldWidgets(n);
+
+  qDebug() << "meanwhile items:" << m_inboxMinorWidget->count();
+  qDebug() << "firehose items:" << m_firehoseWidget->count();
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::refreshTimeLabels() {
   m_inboxWidget->refreshTimeLabels();
   m_directMinorWidget->refreshTimeLabels();
@@ -271,9 +287,6 @@ void PumpApp::refreshTimeLabels() {
   m_firehoseWidget->refreshTimeLabels();
   if (m_contextWidget)
     m_contextWidget->refreshTimeLabels();
-
-  qDebug() << "meanwhile items:" << m_inboxMinorWidget->count();
-  qDebug() << "firehose items:" << m_firehoseWidget->count();
 }
 
 //------------------------------------------------------------------------------

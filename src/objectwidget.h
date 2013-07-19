@@ -40,6 +40,7 @@ public:
                       bool shortWidget=false);
 
   QASObject* object() const { return m_object; }
+  virtual QASAbstractObject* asObject() const { return object(); }
 
   virtual void refreshTimeLabels();
 

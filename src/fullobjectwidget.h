@@ -40,6 +40,7 @@ public:
   FullObjectWidget(QASObject* obj, QWidget* parent = 0, bool childWidget=false);
 
   QASObject* object() const { return m_object; }
+  virtual QASAbstractObject* asObject() const { return object(); }
 
   virtual void refreshTimeLabels() { updateInfoText(); }
 

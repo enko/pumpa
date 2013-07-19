@@ -41,6 +41,8 @@ public:
   virtual QString getId() const { return m_activity->id(); }
   QASActivity* activity() const { return m_activity; }
 
+  virtual QASAbstractObject* asObject() const { return activity(); }
+
   virtual void refreshTimeLabels();
 
 public slots:

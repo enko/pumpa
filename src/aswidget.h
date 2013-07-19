@@ -39,7 +39,8 @@ public:
   virtual void fetchOlder();
   void setEndpoint(QString endpoint, int asMode=-1);
 
-  int count() const { return m_list->size(); }
+  int count() const { return m_object_set.size(); }
+  int purgeOldWidgets(int numToKeep);
 
 signals:
   void highlightMe();  
