@@ -839,7 +839,10 @@ void PumpApp::postImageActivity(QVariantMap obj) {
 //------------------------------------------------------------------------------
 
 void PumpApp::uploadProgress(qint64 bytesSent, qint64 bytesTotal) {
-  m_uploadDialog->setValue((100*bytesSent)/bytesTotal);
+  // dont to division by zero
+  if (bytesTotal > 0) {
+    m_uploadDialog->setValue((100*bytesSent)/bytesTotal);
+  }
   if (m_uploadDialog->wasCanceled())
     qDebug() << "abort mission"; // FIXME: here call QNetworkReply::abort()
 }
