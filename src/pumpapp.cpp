@@ -852,6 +852,9 @@ void PumpApp::postImageActivity(QVariantMap obj) {
 //------------------------------------------------------------------------------
 
 void PumpApp::uploadProgress(qint64 bytesSent, qint64 bytesTotal) {
+  if (!m_uploadDialog || bytesTotal <= 0)
+    return;
+
   m_uploadDialog->setValue((100*bytesSent)/bytesTotal);
   if (m_uploadDialog->wasCanceled())
     qDebug() << "abort mission"; // FIXME: here call QNetworkReply::abort()
@@ -1095,6 +1098,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     m_selfActor = QASActor::getActor(json["profile"].toMap(), this);
     m_selfActor->setYou();
   } else if (sid == QAS_IMAGE_UPLOAD) {
+    m_uploadDialog->hide();
     postImageActivity(json);
   } else if (sid == QAS_IMAGE_UPDATE) {
     updatePostedImage(json);
