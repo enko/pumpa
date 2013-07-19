@@ -207,6 +207,16 @@ void MessageWindow::updateAddPicture() {
     return;
   }
 
+  QPixmap p;
+  if (!m_imageFileName.isEmpty()) {
+    p.load(m_imageFileName);
+    if (p.isNull()) {
+      QMessageBox::critical(this, tr("Sorry!"),
+                            tr("That file didn't appear to be an image."));
+      m_imageFileName = "";
+    }
+  }
+
   m_addPictureButton->setVisible(true);
   if (m_imageFileName.isEmpty()) {
     m_addPictureButton->setText(tr("&Add picture"));
@@ -214,7 +224,7 @@ void MessageWindow::updateAddPicture() {
     m_pictureLabel->setVisible(false);
     m_pictureTitle->setVisible(false);
   } else {
-    QPixmap p(m_imageFileName);
+      
     m_pictureLabel->setPixmap(p);
     m_addPictureButton->setText(tr("&Change picture"));
     m_removePictureButton->setVisible(true);
