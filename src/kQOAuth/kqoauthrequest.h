@@ -105,6 +105,9 @@ public:
     void setContentType(const QString &contentType);
     QString contentType();
 
+    void setContentLength(int contentLength);
+    int contentLength();
+
     void setRawData(const QByteArray &rawData);
     QByteArray rawData();
 

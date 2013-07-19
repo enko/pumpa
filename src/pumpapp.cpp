@@ -62,7 +62,6 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
 
   m_nam = new QNetworkAccessManager(this);
 
-  oaRequest = new KQOAuthRequest(this);
   oaManager = new KQOAuthManager(this);
   connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
           this, SLOT(onAuthorizedRequestReady(QByteArray, int)));
@@ -167,6 +166,10 @@ void PumpApp::launchOAuthWizard() {
 
 void PumpApp::startPumping() {
   resetActivityStreams();
+
+  QString webFinger = siteUrlToAccountId(m_s->userName(), m_s->siteUrl());
+
+  setWindowTitle(QString("%1 - %2").arg(CLIENT_FANCY_NAME).arg(webFinger));
 
   // Setup endpoints for our timeline widgets
   m_inboxWidget->setEndpoint(inboxEndpoint("major"), QAS_FOLLOW);
@@ -819,8 +822,10 @@ void PumpApp::uploadFile(QString filename) {
 
   QByteArray ba = fp.readAll();
   
-  initRequest(apiUrl(apiUser("uploads")), KQOAuthRequest::POST);
+  KQOAuthRequest* oaRequest = initRequest(apiUrl(apiUser("uploads")),
+                                          KQOAuthRequest::POST);
   oaRequest->setContentType(mimeType);
+  oaRequest->setContentLength(ba.size());
   oaRequest->setRawData(ba);
 
   if (m_uploadDialog == NULL) {
@@ -937,10 +942,6 @@ void PumpApp::feed(QString verb, QVariantMap object, int response_id,
   addRecipient(data, "to", to);
   addRecipient(data, "cc", cc);
 
-#ifdef DEBUG_NET
-  qDebug() << "FEED" << data;
-#endif
-
   request(endpoint, response_id, KQOAuthRequest::POST, data);
 }
 
@@ -964,14 +965,16 @@ QString PumpApp::apiUser(QString path) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::initRequest(QString endpoint,
-                          KQOAuthRequest::RequestHttpMethod method) {
+KQOAuthRequest* PumpApp::initRequest(QString endpoint,
+                                     KQOAuthRequest::RequestHttpMethod method) {
+  KQOAuthRequest* oaRequest = new KQOAuthRequest(this);
   oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, QUrl(endpoint));
   oaRequest->setConsumerKey(m_s->clientId());
   oaRequest->setConsumerSecretKey(m_s->clientSecret());
   oaRequest->setToken(m_s->token());
   oaRequest->setTokenSecret(m_s->tokenSecret());
   oaRequest->setHttpMethod(method); 
+  return oaRequest;
 }
 
 //------------------------------------------------------------------------------
@@ -995,7 +998,7 @@ void PumpApp::request(QString endpoint, int response_id,
 #endif
 
   QStringList epl = endpoint.split("?");
-  initRequest(epl[0], method);
+  KQOAuthRequest* oaRequest = initRequest(epl[0], method);
 
   // I have no idea why this is the only way that seems to
   // work. Incredibly frustrating and ugly :-/
@@ -1010,8 +1013,13 @@ void PumpApp::request(QString endpoint, int response_id,
   }
   
   if (method == KQOAuthRequest::POST) {
+    QByteArray ba = serializeJson(data);
+    oaRequest->setRawData(ba);
     oaRequest->setContentType("application/json");
-    oaRequest->setRawData(serializeJson(data));
+    oaRequest->setContentLength(ba.size());
+#ifdef DEBUG_NET
+    qDebug() << "DATA" << oaRequest->rawData();
+#endif
   }
 
   oaManager->executeAuthorizedRequest(oaRequest, response_id);
@@ -1026,6 +1034,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
 #ifdef DEBUG_NET
   qDebug() << "[DEBUG] request done [" << id << "]"
            << response.count() << "bytes";
+  // qDebug() << response;
 #endif
 
   m_requests--;

@@ -122,7 +122,8 @@ protected:
   }
 
 private:
-  void initRequest(QString endpoint, KQOAuthRequest::RequestHttpMethod method);
+  KQOAuthRequest* initRequest(QString endpoint,
+                              KQOAuthRequest::RequestHttpMethod method);
 
   void uploadFile(QString filename);
 
@@ -185,7 +186,7 @@ private:
   QMenu* helpMenu;
 
   KQOAuthManager *oaManager;
-  KQOAuthRequest *oaRequest;
+  // KQOAuthRequest *oaRequest;
 
   TabWidget* m_tabWidget;
   CollectionWidget* m_inboxWidget;
