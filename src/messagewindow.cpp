@@ -21,6 +21,7 @@
 #include "pumpa_defines.h"
 
 #include <QFileDialog>
+#include <QMessageBox>
 
 //------------------------------------------------------------------------------
 
