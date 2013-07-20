@@ -161,6 +161,11 @@
 <context>
     <name>MessageWindow</name>
     <message>
+        <location filename="src/messagewindow.cpp" line="46"/>
+        <source>[markup]</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="src/messagewindow.cpp" line="59"/>
         <source>Public</source>
         <translation>Público</translation>
@@ -239,6 +244,80 @@
         <location filename="src/messagewindow.cpp" line="230"/>
         <source>&amp;Change picture</source>
         <translation>&amp;Cambiar imagen</translation>
+    </message>
+</context>
+<context>
+    <name>OAuthFirstPage</name>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="41"/>
+        <source>Welcome to Pumpa!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="46"/>
+        <source>&lt;p&gt;In order to use pump.io you need to first register an account with a pump.io server. If you haven&apos;t done this yet you can do it now by trying out one of the existing public servers: &lt;br /&gt;&lt;a href=&quot;http://pump.io/tryit.html&quot;&gt;http://pump.io/tryit.html&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;When you are done enter your new pump.io account id below in the form of &lt;b&gt;username@servername&lt;/b&gt;.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="65"/>
+        <source>&lt;b&gt;Your pump.io account id:&lt;/b&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="76"/>
+        <source>Next</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OAuthSecondPage</name>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="121"/>
+        <source>Authorise Pumpa</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="126"/>
+        <source>In order for Pumpa to be able to read and post new messages to your pump.io account you need to grant Pumpa access via the web page. Pumpa will open the web page for you - just follow the instructions and copy &amp;amp; paste the &lt;b&gt;verifier&lt;/b&gt; text string back into the field below. (Thetoken should be automatically pre-filled.)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="136"/>
+        <source>Token:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="142"/>
+        <source>Verifier:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OAuthWizard</name>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="216"/>
+        <source>Registering client ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="251"/>
+        <source>Network error: </source>
+        <translation type="unfinished">Error de red:</translation>
+    </message>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="263"/>
+        <source>Registered client to [%1] successfully.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="272"/>
+        <source>Authorising user ...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/oauthwizard.cpp" line="296"/>
+        <source>Network or authentication error!</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -392,82 +471,92 @@
         <translation>&amp;Ayuda</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="533"/>
+        <location filename="src/pumpapp.cpp" line="502"/>
+        <source>&lt;p&gt;Pumpa is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.&lt;/p&gt;&lt;p&gt;Pumpa is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.&lt;/p&gt;&lt;p&gt;You should have received a copy of the GNU General Public License along with Pumpa.  If not, see &lt;a href=&quot;http://www.gnu.org/licenses/&quot;&gt;http://www.gnu.org/licenses/&lt;/a&gt;.&lt;/p&gt;</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/pumpapp.cpp" line="515"/>
+        <source>&lt;p&gt;The &lt;a href=&quot;https://github.com/kypeli/kQOAuth&quot;&gt;kQOAuth library&lt;/a&gt; is copyrighted by &lt;a href=&quot;http://www.johanpaul.com/&quot;&gt;Johan Paul&lt;/a&gt; and licensed under LGPL 2.1.&lt;/p&gt;&lt;p&gt;The &lt;a href=&quot;https://github.com/vmg/sundown&quot;&gt;sundown Markdown library&lt;/a&gt; is copyrighted by Natacha Port&amp;eacute;, Vicent Marti and others, and &lt;a href=&quot;https://github.com/vmg/sundown#license&quot;&gt;permissively licensed&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;The Pumpa logo was &lt;a href=&quot;http://opengameart.org/content/fruit-and-veggie-inventory&quot;&gt;created by Joshua Taylor&lt;/a&gt; for the &lt;a href=&quot;http://lpc.opengameart.org/&quot;&gt;Liberated Pixel Cup&lt;/a&gt;.The logo is copyrighted by the artist and is dual licensed under the CC-BY-SA 3.0 license and the GNU GPL 3.0.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/pumpapp.cpp" line="534"/>
         <source>A simple Qt-based pump.io client.</source>
         <translation>Un cliente pump.io sencillo basado en Qt.</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="536"/>
+        <location filename="src/pumpapp.cpp" line="537"/>
         <source>About %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="598"/>
+        <location filename="src/pumpapp.cpp" line="599"/>
         <source>Site not configured yet!</source>
         <translation>¡Sitio aún no configurado!</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="628"/>
+        <location filename="src/pumpapp.cpp" line="629"/>
         <source>Follow pump.io user</source>
         <translation>Seguir a un usuario pump.io</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="629"/>
+        <location filename="src/pumpapp.cpp" line="630"/>
         <source>Enter webfinger ID of person to follow: </source>
         <translation>Introduce el webfinger ID de la persona a seguir:</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="639"/>
+        <location filename="src/pumpapp.cpp" line="640"/>
         <source>Sorry, that doesn&apos;t even look like a webfinger ID!</source>
         <translation>¡Lo siento, eso no parece un webfinger ID!</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="644"/>
+        <location filename="src/pumpapp.cpp" line="645"/>
         <source>Sorry, you are already following that person!</source>
         <translation>Lo siento, ¡ya sigues a esa persona!</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="680"/>
+        <location filename="src/pumpapp.cpp" line="681"/>
         <source>Invalid user: </source>
         <translation>Usuario no válido:</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="687"/>
+        <location filename="src/pumpapp.cpp" line="688"/>
         <source>Invalid user (cannot check site): </source>
         <translation>Usuario no válido (no se puede comprobar el sitio):</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="706"/>
+        <location filename="src/pumpapp.cpp" line="707"/>
         <source>&amp;Context</source>
         <translation>&amp;Contexto</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="1014"/>
+        <location filename="src/pumpapp.cpp" line="1015"/>
         <source>Loading ...</source>
         <translation>Cargando ...</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="1029"/>
+        <location filename="src/pumpapp.cpp" line="1030"/>
         <source>Ready!</source>
         <translation>¡Listo!</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="1035"/>
+        <location filename="src/pumpapp.cpp" line="1036"/>
         <source>Unable to post message!</source>
         <translation>¡No se ha podido publicar el mensaje!</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="1040"/>
+        <location filename="src/pumpapp.cpp" line="1041"/>
         <source>Network or authorisation error [%1/%2].</source>
         <translation>Error de red o de autorización [%1/%2].</translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="1075"/>
+        <location filename="src/pumpapp.cpp" line="1076"/>
         <source>Successfully followed </source>
         <translation>Siguiendo correctamente a </translation>
     </message>
     <message>
-        <location filename="src/pumpapp.cpp" line="1076"/>
+        <location filename="src/pumpapp.cpp" line="1077"/>
         <source>Successfully unfollowed </source>
         <translation>Dejaste correctamente de seguir a </translation>
     </message>
