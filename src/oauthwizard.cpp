@@ -31,25 +31,26 @@
 #include "util.h"
 #include "json.h"
 
-#define EXAMPLE_ACCOUNT_ID "username@example.com"
+#define EXAMPLE_ACCOUNT_ID tr("username@example.com")
 
 //------------------------------------------------------------------------------
 
 OAuthFirstPage::OAuthFirstPage(QWidget* parent) :
   QWizardPage(parent)
 {
-  setTitle("Welcome to Pumpa!");
+  setTitle(tr("Welcome to Pumpa!"));
 
   QVBoxLayout* layout = new QVBoxLayout(this);
 
   QLabel* infoLabel = 
-    new QLabel("<p>In order to use pump.io you need to first register an "
-               "account with a pump.io server. If you haven't done this yet "
-               "you can do it now by trying out one of the existing public "
-               "servers: <br /><a href=\"http://pump.io/tryit.html\">"
-               "http://pump.io/tryit.html</a>.</p>"
-               "<p>When you are done enter your new pump.io account id below "
-               "in the form of <b>username@servername</b>.</p>", this);
+    new QLabel(tr("<p>In order to use pump.io you need to first register an "
+                  "account with a pump.io server. If you haven't done this yet "
+                  "you can do it now by trying out one of the existing public "
+                  "servers: <br /><a href=\"http://pump.io/tryit.html\">"
+                  "http://pump.io/tryit.html</a>.</p>"
+                  "<p>When you are done enter your new pump.io account id "
+                  "below in the form of <b>username@servername</b>.</p>"),
+               this);
   infoLabel->setOpenExternalLinks(true);
   infoLabel->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                      Qt::LinksAccessibleByMouse);
@@ -60,7 +61,8 @@ OAuthFirstPage::OAuthFirstPage(QWidget* parent) :
   m_messageLabel = new QLabel(this);
   layout->addWidget(m_messageLabel);
 
-  QLabel* accountIdLabel = new QLabel("<b>Your pump.io account id:</b>", this);
+  QLabel* accountIdLabel =
+    new QLabel(tr("<b>Your pump.io account id:</b>"), this);
   QLineEdit* accountIdEdit = new QLineEdit(EXAMPLE_ACCOUNT_ID, this);
   accountIdLabel->setBuddy(accountIdEdit);
   connect(accountIdEdit, SIGNAL(textEdited(const QString&)),
@@ -71,7 +73,7 @@ OAuthFirstPage::OAuthFirstPage(QWidget* parent) :
 
   registerField("accountId*", accountIdEdit);
 
-  setButtonText(QWizard::CommitButton, "Next");
+  setButtonText(QWizard::CommitButton, tr("Next"));
   setCommitPage(true);
   setLayout(layout);
 }
@@ -116,28 +118,28 @@ bool OAuthFirstPage::validatePage() {
 //------------------------------------------------------------------------------
 
 OAuthSecondPage::OAuthSecondPage(QWidget* parent) : QWizardPage(parent) {
-  setTitle("Authorise Pumpa");
+  setTitle(tr("Authorise Pumpa"));
 
   QVBoxLayout* layout = new QVBoxLayout(this);
 
   QLabel* infoLabel = 
-    new QLabel("In order for Pumpa to be able to read and post new messages "
-               "to your pump.io account you need to grant Pumpa access via "
-               "the web page. Pumpa will open the web page for you - just "
-               "follow the instructions and copy &amp; paste the "
-               "<b>verifier</b> text string back into the field below. (The"
-               "token should be automatically pre-filled.)",
+    new QLabel(tr("In order for Pumpa to be able to read and post new messages "
+                  "to your pump.io account you need to grant Pumpa access via "
+                  "the web page. Pumpa will open the web page for you - just "
+                  "follow the instructions and copy &amp; paste the "
+                  "<b>verifier</b> text string back into the field below. (The"
+                  "token should be automatically pre-filled.)"),
                this);
   infoLabel->setWordWrap(true);
   layout->addWidget(infoLabel);
 
-  QLabel* tokenLabel = new QLabel("Token:", this);
+  QLabel* tokenLabel = new QLabel(tr("Token:"), this);
   QLineEdit* tokenEdit = new QLineEdit(this);
   tokenLabel->setBuddy(tokenEdit);
   layout->addWidget(tokenLabel);
   layout->addWidget(tokenEdit);
 
-  QLabel* verifierLabel = new QLabel("Verifier:", this);
+  QLabel* verifierLabel = new QLabel(tr("Verifier:"), this);
   QLineEdit* verifierEdit = new QLineEdit(this);
   verifierLabel->setBuddy(verifierEdit);
   layout->addWidget(verifierLabel);
@@ -168,7 +170,7 @@ OAuthWizard::OAuthWizard(QNetworkAccessManager* nam, QWidget* parent) :
   QWizard(parent),
   m_nam(nam)
 {
-  setWindowTitle("Pumpa");
+  setWindowTitle(CLIENT_FANCY_NAME);
 
   m_oam = new KQOAuthManager(this);
   m_oar = new KQOAuthRequest(this);
@@ -211,7 +213,7 @@ void OAuthWizard::onFirstPageCommitted(QString username, QString server) {
 //------------------------------------------------------------------------------
 
 void OAuthWizard::registerOAuthClient() {
-  notifyMessage("Registering client ...");
+  notifyMessage(tr("Registering client ..."));
   m_clientRegTryCount++;
 
   QUrl serverUrl(m_server);
@@ -246,7 +248,7 @@ void OAuthWizard::onOAuthClientRegDone() {
       m_server.replace("https://", "http://");
       registerOAuthClient();
     } else
-      errorMessage("Network error: " + reply->errorString());
+      errorMessage(tr("Network error: ") + reply->errorString());
     return;
   }
 
@@ -258,7 +260,8 @@ void OAuthWizard::onOAuthClientRegDone() {
 
   emit clientRegistered(m_username, m_server, m_clientId, m_clientSecret);
 
-  notifyMessage("Registered client to [" + m_server + "] successfully.");
+  notifyMessage(QString(tr("Registered client to [%1] successfully.")).
+                arg(m_server));
 
   getOAuthAccess();
 }
@@ -266,7 +269,7 @@ void OAuthWizard::onOAuthClientRegDone() {
 //------------------------------------------------------------------------------
 
 void OAuthWizard::getOAuthAccess() {
-  notifyMessage("Authorising user ...");
+  notifyMessage(tr("Authorising user ..."));
 
   connect(m_oam, SIGNAL(temporaryTokenReceived(QString, QString)),
           this, SLOT(onTemporaryTokenReceived(QString, QString)));
@@ -290,7 +293,7 @@ void OAuthWizard::onTemporaryTokenReceived(QString token,
   if (m_oam->lastError() == KQOAuthManager::NoError)
     m_oam->getUserAuthorization(userAuthURL);
   else 
-    errorMessage("Network or authentication error!");
+    errorMessage(tr("Network or authentication error!"));
 }
 
 //------------------------------------------------------------------------------

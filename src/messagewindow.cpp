@@ -43,7 +43,7 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
   m_infoLabel = new QLabel(this);
 
   m_markupLabel = new QLabel(this);
-  m_markupLabel->setText(QString("<a href=\"%2\">[markup]</a>").
+  m_markupLabel->setText(QString("<a href=\"%2\">" + tr("[markup]") + "</a>").
                        arg(MARKUP_DOC_URL));
   m_markupLabel->setOpenExternalLinks(true);
   m_markupLabel->setTextInteractionFlags(Qt::TextSelectableByMouse |

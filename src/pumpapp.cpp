@@ -499,7 +499,7 @@ void PumpApp::exit() {
 
 void PumpApp::about() { 
   static const QString GPL = 
-    "<p>Pumpa is free software: you can redistribute it and/or modify it "
+    tr("<p>Pumpa is free software: you can redistribute it and/or modify it "
     "under the terms of the GNU General Public License as published by "
     "the Free Software Foundation, either version 3 of the License, or "
     "(at your option) any later version.</p>"
@@ -510,20 +510,21 @@ void PumpApp::about() {
     "<p>You should have received a copy of the GNU General Public License "
     "along with Pumpa.  If not, see "
     "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>."
-    "</p>"
-    "<p>The <a href=\"https://github.com/kypeli/kQOAuth\">kQOAuth library</a> "
-    "is copyrighted by <a href=\"http://www.johanpaul.com/\">Johan Paul</a> "
-    "and licensed under LGPL 2.1.</p>"
-    "<p>The <a href=\"https://github.com/vmg/sundown\">sundown Markdown "
-    "library</a> is copyrighted by Natacha Port&eacute;, Vicent Marti and "
-    "others, and <a href=\"https://github.com/vmg/sundown#license\">"
-    "permissively licensed</a>.</p>"
-    "<p>The Pumpa logo was "
-    "<a href=\"http://opengameart.org/content/fruit-and-veggie-inventory\">"
-    "created by Joshua Taylor</a> for the "
-    "<a href=\"http://lpc.opengameart.org/\">Liberated Pixel Cup</a>."
-    "The logo is copyrighted by the artist and is dual licensed under the "
-       "CC-BY-SA 3.0 license and the GNU GPL 3.0.";
+       "</p>");
+  static const QString credits = 
+    tr("<p>The <a href=\"https://github.com/kypeli/kQOAuth\">kQOAuth library"
+       "</a> is copyrighted by <a href=\"http://www.johanpaul.com/\">Johan "
+       "Paul</a> and licensed under LGPL 2.1.</p>"
+       "<p>The <a href=\"https://github.com/vmg/sundown\">sundown Markdown "
+       "library</a> is copyrighted by Natacha Port&eacute;, Vicent Marti and "
+       "others, and <a href=\"https://github.com/vmg/sundown#license\">"
+       "permissively licensed</a>.</p>"
+       "<p>The Pumpa logo was "
+       "<a href=\"http://opengameart.org/content/fruit-and-veggie-inventory\">"
+       "created by Joshua Taylor</a> for the "
+       "<a href=\"http://lpc.opengameart.org/\">Liberated Pixel Cup</a>."
+       "The logo is copyrighted by the artist and is dual licensed under the "
+       "CC-BY-SA 3.0 license and the GNU GPL 3.0.");
   
   QString mainText = QString("<p><b>%1 %2</b> - %3<br/>"
                              "<a href=\"%4\">%4</a><br/>"
@@ -534,7 +535,7 @@ void PumpApp::about() {
     .arg(WEBSITE_URL);
 
   QMessageBox::about(this, QString(tr("About %1")).arg(CLIENT_FANCY_NAME),
-                     mainText + GPL);
+                     mainText + GPL + credits);
 }
 
 //------------------------------------------------------------------------------
