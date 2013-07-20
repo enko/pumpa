@@ -533,7 +533,7 @@ void PumpApp::about() {
     .arg(tr("A simple Qt-based pump.io client."))
     .arg(WEBSITE_URL);
 
-  QMessageBox::about(this, "About " CLIENT_FANCY_NAME, 
+  QMessageBox::about(this, QString(tr("About %1")).arg(CLIENT_FANCY_NAME),
                      mainText + GPL);
 }
 
