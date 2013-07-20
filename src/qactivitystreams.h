@@ -20,18 +20,7 @@
 #ifndef _QACTIVITYSTREAMS_H_
 #define _QACTIVITYSTREAMS_H_
 
-// #include <QSet>
-// #include <QObject>
-// #include <QDateTime>
-// #include <QVariantMap>
-
 //------------------------------------------------------------------------------
-// Forward declarations
-
-// class QASCollection;
-// class QASObjectList;
-// class QASActorList;
-// class QASActor;
 
 #include "qasabstractobject.h"
 #include "qasobject.h"

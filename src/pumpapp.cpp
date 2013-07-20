@@ -278,6 +278,7 @@ void PumpApp::purgeTimelines() {
 
   qDebug() << "meanwhile items:" << m_inboxMinorWidget->count();
   qDebug() << "firehose items:" << m_firehoseWidget->count();
+  qDebug() << "QASObjects in memory:" << QASObject::cacheItems();
 }
 
 //------------------------------------------------------------------------------
