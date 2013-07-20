@@ -659,4 +659,32 @@
         <translation>Se ha iniciado sesión como %1.</translation>
     </message>
 </context>
+<context>
+    <name>QObject</name>
+    <message>
+        <location filename="src/util.cpp" line="127"/>
+        <source>a few seconds ago</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/util.cpp" line="129"/>
+        <source>one minute ago</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/util.cpp" line="131"/>
+        <source>%1 minutes ago</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/util.cpp" line="133"/>
+        <source>1 hour ago</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/util.cpp" line="135"/>
+        <source>%1 hours ago</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
 </TS>
