@@ -107,9 +107,15 @@
     </message>
     <message>
         <location filename="src/fullobjectwidget.cpp" line="334"/>
+        <location filename="src/fullobjectwidget.cpp" line="338"/>
         <source>%1 like this.</source>
         <oldsource>like this.</oldsource>
         <translation>A %1 le gusta.</translation>
+    </message>
+    <message>
+        <location filename="src/fullobjectwidget.cpp" line="336"/>
+        <source>%1 likes this.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="src/fullobjectwidget.cpp" line="367"/>
@@ -233,6 +239,19 @@
         <location filename="src/messagewindow.cpp" line="230"/>
         <source>&amp;Change picture</source>
         <translation>&amp;Cambiar imagen</translation>
+    </message>
+</context>
+<context>
+    <name>ObjectWidget</name>
+    <message>
+        <location filename="src/objectwidget.cpp" line="121"/>
+        <source>Re: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="src/objectwidget.cpp" line="122"/>
+        <source>show context</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -376,6 +395,11 @@
         <location filename="src/pumpapp.cpp" line="533"/>
         <source>A simple Qt-based pump.io client.</source>
         <translation>Un cliente pump.io sencillo basado en Qt.</translation>
+    </message>
+    <message>
+        <location filename="src/pumpapp.cpp" line="536"/>
+        <source>About %1</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="src/pumpapp.cpp" line="598"/>

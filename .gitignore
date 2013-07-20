@@ -6,4 +6,3 @@ moc_*.cpp
 /pumpa
 /qrc_pumpa.cpp
 /src/TAGS
-*.qm
