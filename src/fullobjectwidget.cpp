@@ -333,9 +333,9 @@ void FullObjectWidget::updateLikes() {
   if (likes->onlyYou())
     text = " " + QString(tr("%1 like this.")).arg(nstr);
   else if (nl==1) 
-    text = " " + QString("%1 likes this.").arg(nstr);
+    text = " " + QString(tr("%1 likes this.")).arg(nstr);
   else 
-    text = " " + QString("%1 like this.").arg(nstr);
+    text = " " + QString(tr("%1 like this.")).arg(nstr);
   m_likesLabel->setText(text);
 }
 

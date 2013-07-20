@@ -2,25 +2,27 @@
 
 Greetings, fellow pumpkins!
 
-Pumpa is a simple [pump.io][1] client written in C++ and Qt.  Some
-parts have been cherry picked from my old StatusNet client, yaics
-(<http://gitorious.org/yaics>).
+Pumpa is a simple [pump.io][1] client written in C++ and Qt, and
+licensed under the GNU GPL 3.0 (or later).
 
-Pumpa is licensed under the GNU GPL 3.0 (or later).  Please send bug
-reports and feature suggestions to me via e-mail <mats@sjoberg.fi> or
-to my pump.io account [sazius@io.saz.im](https://io.saz.im/sazius).
+Please report any bugs or feature requests to [the bug tracker][13].
+If that doesn't work for some reason, you can always contact me via
+e-mail: <mats@sjoberg.fi>.
 
-The [kQOAuth library][2] is copyrighted by [Johan Paul][3] and
-licensed under LGPL 2.1.
+The Pumpa source code includes codes and graphics from other projects:
 
-The [sundown Markdown library][8] is copyrighted by Natacha Porté,
-Vicent Marti and others, and [permissively licensed][9].
+- The [kQOAuth library][2] is copyrighted by [Johan Paul][3] and
+  licensed under LGPL 2.1.
 
-The current (temporary?) Pumpa logo is from the
-["Fruit and Veggie Inventory"][4] entry to the
-[Liberated Pixel Cup][5] by Joshua Taylor.  The logo is copyrighted by
-the artist and is dual licensed under the CC-BY-SA 3.0 license and the
-GNU GPL 3.0.
+- The [sundown Markdown library][8] is copyrighted by Natacha
+  Port&eacute;, Vicent Marti and others, and
+  [permissively licensed][9].
+
+- The current (temporary?) Pumpa logo is from the
+  ["Fruit and Veggie Inventory"][4] entry to the
+  [Liberated Pixel Cup][5] by Joshua Taylor.  The logo is copyrighted
+  by the artist and is dual licensed under the CC-BY-SA 3.0 license
+  and the GNU GPL 3.0.
 
 Oh, and "pumpa" is a Swedish word that means either "to pump" (as a
 verb) or "pumpkin" (as a noun) :-)
@@ -33,6 +35,7 @@ verb) or "pumpkin" (as a noun) :-)
 [5]: http://lpc.opengameart.org/
 [8]: https://github.com/vmg/sundown
 [9]: https://github.com/vmg/sundown#license
+[13]: https://bugs.saz.im/index.php?project=2
 
 ## Build dependencies
   
@@ -130,18 +133,6 @@ colour is spelt wrong in the config name :-)
 
 [11]: http://qt-project.org/doc/qt-4.8/qcolor.html#setNamedColor
 [12]: http://qt-project.org/doc/qt-4.8/qsettings.html#locations-where-application-settings-are-stored
-
-## Missing features
-
-There are still several missing features.  This list contains some of
-them, not necessarily in order of importance:
-
-* Posting images
-* Ability to post to a particular user or user list
-
-Feel free to suggest other features, however my intention is to keep
-Pumpa as simple as possible, so I might not be interested in
-implementing everything. 
 
 
 ## License

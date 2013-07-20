@@ -118,8 +118,8 @@ void ObjectWidget::updateContextLabel() {
     return;
 
   QString text = ShortObjectWidget::objectExcerpt(m_irtObject);
-  m_contextLabel->setText("Re: " + text);
-  m_contextButton->setText("Show context");
+  m_contextLabel->setText(tr("Re: ") + text);
+  m_contextButton->setText(tr("show context"));
   if (!m_short && !m_irtObject->url().isEmpty()) {
     m_contextLabel->setVisible(true);
     m_contextButton->setVisible(true);
