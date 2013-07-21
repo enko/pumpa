@@ -96,7 +96,9 @@ SOURCES += $$OBJECT_SOURCES $$SUNDOWN_SOURCES
 # Translation files
 ######################################################################
 
-TRANSLATIONS = pumpa_es.ts
+TRANSLATIONS = \
+	translations/pumpa_es.ts \
+	translations/pumpa_de.ts
 
 
 ######################################################################
