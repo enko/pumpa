@@ -138,10 +138,10 @@ colour is spelt wrong in the config name :-)
 
 ## Translations
 
-Pumpa currently has an almost finished Spanish translation, French and
-German are under way. Any new translations are most welcome, but
-please tell me first (<mats@sjoberg.fi>) so that people don't do
-duplicate work!
+Pumpa currently has a Spanish and French translation, and a German one
+has been discussed. Any new translations are most welcome, but please
+tell me first (<mats@sjoberg.fi>) so that people don't do duplicate
+work!
 
 If you want to translate Pumpa you need to edit a .ts file.  Any TS
 translation tool is probably OK, but these instructions assume you
@@ -156,7 +156,7 @@ steps:
   it earlier (as described above) just do a pull to get the newest
   version:
 
-    git pull
+      git pull
     
   (alternatively you could just grab the .ts file directly from the
   [gitorious web site](https://gitorious.org/pumpa/pumpa/trees/master/translations)).
@@ -183,13 +183,13 @@ steps:
   
 - If you want to try it on Pumpa right away, you need to run the command:
 
-    lrelease pumpa.pro
+      lrelease pumpa.pro
 
   Pumpa should detect your systems locale setting and use the correct
   language.  If that doesn't work, or your locale is different, you
   can always force Pumpa to pick the right one, e.g. for Spanish:
 
-    ./pumpa -l es
+      ./pumpa -l es
 
 
 [14]: https://qt-project.org/downloads
