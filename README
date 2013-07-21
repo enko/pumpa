@@ -68,10 +68,11 @@ To download and build, type the following:
     make
 
 The procedure on Mac OS X is the same, but getting the dependencies is
-a bit different, David Haberthür has made a detailed guide for
+a bit different, David Haberth&uuml;r has made a detailed guide for
 building on Mac OS X here:
 <https://github.com/e14n/pump.io/wiki/HowTo-for-building-Pumpa-on-OS-X>
 
+Axel has a blog post about compiling for Windows here: <https://axel668.wordpress.com/2013/07/18/how-to-build-pumpa-qt-based-pump-io-client-for-windows/>
 
 ## Running
 
@@ -135,9 +136,68 @@ colour is spelt wrong in the config name :-)
 [12]: http://qt-project.org/doc/qt-4.8/qsettings.html#locations-where-application-settings-are-stored
 
 
+## Translations
+
+Pumpa currently has an almost finished Spanish translation, French and
+German are under way. Any new translations are most welcome, but
+please tell me first (<mats@sjoberg.fi>) so that people don't do
+duplicate work!
+
+If you want to translate Pumpa you need to edit a .ts file.  Any TS
+translation tool is probably OK, but these instructions assume you
+will use the [Linguist tool][15] that comes with Qt. Here are the
+steps:
+
+- Download and install Qt development tools, e.g. in Debian you need
+  the `qt4-dev-tools` package.  You can also just install the full Qt
+  system from the [Qt Project web site][14] (Linux, Mac and Windows).
+
+- Pull the most recent version of Pumpa from git. If you have cloned
+  it earlier (as described above) just do a pull to get the newest
+  version:
+
+    git pull
+    
+  (alternatively you could just grab the .ts file directly from the
+  [gitorious web site](https://gitorious.org/pumpa/pumpa/trees/master/translations)).
+
+- In Pumpa there should be a `translations` directory with several .ts
+  files, called e.g. `pumpa_es.ts` for Spanish, `pumpa_de.ts` for
+  German, and so on.  If you cannot find one for your language you can
+  ask me to add it (or add it yourself, it needs a line under
+  `TRANSLATIONS` in `pumpa.pro` and then run `lupdate` on the CLI).
+
+- Open the .ts file in [Qt Linguist][15] and start filling in the
+  fields in your language.  Feel free to ask any questions about the
+  context of the texts, or if you want to have something improved to
+  better fit your language.
+  
+- Some menu items and buttons have texts with ampersands,
+  e.g. "&Help", this means that the next character is an
+  ALT-shortcut. So in this case ALT-h would launch the Help menu.  It
+  is OK to change the shortcut when translating, but make sure that
+  you do not have the same shortcut for many things :-)
+  
+- Once you are done you can make your own clone on gitorious and make
+  a pull request, or just email me the .ts file if that's easier.
+  
+- If you want to try it on Pumpa right away, you need to run the command:
+
+    lrelease pumpa.pro
+
+  Pumpa should detect your systems locale setting and use the correct
+  language.  If that doesn't work, or your locale is different, you
+  can always force Pumpa to pick the right one, e.g. for Spanish:
+
+    ./pumpa -l es
+
+
+[14]: https://qt-project.org/downloads
+[15]: http://qt-project.org/doc/qt-4.8/linguist-translators.html
+
 ## License
 
-Copyright 2013 Mats Sjöberg <mats@sjoberg.fi>.
+Copyright 2013 Mats Sj&ouml;berg <mats@sjoberg.fi>.
 
 All of the source code of Pumpa is licensed under the GPLv3.
 

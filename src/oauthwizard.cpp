@@ -31,7 +31,7 @@
 #include "util.h"
 #include "json.h"
 
-#define EXAMPLE_ACCOUNT_ID tr("username@example.com")
+#define EXAMPLE_ACCOUNT_ID "username@example.com"
 
 //------------------------------------------------------------------------------
 
