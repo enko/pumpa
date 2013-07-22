@@ -26,6 +26,8 @@
 #include <QSize>
 #include <QPoint>
 
+#include "pumpa_defines.h"
+
 class PumpaSettings : public QObject {
   Q_OBJECT
 
@@ -69,7 +71,13 @@ public:
     return getValue("pos", QPoint(0, 0), "MainWindow").toPoint();
   }
 
-  int defaultToAddress() const { return getValue("default_to", 1).toInt(); }
+  int defaultToAddress() const {
+    return getValue("default_to", RECIPIENT_PUBLIC).toInt(); 
+  }
+
+  int defaultCcAddress() const {
+    return getValue("default_cc", RECIPIENT_FOLLOWERS).toInt(); 
+  }
 
   QString linkColor() const { return getValue("link_color", "").toString(); }
 
@@ -105,6 +113,7 @@ public:
   void pos(QPoint p) { setValue("pos", p, "MainWindow"); }
 
   void defaultToAddress(int i) { setValue("default_to", i); }
+  void defaultCcAddress(int i) { setValue("default_cc", i); }
 
 signals:
   void trayIconChanged();

@@ -540,14 +540,17 @@ void PumpApp::about() {
        "The logo is copyrighted by the artist and is dual licensed under the "
        "CC-BY-SA 3.0 license and the GNU GPL 3.0.");
   
-  QString mainText = QString("<p><b>%1 %2</b> - %3<br/>"
-                             "<a href=\"%4\">%4</a><br/>"
-                             "Copyright &copy; 2013 Mats Sj&ouml;berg.</p>")
+  QString mainText = 
+    QString("<p><b>%1 %2</b> - %3<br/><a href=\"%4\">%4</a><br/>"
+            + tr("Copyright &copy; 2013 Mats Sj&ouml;berg.</p>")
+            + tr("<p>Report bugs and feature requests at "
+                 "<a href=\"%5\">%5</a>.</p>"))
     .arg(CLIENT_FANCY_NAME)
     .arg(CLIENT_VERSION)
     .arg(tr("A simple Qt-based pump.io client."))
-    .arg(WEBSITE_URL);
-
+    .arg(WEBSITE_URL)
+    .arg(BUGTRACKER_URL);
+  
   QMessageBox::about(this, QString(tr("About %1")).arg(CLIENT_FANCY_NAME),
                      mainText + GPL + credits);
 }
