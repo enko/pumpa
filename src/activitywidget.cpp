@@ -107,7 +107,7 @@ QString ActivityWidget::recipientsToString(QASObjectList* rec) {
   for (size_t i=0; i<rec->size(); ++i) {
     QASObject* r = rec->at(i);
     if (r->type() == "collection" && r->id() == PUBLIC_RECIPIENT_ID) {
-      ret << "Public";
+      ret << tr("Public");
     } else {
       QString name = r->displayName();
       QString url = r->url();

@@ -39,6 +39,8 @@ public:
   static QASActivity* getActivity(QVariantMap json, QObject* parent);
   void update(QVariantMap json);
 
+  virtual QString apiLink() const { return id(); }
+
   QString id() const { return m_id; }
   QString verb() const { return m_verb; }
   QString content() const { return m_content; }

@@ -62,7 +62,6 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
 
   m_nam = new QNetworkAccessManager(this);
 
-  oaRequest = new KQOAuthRequest(this);
   oaManager = new KQOAuthManager(this);
   connect(oaManager, SIGNAL(authorizedRequestReady(QByteArray, int)),
           this, SLOT(onAuthorizedRequestReady(QByteArray, int)));
@@ -167,6 +166,10 @@ void PumpApp::launchOAuthWizard() {
 
 void PumpApp::startPumping() {
   resetActivityStreams();
+
+  QString webFinger = siteUrlToAccountId(m_s->userName(), m_s->siteUrl());
+
+  setWindowTitle(QString("%1 - %2").arg(CLIENT_FANCY_NAME).arg(webFinger));
 
   // Setup endpoints for our timeline widgets
   m_inboxWidget->setEndpoint(inboxEndpoint("major"), QAS_FOLLOW);
@@ -466,7 +469,7 @@ void PumpApp::createMenu() {
   fileMenu->addAction(followAction);
   // fileMenu->addSeparator();
   fileMenu->addAction(reloadAction);
-  // fileMenu->addAction(loadOlderAction);
+  fileMenu->addAction(loadOlderAction);
   // fileMenu->addAction(pauseAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openPrefsAction);
@@ -496,7 +499,7 @@ void PumpApp::exit() {
 
 void PumpApp::about() { 
   static const QString GPL = 
-    "<p>Pumpa is free software: you can redistribute it and/or modify it "
+    tr("<p>Pumpa is free software: you can redistribute it and/or modify it "
     "under the terms of the GNU General Public License as published by "
     "the Free Software Foundation, either version 3 of the License, or "
     "(at your option) any later version.</p>"
@@ -507,31 +510,35 @@ void PumpApp::about() {
     "<p>You should have received a copy of the GNU General Public License "
     "along with Pumpa.  If not, see "
     "<a href=\"http://www.gnu.org/licenses/\">http://www.gnu.org/licenses/</a>."
-    "</p>"
-    "<p>The <a href=\"https://github.com/kypeli/kQOAuth\">kQOAuth library</a> "
-    "is copyrighted by <a href=\"http://www.johanpaul.com/\">Johan Paul</a> "
-    "and licensed under LGPL 2.1.</p>"
-    "<p>The <a href=\"https://github.com/vmg/sundown\">sundown Markdown "
-    "library</a> is copyrighted by Natacha Port&eacute;, Vicent Marti and "
-    "others, and <a href=\"https://github.com/vmg/sundown#license\">"
-    "permissively licensed</a>.</p>"
-    "<p>The Pumpa logo was "
-    "<a href=\"http://opengameart.org/content/fruit-and-veggie-inventory\">"
-    "created by Joshua Taylor</a> for the "
-    "<a href=\"http://lpc.opengameart.org/\">Liberated Pixel Cup</a>."
-    "The logo is copyrighted by the artist and is dual licensed under the "
-       "CC-BY-SA 3.0 license and the GNU GPL 3.0.";
+       "</p>");
+  static const QString credits = 
+    tr("<p>The <a href=\"https://github.com/kypeli/kQOAuth\">kQOAuth library"
+       "</a> is copyrighted by <a href=\"http://www.johanpaul.com/\">Johan "
+       "Paul</a> and licensed under LGPL 2.1.</p>"
+       "<p>The <a href=\"https://github.com/vmg/sundown\">sundown Markdown "
+       "library</a> is copyrighted by Natacha Port&eacute;, Vicent Marti and "
+       "others, and <a href=\"https://github.com/vmg/sundown#license\">"
+       "permissively licensed</a>.</p>"
+       "<p>The Pumpa logo was "
+       "<a href=\"http://opengameart.org/content/fruit-and-veggie-inventory\">"
+       "created by Joshua Taylor</a> for the "
+       "<a href=\"http://lpc.opengameart.org/\">Liberated Pixel Cup</a>."
+       "The logo is copyrighted by the artist and is dual licensed under the "
+       "CC-BY-SA 3.0 license and the GNU GPL 3.0.");
   
-  QString mainText = QString("<p><b>%1 %2</b> - %3<br/>"
-                             "<a href=\"%4\">%4</a><br/>"
-                             "Copyright &copy; 2013 Mats Sj&ouml;berg.</p>")
+  QString mainText = 
+    QString("<p><b>%1 %2</b> - %3<br/><a href=\"%4\">%4</a><br/>"
+            + tr("Copyright &copy; 2013 Mats Sj&ouml;berg.</p>")
+            + tr("<p>Report bugs and feature requests at "
+                 "<a href=\"%5\">%5</a>.</p>"))
     .arg(CLIENT_FANCY_NAME)
     .arg(CLIENT_VERSION)
     .arg(tr("A simple Qt-based pump.io client."))
-    .arg(WEBSITE_URL);
-
-  QMessageBox::about(this, "About " CLIENT_FANCY_NAME, 
-                     mainText + GPL);
+    .arg(WEBSITE_URL)
+    .arg(BUGTRACKER_URL);
+  
+  QMessageBox::about(this, QString(tr("About %1")).arg(CLIENT_FANCY_NAME),
+                     mainText + GPL + credits);
 }
 
 //------------------------------------------------------------------------------
@@ -806,8 +813,10 @@ void PumpApp::uploadFile(QString filename) {
 
   QByteArray ba = fp.readAll();
   
-  initRequest(apiUrl(apiUser("uploads")), KQOAuthRequest::POST);
+  KQOAuthRequest* oaRequest = initRequest(apiUrl(apiUser("uploads")),
+                                          KQOAuthRequest::POST);
   oaRequest->setContentType(mimeType);
+  oaRequest->setContentLength(ba.size());
   oaRequest->setRawData(ba);
 
   if (m_uploadDialog == NULL) {
@@ -839,10 +848,10 @@ void PumpApp::postImageActivity(QVariantMap obj) {
 //------------------------------------------------------------------------------
 
 void PumpApp::uploadProgress(qint64 bytesSent, qint64 bytesTotal) {
-  // dont to division by zero
-  if (bytesTotal > 0) {
-    m_uploadDialog->setValue((100*bytesSent)/bytesTotal);
-  }
+  if (!m_uploadDialog || bytesTotal <= 0)
+    return;
+
+  m_uploadDialog->setValue((100*bytesSent)/bytesTotal);
   if (m_uploadDialog->wasCanceled())
     qDebug() << "abort mission"; // FIXME: here call QNetworkReply::abort()
 }
@@ -924,10 +933,6 @@ void PumpApp::feed(QString verb, QVariantMap object, int response_id,
   addRecipient(data, "to", to);
   addRecipient(data, "cc", cc);
 
-#ifdef DEBUG_NET
-  qDebug() << "FEED" << data;
-#endif
-
   request(endpoint, response_id, KQOAuthRequest::POST, data);
 }
 
@@ -951,14 +956,16 @@ QString PumpApp::apiUser(QString path) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::initRequest(QString endpoint,
-                          KQOAuthRequest::RequestHttpMethod method) {
+KQOAuthRequest* PumpApp::initRequest(QString endpoint,
+                                     KQOAuthRequest::RequestHttpMethod method) {
+  KQOAuthRequest* oaRequest = new KQOAuthRequest(this);
   oaRequest->initRequest(KQOAuthRequest::AuthorizedRequest, QUrl(endpoint));
   oaRequest->setConsumerKey(m_s->clientId());
   oaRequest->setConsumerSecretKey(m_s->clientSecret());
   oaRequest->setToken(m_s->token());
   oaRequest->setTokenSecret(m_s->tokenSecret());
   oaRequest->setHttpMethod(method); 
+  return oaRequest;
 }
 
 //------------------------------------------------------------------------------
@@ -982,7 +989,7 @@ void PumpApp::request(QString endpoint, int response_id,
 #endif
 
   QStringList epl = endpoint.split("?");
-  initRequest(epl[0], method);
+  KQOAuthRequest* oaRequest = initRequest(epl[0], method);
 
   // I have no idea why this is the only way that seems to
   // work. Incredibly frustrating and ugly :-/
@@ -997,8 +1004,13 @@ void PumpApp::request(QString endpoint, int response_id,
   }
   
   if (method == KQOAuthRequest::POST) {
+    QByteArray ba = serializeJson(data);
+    oaRequest->setRawData(ba);
     oaRequest->setContentType("application/json");
-    oaRequest->setRawData(serializeJson(data));
+    oaRequest->setContentLength(ba.size());
+#ifdef DEBUG_NET
+    qDebug() << "DATA" << oaRequest->rawData();
+#endif
   }
 
   oaManager->executeAuthorizedRequest(oaRequest, response_id);
@@ -1013,6 +1025,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
 #ifdef DEBUG_NET
   qDebug() << "[DEBUG] request done [" << id << "]"
            << response.count() << "bytes";
+  // qDebug() << response;
 #endif
 
   m_requests--;
@@ -1085,6 +1098,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     m_selfActor = QASActor::getActor(json["profile"].toMap(), this);
     m_selfActor->setYou();
   } else if (sid == QAS_IMAGE_UPLOAD) {
+    m_uploadDialog->hide();
     postImageActivity(json);
   } else if (sid == QAS_IMAGE_UPDATE) {
     updatePostedImage(json);

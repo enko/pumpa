@@ -347,11 +347,17 @@ void KQOAuthManager::executeAuthorizedRequest(KQOAuthRequest *request, int id) {
 
         networkRequest.setHeader(QNetworkRequest::ContentTypeHeader, request->contentType());
 
-        /*
-        qDebug() << networkRequest.rawHeaderList();
-        qDebug() << networkRequest.rawHeader("Authorization");
-        qDebug() << networkRequest.rawHeader("Content-Type");
-        */
+        int contentLength = request->contentLength();
+        if (contentLength != -1)
+          networkRequest.setHeader(QNetworkRequest::ContentLengthHeader, contentLength);
+
+#ifdef DEBUG_NET
+        QList<QByteArray> nrhl = networkRequest.rawHeaderList();
+        for (int i=0; i<nrhl.size(); ++i) {
+          const QByteArray& h = nrhl.at(i);
+          qDebug() << h << ":" << networkRequest.rawHeader(h);
+        }
+#endif
 
         if (request->contentType() == "application/x-www-form-urlencoded") {
           reply = d->networkManager->post(networkRequest, request->requestBody());

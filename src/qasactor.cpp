@@ -33,6 +33,13 @@ QASActor::QASActor(QString id, QObject* parent) :
 #ifdef DEBUG_QAS
   qDebug() << "new Actor" << m_id;
 #endif
+
+  m_webFinger = m_id;
+  if (m_webFinger.startsWith("acct:"))
+    m_webFinger.remove(0, 5);
+
+  m_webFingerName = m_webFinger;
+  m_webFingerName.remove(QRegExp("@.*"));
 }
 
 //------------------------------------------------------------------------------
@@ -87,15 +94,6 @@ void QASActor::setFollowed(bool b) {
     m_followed = b;
     emit changed();
   }
-}
-
-//------------------------------------------------------------------------------
-
-QString QASActor::webFinger() const {
-  QString wf = id();
-  if (wf.startsWith("acct:"))
-    wf.remove(0, 5);
-  return wf;
 }
 
 //------------------------------------------------------------------------------

@@ -20,6 +20,7 @@
 #include "util.h"
 
 #include <QRegExp>
+#include <QObject>
 
 #include "sundown/markdown.h"
 #include "sundown/html.h"
@@ -123,11 +124,15 @@ QString relativeFuzzyTime(QDateTime sTime) {
   int hours = qRound((float)secs/60/60);
     
   if (secs < 60) { 
-    dateStr = QString("a few seconds ago");
+    dateStr = QObject::tr("a few seconds ago");
+  } else if (mins == 1) {
+    dateStr = QObject::tr("one minute ago");
   } else if (mins < 60) {
-    dateStr = QString("%1 minute%2 ago").arg(mins).arg(mins==1?"":"s");
+    dateStr = QString(QObject::tr("%1 minutes ago")).arg(mins);
+  } else if (hours == 1) {
+    dateStr = QObject::tr("1 hour ago");
   } else if (hours < 24) {
-    dateStr = QString("%1 hour%2 ago").arg(hours).arg(hours==1?"":"s");
+    dateStr = QString(QObject::tr("%1 hours ago")).arg(hours);
   }
   return dateStr;
 }

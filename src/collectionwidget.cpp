@@ -66,7 +66,7 @@ void CollectionWidget::updateLoadOlderButton(bool wait) {
     m_loadOlderButton->setVisible(false);
     return;
   }
-  QString text = "Load older";
+  QString text = tr("Load older");
   if (wait)
     text = "...";
 

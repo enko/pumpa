@@ -92,6 +92,15 @@ HEADERS += $$OBJECT_HEADERS $$SUNDOWN_HEADERS pumpa_defines.h
 SOURCES += main.cpp
 SOURCES += $$OBJECT_SOURCES $$SUNDOWN_SOURCES
 
+######################################################################
+# Translation files
+######################################################################
+
+TRANSLATIONS = \
+	translations/pumpa_es.ts \
+	translations/pumpa_fr.ts \
+	translations/pumpa_de.ts
+
 
 ######################################################################
 # kQOAuth sources

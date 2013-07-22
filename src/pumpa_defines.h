@@ -27,6 +27,7 @@
 
 #define WEBSITE_URL           "http://saz.im/software/pumpa.html"
 #define MARKUP_DOC_URL        "http://saz.im/software/pumpa.html#markup"
+#define BUGTRACKER_URL        "https://bugs.saz.im/pumpa"
 
 #define FEED_INBOX            8
 #define FEED_MENTIONS         4
