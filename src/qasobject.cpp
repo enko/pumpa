@@ -25,12 +25,40 @@
 #include "util.h"
 
 #include <QDebug>
+#include <QList>
+#include <QtAlgorithms>
 
 //------------------------------------------------------------------------------
 
 QMap<QString, QASObject*> QASObject::s_objects;
 
 void QASObject::clearCache() { deleteMap<QASObject*>(s_objects); }
+
+int QASObject::objectsUnconnected() {
+  int noConnections = 0;
+  QMap<int, int> hist;
+  for (QMap<QString, QASObject*>::const_iterator it = s_objects.begin();
+       it != s_objects.end(); ++it) {
+    int n = it.value()->connections();
+    hist[n] = hist.value(n, 0) + 1;
+    if (n == 0)
+      noConnections++;
+  }
+
+  qDebug() << "QASObject connections:";
+  QList<int> keys = hist.keys();
+  qSort(keys);
+  for (int i=0; i<keys.count(); ++i) {
+    const int& k = keys[i];
+    qDebug() << "   " << k << hist[k];
+  }
+
+  return noConnections;
+}
+
+int QASObject::connections() const {
+  return receivers(SIGNAL(changed()));
+}
 
 //------------------------------------------------------------------------------
 

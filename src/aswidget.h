@@ -40,7 +40,7 @@ public:
   void setEndpoint(QString endpoint, int asMode=-1);
 
   int count() const { return m_object_set.size(); }
-  int purgeOldWidgets(int numToKeep);
+  int purgeOldWidgets(int numToKeep, bool deleteObjects=false);
 
 signals:
   void highlightMe();  

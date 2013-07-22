@@ -274,11 +274,13 @@ void PumpApp::purgeTimelines() {
   m_directMinorWidget->purgeOldWidgets(n);
   m_directMajorWidget->purgeOldWidgets(n);
   m_inboxMinorWidget->purgeOldWidgets(n);
-  m_firehoseWidget->purgeOldWidgets(n);
+  m_firehoseWidget->purgeOldWidgets(m_s->maxFirehoseItems(), true);
 
   qDebug() << "meanwhile items:" << m_inboxMinorWidget->count();
   qDebug() << "firehose items:" << m_firehoseWidget->count();
   qDebug() << "QASObjects in memory:" << QASObject::cacheItems();
+  int m = QASObject::objectsUnconnected();
+  qDebug() << "QASObjects unconnected:" << m;
 }
 
 //------------------------------------------------------------------------------

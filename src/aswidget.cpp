@@ -209,7 +209,7 @@ QASAbstractObjectList* ASWidget::initList(QString, QObject*) {
 
 //------------------------------------------------------------------------------
 
-int ASWidget::purgeOldWidgets(int numToKeep) {
+int ASWidget::purgeOldWidgets(int numToKeep, bool deleteObjects) {
   int n = 0;
 
   if (count() <= numToKeep)
@@ -234,6 +234,11 @@ int ASWidget::purgeOldWidgets(int numToKeep) {
     delete ow;
     delete item;
     m_object_set.remove(obj);
+
+    if (deleteObjects) {
+    //   m_list->remove(obj);
+    //   delete obj;
+    }
 
     n++;
   }
