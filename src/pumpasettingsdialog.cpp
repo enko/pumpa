@@ -70,7 +70,11 @@ PumpaSettingsDialog::PumpaSettingsDialog(PumpaSettings* settings,
 
   m_defaultToComboBox = new QComboBox(this);
   m_defaultToComboBox->addItems(addressItems);
-  uiLayout->addRow(tr("Default recipient:"), m_defaultToComboBox);
+  uiLayout->addRow(tr("Default \"To\":"), m_defaultToComboBox);
+
+  m_defaultCcComboBox = new QComboBox(this);
+  m_defaultCcComboBox->addItems(addressItems);
+  uiLayout->addRow(tr("Default \"CC\":"), m_defaultCcComboBox);
 
   m_useIconCheckBox = new QCheckBox(tr("Use icon in system tray"), this);
   uiLayout->addRow(m_useIconCheckBox);
@@ -167,6 +171,7 @@ void PumpaSettingsDialog::updateUI() {
     setCurrentIndex(feedIntToComboIndex(s->popupFeeds()));
 
   m_defaultToComboBox->setCurrentIndex(s->defaultToAddress());
+  m_defaultCcComboBox->setCurrentIndex(s->defaultCcAddress());
 }
 
 //------------------------------------------------------------------------------
@@ -179,5 +184,6 @@ void PumpaSettingsDialog::onOKClicked() {
   s->popupFeeds(comboIndexToFeedInt(m_popupComboBox->currentIndex()));
 
   s->defaultToAddress(m_defaultToComboBox->currentIndex());
+  s->defaultCcAddress(m_defaultCcComboBox->currentIndex());
   emit accepted();
 }
