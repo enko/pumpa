@@ -611,57 +611,66 @@
         <translation>Abonnés</translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="73"/>
         <source>Default recipient:</source>
-        <translation>Destinataire par défaut:</translation>
+        <translation type="obsolete">Destinataire par défaut:</translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="75"/>
+        <location filename="../src/pumpasettingsdialog.cpp" line="73"/>
+        <source>Default &quot;To&quot;:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/pumpasettingsdialog.cpp" line="77"/>
+        <source>Default &quot;CC&quot;:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/pumpasettingsdialog.cpp" line="79"/>
         <source>Use icon in system tray</source>
         <translation>Icone dans la bare de tâche</translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="81"/>
+        <location filename="../src/pumpasettingsdialog.cpp" line="85"/>
         <source>Notifications</source>
         <translation>Notifications</translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="85"/>
+        <location filename="../src/pumpasettingsdialog.cpp" line="89"/>
         <source>Never</source>
         <translation>Jamais</translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="86"/>
+        <location filename="../src/pumpasettingsdialog.cpp" line="90"/>
         <source>Direct only</source>
         <translation>Seulement pour les messages directs</translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="87"/>
+        <location filename="../src/pumpasettingsdialog.cpp" line="91"/>
         <source>Direct or mention</source>
         <translation>Messages directs ou mentions</translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="88"/>
+        <location filename="../src/pumpasettingsdialog.cpp" line="92"/>
         <source>Direct, mention or inbox</source>
         <translation>Messages directs, mentions ou réception </translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="89"/>
+        <location filename="../src/pumpasettingsdialog.cpp" line="93"/>
         <source>Anything</source>
         <translation>Tout</translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="93"/>
+        <location filename="../src/pumpasettingsdialog.cpp" line="97"/>
         <source>Highlight tray icon on:</source>
         <translation>Notification dans l&apos;icone de la bare de tâche pour:</translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="97"/>
+        <location filename="../src/pumpasettingsdialog.cpp" line="101"/>
         <source>Popup notification on:</source>
         <translation>Notification dans une popup pour:</translation>
     </message>
     <message>
-        <location filename="../src/pumpasettingsdialog.cpp" line="156"/>
+        <location filename="../src/pumpasettingsdialog.cpp" line="160"/>
         <source>Currently logged in as %1.</source>
         <translation>Actuellement connecté comme %1.</translation>
     </message>

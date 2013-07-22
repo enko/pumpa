@@ -132,7 +132,7 @@ void MessageWindow::newMessage(QASObject* obj) {
 
   m_infoLabel->setText(obj == NULL ? tr("Post a note") : tr("Post a reply"));
   m_toComboBox->setCurrentIndex(m_s->defaultToAddress());
-  m_ccComboBox->setCurrentIndex(2);
+  m_ccComboBox->setCurrentIndex(m_s->defaultCcAddress());
 
   textEdit->clear();
   m_pictureTitle->clear();
