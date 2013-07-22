@@ -132,6 +132,8 @@ private:
 
   void errorBox(QString msg);
 
+  bool webFingerFromString(QString text, QString& username, QString& server);
+
   void testUserAndFollow(QString username, QString server);
 
   QString apiUrl(QString endpoint);
