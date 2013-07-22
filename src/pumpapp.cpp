@@ -1111,6 +1111,9 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     updatePostedImage(json);
   }
 
+  if ((id & QAS_POST) && m_messageWindow)
+    m_messageWindow->clear();
+
   if (id & QAS_REFRESH) { 
     fetchAll();
   }
