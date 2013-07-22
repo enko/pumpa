@@ -371,6 +371,13 @@ void PumpApp::updateTrayIcon() {
       createTrayIcon();
     else
       m_trayIcon->show();
+
+    if (m_trayIcon) {
+      QString toolTip = CLIENT_FANCY_NAME;
+      if (!m_s->userName().isEmpty())
+        toolTip += " - " + siteUrlToAccountId(m_s->userName(), m_s->siteUrl());
+      m_trayIcon->setToolTip(toolTip);
+    }
   } else {
     qApp->setQuitOnLastWindowClosed(true);
     if (m_trayIcon)
