@@ -66,12 +66,12 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
     }
   }
 
-  m_objectWidget = new FullObjectWidget(m_object, parent);
+  m_objectWidget = new FullObjectWidget(m_object, this);
   ObjectWidgetWithSignals::connectSignals(m_objectWidget, this);
   m_layout->addWidget(m_objectWidget);
 
   if (m_short) {
-    m_shortObjectWidget = new ShortObjectWidget(m_object, parent);
+    m_shortObjectWidget = new ShortObjectWidget(m_object, this);
     connect(m_shortObjectWidget, SIGNAL(moreClicked()),
             this, SLOT(showMore()));
     if (m_contextLabel)
