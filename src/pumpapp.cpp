@@ -21,6 +21,7 @@
 #include <QPalette>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QClipboard>
 
 #include "pumpapp.h"
 
@@ -633,12 +634,32 @@ void PumpApp::errorBox(QString msg) {
 
 //------------------------------------------------------------------------------
 
+bool PumpApp::webFingerFromString(QString text, QString& username,
+                                  QString& server) {
+  if (text.startsWith("https://") || text.startsWith("http://")) {
+    int slashPos = text.lastIndexOf('/');
+    if (slashPos > 0)
+      text = siteUrlToAccountId(text.mid(slashPos+1), text.left(slashPos));
+  }
+
+  return splitWebfingerId(text, username, server);
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::followDialog() {
   bool ok;
+
+  QString defaultText = "evan@e14n.com";
+  QString cbText = QApplication::clipboard()->text();
+  if (cbText.contains('@') || cbText.startsWith("https://") ||
+      cbText.startsWith("http://")) 
+    defaultText = cbText;
+
   QString text =
     QInputDialog::getText(this, tr("Follow pump.io user"),
                           tr("Enter webfinger ID of person to follow: "),
-                          QLineEdit::Normal, "evan@e14n.com", &ok);
+                          QLineEdit::Normal, defaultText, &ok);
 
   if (!ok || text.isEmpty())
     return;
@@ -646,7 +667,7 @@ void PumpApp::followDialog() {
   QString username, server;
   QString error;
 
-  if (!splitWebfingerId(text, username, server))
+  if (!webFingerFromString(text, username, server))
     error = tr("Sorry, that doesn't even look like a webfinger ID!");
 
   QASObject* obj = QASObject::getObject("acct:" + username + "@" + server);
@@ -1110,6 +1131,9 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   } else if (sid == QAS_IMAGE_UPDATE) {
     updatePostedImage(json);
   }
+
+  if ((id & QAS_POST) && m_messageWindow)
+    m_messageWindow->clear();
 
   if (id & QAS_REFRESH) { 
     fetchAll();

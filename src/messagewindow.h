@@ -45,6 +45,7 @@ public:
   virtual void accept();
 
   void newMessage(QASObject* obj);
+  void clear();
 
 protected:
   virtual void showEvent(QShowEvent*);

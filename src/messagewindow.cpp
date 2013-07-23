@@ -128,14 +128,10 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
 void MessageWindow::newMessage(QASObject* obj) {
   bool isReply = (obj != NULL);
   m_obj = obj;
-  m_imageFileName = "";
 
   m_infoLabel->setText(obj == NULL ? tr("Post a note") : tr("Post a reply"));
   m_toComboBox->setCurrentIndex(m_s->defaultToAddress());
   m_ccComboBox->setCurrentIndex(m_s->defaultCcAddress());
-
-  textEdit->clear();
-  m_pictureTitle->clear();
 
   m_toComboBox->setVisible(!isReply);
   m_addressLayout->labelForField(m_toComboBox)->setVisible(!isReply);
@@ -143,6 +139,14 @@ void MessageWindow::newMessage(QASObject* obj) {
   m_addressLayout->labelForField(m_ccComboBox)->setVisible(!isReply);
 
   updateAddPicture();
+}
+
+//------------------------------------------------------------------------------
+
+void MessageWindow::clear() {
+  m_imageFileName = "";
+  textEdit->clear();
+  m_pictureTitle->clear();
 }
 
 //------------------------------------------------------------------------------
