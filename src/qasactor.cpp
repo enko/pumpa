@@ -66,7 +66,10 @@ void QASActor::update(QVariantMap json) {
   QString oldUrl = m_imageUrl;
   if (json.contains("image")) {
     QVariantMap im = json["image"].toMap();
-    updateUrlOrProxy(im, m_imageUrl, ch);
+    if (json.contains("status_net"))
+      updateVar(im, m_imageUrl, "url", ch);
+    else
+      updateUrlOrProxy(im, m_imageUrl, ch);
   }
 
   if (ch)
