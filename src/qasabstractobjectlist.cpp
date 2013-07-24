@@ -97,7 +97,7 @@ void QASAbstractObjectList::update(QVariantMap json, bool older) {
 
     m_items.insert(mi++, obj);
     m_item_set.insert(obj);
-    connectSignals(obj, false, true);
+    // connectSignals(obj, false, true);
 
     ch = true;
   }

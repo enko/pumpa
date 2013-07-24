@@ -111,12 +111,12 @@ void QASObject::update(QVariantMap json, bool ignoreLike) {
 
   if (json.contains("inReplyTo")) {
     m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
-    connectSignals(m_inReplyTo, true, true);
+    //connectSignals(m_inReplyTo, true, true);
   }
 
   if (json.contains("author")) {
     m_author = QASActor::getActor(json["author"].toMap(), parent());
-    connectSignals(m_author);
+    //connectSignals(m_author);
   }
 
   if (json.contains("replies")) {
@@ -126,7 +126,7 @@ void QASObject::update(QVariantMap json, bool ignoreLike) {
     if (repliesMap["items"].toList().size()) {
       m_replies = QASObjectList::getObjectList(repliesMap, parent());
       m_replies->isReplies(true);
-      connectSignals(m_replies);
+      // connectSignals(m_replies);
     }
   }
 
@@ -175,12 +175,13 @@ void QASObject::addReply(QASObject* obj) {
   if (!m_replies) {
     m_replies = QASObjectList::initObjectList(id() + "/replies", parent());
     m_replies->isReplies(true);
-    connectSignals(m_replies);
+    // connectSignals(m_replies);
   }
   m_replies->addObject(obj);
 #ifdef DEBUG_QAS
   qDebug() << "addReply" << obj->id() << "to" << id();
 #endif
+  emit changed();
 }
 
 //------------------------------------------------------------------------------

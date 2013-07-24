@@ -41,6 +41,8 @@ void ObjectWidgetWithSignals::connectSignals(ObjectWidgetWithSignals* ow,
           w, SIGNAL(follow(QString, bool)));
   connect(ow, SIGNAL(deleteObject(QASObject*)),
           w, SIGNAL(deleteObject(QASObject*)));
+  connect(ow, SIGNAL(request(QString, int)),
+          w, SIGNAL(request(QString, int)));
 }
 
 //------------------------------------------------------------------------------

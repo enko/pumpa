@@ -186,12 +186,13 @@ void FullObjectWidget::onChanged() {
   setText(processText(text, true));
 
   updateInfoText();
-  if (m_object->numReplies() > 0) {
-    QASObjectList* ol = m_object->replies();
-    if (ol) 
-      connect(ol, SIGNAL(changed()), this, SLOT(onChanged()),
-              Qt::UniqueConnection);
-    addObjectList(ol);
+
+  QASObjectList* ol = m_object->replies();
+  if (ol) {
+    connect(ol, SIGNAL(changed()), this, SLOT(onChanged()),
+            Qt::UniqueConnection);
+    if (ol->size() > 0)
+      addObjectList(ol);
   }
 }
 
