@@ -33,13 +33,17 @@ class QASAbstractObject : public QObject {
   Q_OBJECT
 
 public:
-  virtual void refresh();
+  // virtual void refresh();
   virtual QString apiLink() const { return ""; }
+  int asType() const { return m_asType; }
   virtual bool isDeleted() const { return false; }
+
+  QDateTime lastRefreshed() const { return m_lastRefreshed; }
+  void lastRefreshed(QDateTime dt) { m_lastRefreshed = dt; }
 
 signals:
   void changed();
-  void request(QString, int);
+  // void request(QString, int);
 
 protected:
   QASAbstractObject(int asType, QObject* parent);

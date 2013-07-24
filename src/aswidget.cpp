@@ -74,8 +74,8 @@ void ASWidget::setEndpoint(QString endpoint, int asMode) {
 
   connect(m_list, SIGNAL(changed()),
           this, SLOT(update()), Qt::UniqueConnection);
-  connect(m_list, SIGNAL(request(QString, int)),
-          this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
+  // connect(m_list, SIGNAL(request(QString, int)),
+  //         this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
 }
 
 //------------------------------------------------------------------------------
@@ -243,4 +243,19 @@ int ASWidget::purgeOldWidgets(int numToKeep, bool deleteObjects) {
     n++;
   }
   return n;
+}
+
+//------------------------------------------------------------------------------
+
+void ASWidget::refreshObject(QASAbstractObject* obj) {
+  if (!obj)
+    return;
+  
+  QDateTime now = QDateTime::currentDateTime();
+  QDateTime lr = obj->lastRefreshed();
+
+  if (lr.isNull() || lr.secsTo(now) > 10) {
+    emit request(obj->apiLink(), obj->asType());
+    obj->lastRefreshed(now);
+  }
 }

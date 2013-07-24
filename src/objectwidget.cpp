@@ -58,7 +58,7 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
       if (m_irtObject->url().isEmpty()) {
         m_contextLabel->setVisible(false);
         m_contextButton->setVisible(false);
-        m_irtObject->refresh();
+        refreshObject(m_irtObject);
       } else {
         updateContextLabel();
       }
@@ -84,7 +84,7 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
   
   QASActor* author = m_object->author();
   if (author && author->url().isEmpty())
-    m_object->refresh();
+    refreshObject(m_object);
 
   setLayout(m_layout);
 }

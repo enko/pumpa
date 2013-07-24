@@ -55,8 +55,8 @@ ObjectListWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
   }
 
   ObjectWidget* ow = new ObjectWidget(obj, this);
-  connect(obj, SIGNAL(request(QString, int)), 
-          this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
+  // connect(obj, SIGNAL(request(QString, int)), 
+  //         this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
 
   countAsNew = true;
   return ow;

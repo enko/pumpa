@@ -67,6 +67,8 @@ protected:
   void keyPressEvent(QKeyEvent* event);
   virtual void clear();
 
+  void refreshObject(QASAbstractObject* obj);
+
   QVBoxLayout* m_itemLayout;
   QWidget* m_listContainer;
   bool m_firstTime;

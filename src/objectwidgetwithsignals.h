@@ -44,6 +44,10 @@ signals:
   void newReply(QASObject*);
   void follow(QString, bool);
   void deleteObject(QASObject*);
+  void request(QString, int);
+
+protected:
+  void refreshObject(QASAbstractObject* obj);
 };
 
 #endif /* _OBJECTWIDGETWITHSIGNALS_H_ */

@@ -54,9 +54,9 @@ ActivityWidget::ActivityWidget(QASActivity* a, QWidget* parent) :
 
   updateText();
 
-  QASActor* actor = m_activity->actor();
-  if (QASActivity::isLikeVerb(verb) && actor && !actor->isYou())
-    obj->refresh();
+  // QASActor* actor = m_activity->actor();
+  // if (QASActivity::isLikeVerb(verb) && actor && !actor->isYou())
+  //   refreshObject(obj);
 
   setLayout(layout);
 }

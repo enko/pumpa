@@ -459,7 +459,7 @@ void FullObjectWidget::addHasMoreButton(QASObjectList* ol, int li) {
 
 void FullObjectWidget::onHasMoreClicked() {
   m_hasMoreButton->setText("...");
-  m_object->replies()->refresh();
+  refreshObject(m_object->replies());
 }
 
 //------------------------------------------------------------------------------
