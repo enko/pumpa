@@ -22,6 +22,7 @@
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QClipboard>
+#include <QToolTip>
 
 #include "pumpapp.h"
 
@@ -195,6 +196,8 @@ void PumpApp::connectCollection(ASWidget* w, bool highlight) {
   connect(w, SIGNAL(newReply(QASObject*)), this, SLOT(newNote(QASObject*)));
   connect(w, SIGNAL(linkHovered(const QString&)),
           this, SLOT(statusMessage(const QString&)));
+  connect(w, SIGNAL(linkHovered(const QString&)),
+          this, SLOT(showActorTooltip(const QString&)));
   connect(w, SIGNAL(like(QASObject*)), this, SLOT(onLike(QASObject*)));
   connect(w, SIGNAL(share(QASObject*)), this, SLOT(onShare(QASObject*)));
   if (highlight)
@@ -292,6 +295,21 @@ void PumpApp::syncOAuthInfo() {
 
 void PumpApp::statusMessage(const QString& msg) {
   statusBar()->showMessage(msg);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::showActorTooltip(const QString& msg) {
+  QString username, server;
+  QString error;
+
+  if (webFingerFromString(msg, username, server)) {
+    QASObject* obj = QASObject::getObject("acct:" + username + "@" + server);
+    QASActor* actor = obj ? obj->asActor() : NULL;
+    if (actor) {
+      setToolTip(QString("%1 (%2)").arg(actor->displayNameOrWebFingerShort()).arg(actor->webFinger()));
+    }
+  }
 }
 
 //------------------------------------------------------------------------------

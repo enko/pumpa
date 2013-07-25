@@ -83,6 +83,7 @@ private slots:
   void errorMessage(QString msg);
   void notifyMessage(QString msg);
   void statusMessage(const QString& msg);
+  void showActorTooltip(const QString& msg);
   void onShowContext(QASObject*);
   void tabSelected(int index);
 
