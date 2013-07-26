@@ -18,11 +18,12 @@
 */
 
 #include "imagelabel.h"
+#include "pumpa_defines.h"
 
 //------------------------------------------------------------------------------
 
 ImageLabel::ImageLabel(QWidget* parent) : QLabel(parent) {
-  setMaximumSize(320, 320);
+  setMaximumSize(IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT);
   setFocusPolicy(Qt::NoFocus);
 }
 

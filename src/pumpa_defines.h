@@ -29,6 +29,9 @@
 #define MARKUP_DOC_URL        "http://saz.im/software/pumpa.html#markup"
 #define BUGTRACKER_URL        "https://bugs.saz.im/pumpa"
 
+#define IMAGE_MAX_WIDTH       320
+#define IMAGE_MAX_HEIGHT      320
+
 #define FEED_INBOX            8
 #define FEED_MENTIONS         4
 #define FEED_DIRECT           2
