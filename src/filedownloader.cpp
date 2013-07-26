@@ -18,6 +18,7 @@
 */
 
 #include "filedownloader.h"
+#include "pumpa_defines.h"
 
 #ifdef QT5
 #include <QStandardPaths>
@@ -187,9 +188,32 @@ void FileDownloader::onAuthorizedRequestReady(QByteArray response, int) {
   }
   fp->write(response);
   fp->close();
+
+  QPixmap pix = pixmap(fn);
+  resizeImage(pix, fn);
   
   emit fileReady(fn);
   emit fileReady();
+}
+
+//------------------------------------------------------------------------------
+
+void FileDownloader::resizeImage(QPixmap pix, QString fn) {
+  if (pix.isNull())
+    return;
+
+  int w = pix.width();
+  int h = pix.height();
+  
+  if (w < IMAGE_MAX_WIDTH && h < IMAGE_MAX_HEIGHT)
+    return;
+
+  QPixmap newPix;
+  if (w > h) 
+    newPix = pix.scaledToWidth(IMAGE_MAX_WIDTH);
+  else
+    newPix = pix.scaledToHeight(IMAGE_MAX_HEIGHT);
+  newPix.save(fn);
 }
 
 //------------------------------------------------------------------------------
