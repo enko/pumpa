@@ -21,45 +21,66 @@
 #include "util.h"
 
 #include <QVBoxLayout>
-#include "texttoolbutton.h"
 
 //------------------------------------------------------------------------------
 
 ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
   QFrame(parent),
-  m_object(obj),
+  m_object(NULL),
   m_actor(NULL)
 {
-  static QSet<QString> expandableTypes;
-  if (expandableTypes.isEmpty())
-    expandableTypes << "person" << "note" << "comment" << "image";
-
-  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+#ifdef DEBUG_WIDGETS
+  qDebug() << "Creating ShortObjectWidget";
+#endif
 
   m_textLabel = new RichTextLabel(this, true);
 
   m_actorWidget = new ActorWidget(NULL, this, true);
-  updateAvatar();
 
-  TextToolButton* moreButton = NULL;
-  
-  if (expandableTypes.contains(m_object->type())) {
-    moreButton = new TextToolButton("+", this);
-    connect(moreButton, SIGNAL(clicked()), this, SIGNAL(moreClicked()));
-  }
+  m_moreButton = new TextToolButton("+", this);
+  connect(m_moreButton, SIGNAL(clicked()), this, SIGNAL(moreClicked()));
   
   QHBoxLayout* acrossLayout = new QHBoxLayout;
   // acrossLayout->setSpacing(10);
   acrossLayout->setContentsMargins(0, 0, 0, 0);
   acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignVCenter);
   acrossLayout->addWidget(m_textLabel, 0, Qt::AlignVCenter);
-  if (moreButton)
-    acrossLayout->addWidget(moreButton, 0, Qt::AlignVCenter);
+  acrossLayout->addWidget(m_moreButton, 0, Qt::AlignVCenter);
 
-  updateText();
+  changeObject(obj);
   
   setLayout(acrossLayout);
+}
 
+//------------------------------------------------------------------------------
+
+ShortObjectWidget::~ShortObjectWidget() {
+#ifdef DEBUG_WIDGETS
+  qDebug() << "Deleting ShortObjectWidget" << m_object->id();
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+void ShortObjectWidget::changeObject(QASAbstractObject* obj) {
+  if (m_object != NULL)
+    disconnect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+
+  m_object = qobject_cast<QASObject*>(obj);
+  if (!m_object)
+    return;
+
+  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+
+  updateAvatar();
+
+  static QSet<QString> expandableTypes;
+  if (expandableTypes.isEmpty())
+    expandableTypes << "person" << "note" << "comment" << "image";
+
+  m_moreButton->setVisible(expandableTypes.contains(m_object->type()));
+
+  updateText();
 }
 
 //------------------------------------------------------------------------------
@@ -74,6 +95,9 @@ void ShortObjectWidget::updateAvatar() {
 //------------------------------------------------------------------------------
 
 void ShortObjectWidget::updateText() {
+  if (!m_object)
+    return;
+
   QString content = objectExcerpt(m_object);
 
   QString text;

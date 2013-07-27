@@ -109,6 +109,8 @@ private slots:
 
   void launchOAuthWizard();
 
+  void debugAction();
+
 protected:
   void timerEvent(QTimerEvent*);
   virtual bool event(QEvent* e) {
@@ -184,6 +186,8 @@ private:
   QAction* aboutAction;
   QAction* aboutQtAction;
   QMenu* helpMenu;
+
+  QAction* m_debugAction;
 
   KQOAuthManager *oaManager;
   // KQOAuthRequest *oaRequest;

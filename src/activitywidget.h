@@ -37,6 +37,9 @@ class ActivityWidget : public ObjectWidgetWithSignals {
 
 public:
   ActivityWidget(QASActivity* a, QWidget* parent=0);
+  virtual ~ActivityWidget();
+
+  virtual void changeObject(QASAbstractObject* obj);
 
   virtual QString getId() const { return m_activity->id(); }
   QASActivity* activity() const { return m_activity; }
@@ -54,7 +57,7 @@ signals:
 private:
   void updateText();
   QString recipientsToString(QASObjectList* rec);
-  ObjectWidget* makeObjectWidgetAndConnect(QASObject* obj, bool shortObject);
+  // ObjectWidget* makeObjectWidgetAndConnect(QASObject* obj, bool shortObject);
 
   RichTextLabel* m_textLabel;
   ActorWidget* m_actorWidget;

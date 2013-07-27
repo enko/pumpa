@@ -28,6 +28,9 @@
 #include "util.h"
 #include "filedownloader.h"
 
+#include <sys/resource.h>
+#include <unistd.h>
+
 //------------------------------------------------------------------------------
 
 PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
@@ -268,19 +271,79 @@ void PumpApp::resetTimer() {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::debugAction() {
+  purgeTimelines();
+}
+
+//------------------------------------------------------------------------------
+
+long getMaxRSS() {
+  struct rusage rusage;
+  getrusage(RUSAGE_SELF, &rusage);
+  return rusage.ru_maxrss;
+}
+
+//------------------------------------------------------------------------------
+
+long getCurrentRSS() {
+  QFile fp("/proc/self/statm");
+  if (!fp.open(QIODevice::ReadOnly))
+    return -1;
+
+  QTextStream in(&fp);
+  QString line = in.readLine();
+  QStringList parts = line.split(" ");
+
+  return parts[1].toLong() * sysconf( _SC_PAGESIZE);
+}
+
+//------------------------------------------------------------------------------
+
+void checkMemory(QString desc="") {
+  static long oldMem = -1;
+  
+  long mem = getCurrentRSS();
+  long diff = 0;
+  if (oldMem > 0)
+    diff = mem-oldMem;
+
+  QString msg("RESIDENT MEMORY");
+  if (!desc.isEmpty())
+    msg += " (" + desc + ")";
+  msg += QString(": %1 KB").arg((float)mem/1024.0, 0, 'f', 2);
+  if (diff != 0)
+    msg += QString(" (%2%1)").arg(diff).arg(diff > 0 ? '+' : '-');
+
+  qDebug() << msg;
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::purgeTimelines() {
-  int n = m_s->maxTimelineItems();
-  m_inboxWidget->purgeOldWidgets(n);
-  m_directMinorWidget->purgeOldWidgets(n);
-  m_directMajorWidget->purgeOldWidgets(n);
-  m_inboxMinorWidget->purgeOldWidgets(n);
-  m_firehoseWidget->purgeOldWidgets(m_s->maxFirehoseItems(), true);
+  checkMemory("before purge");
+
+  // int n = m_s->maxTimelineItems();
+  // int m = m_s->maxFirehoseItems();
+  // int n = 10;
+  // int m = 10;
+  // m_inboxWidget->purgeOldWidgets(n);
+  // m_directMinorWidget->purgeOldWidgets(n);
+  // m_directMajorWidget->purgeOldWidgets(n);
+  // m_inboxMinorWidget->purgeOldWidgets(n);
+  // m_firehoseWidget->purgeOldWidgets(m, true);
 
   qDebug() << "meanwhile items:" << m_inboxMinorWidget->count();
   qDebug() << "firehose items:" << m_firehoseWidget->count();
-  qDebug() << "QASObjects in memory:" << QASObject::cacheItems();
-  int m = QASObject::objectsUnconnected();
-  qDebug() << "QASObjects unconnected:" << m;
+
+  // int obj_n = QASObject::cacheItems();
+  // float obj_kb = float(sizeof(QASObject) * obj_n) / 1024.0;
+  // qDebug() << "QASObjects in memory:" << obj_n << obj_kb
+  //          << "KB.";
+
+  // int m = QASObject::objectsUnconnected();
+  // qDebug() << "QASObjects unconnected:" << m;
+
+  checkMemory("after purge");
 }
 
 //------------------------------------------------------------------------------
@@ -471,6 +534,10 @@ void PumpApp::createActions() {
   // newPictureAction->setShortcut(tr("Ctrl+P"));
   // connect(newPictureAction, SIGNAL(triggered()), this, SLOT(newPicture()));
 
+  m_debugAction = new QAction("Debug", this);
+  m_debugAction->setShortcut(tr("Ctrl+D"));
+  connect(m_debugAction, SIGNAL(triggered()), this, SLOT(debugAction()));
+
   m_showHideAction = new QAction(showHideText(true), this);
   connect(m_showHideAction, SIGNAL(triggered()), this, SLOT(toggleVisible()));
 }
@@ -489,6 +556,7 @@ void PumpApp::createMenu() {
   // fileMenu->addAction(pauseAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openPrefsAction);
+  fileMenu->addAction(m_debugAction);
   fileMenu->addSeparator();
   fileMenu->addAction(exitAction);
   menuBar()->addMenu(fileMenu);
@@ -734,6 +802,7 @@ void PumpApp::onShowContext(QASObject* obj) {
 
 QString PumpApp::addTextMarkup(QString text) {
   QString oldText = text;
+  return oldText;
 
 #ifdef DEBUG_MARKUP
   qDebug() << "\n[DEBUG] MARKUP\n" << text;
@@ -981,6 +1050,9 @@ KQOAuthRequest* PumpApp::initRequest(QString endpoint,
   oaRequest->setToken(m_s->token());
   oaRequest->setTokenSecret(m_s->tokenSecret());
   oaRequest->setHttpMethod(method); 
+
+  qDebug() << "initRequest" << sizeof(*oaRequest);
+
   return oaRequest;
 }
 

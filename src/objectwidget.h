@@ -36,8 +36,11 @@ class ObjectWidget : public ObjectWidgetWithSignals {
   Q_OBJECT
 
 public:
-  ObjectWidget(QASObject* obj, QWidget* parent = 0,
-                      bool shortWidget=false);
+  ObjectWidget(QASObject* obj, QWidget* parent = 0);
+  virtual ~ObjectWidget();
+
+  virtual void changeObject(QASAbstractObject* obj, bool fullObject);
+  virtual void changeObject(QASAbstractObject* obj) { changeObject(obj, true); }
 
   QASObject* object() const { return m_object; }
   virtual QASAbstractObject* asObject() const { return object(); }

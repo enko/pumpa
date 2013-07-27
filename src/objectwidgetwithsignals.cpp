@@ -47,6 +47,27 @@ void ObjectWidgetWithSignals::connectSignals(ObjectWidgetWithSignals* ow,
 
 //------------------------------------------------------------------------------
 
+void ObjectWidgetWithSignals::disconnectSignals(ObjectWidgetWithSignals* ow, 
+                                                QWidget* w) 
+{
+  disconnect(ow, SIGNAL(linkHovered(const QString&)),
+             w, SIGNAL(linkHovered(const QString&)));
+  disconnect(ow, SIGNAL(like(QASObject*)),
+             w, SIGNAL(like(QASObject*)));
+  disconnect(ow, SIGNAL(share(QASObject*)),
+             w, SIGNAL(share(QASObject*)));
+  disconnect(ow, SIGNAL(newReply(QASObject*)),
+             w, SIGNAL(newReply(QASObject*)));
+  disconnect(ow, SIGNAL(follow(QString, bool)),
+             w, SIGNAL(follow(QString, bool)));
+  disconnect(ow, SIGNAL(deleteObject(QASObject*)),
+             w, SIGNAL(deleteObject(QASObject*)));
+  disconnect(ow, SIGNAL(request(QString, int)),
+             w, SIGNAL(request(QString, int)));
+}
+
+//------------------------------------------------------------------------------
+
 void ObjectWidgetWithSignals::refreshObject(QASAbstractObject* obj) {
   if (!obj)
     return;

@@ -49,7 +49,7 @@ RichTextLabel::RichTextLabel(QWidget* parent, bool singleLine) :
 void RichTextLabel::resizeEvent(QResizeEvent*) {
   if (!m_singleLine && minimumSizeHint().width() > size().width()) {
     // qDebug() << "[DEBUG]: chop off" << minimumSizeHint().width() << size().width();
-    setStyleSheet( "border-width: 2px; border-top-style: none; border-right-style: solid; border-bottom-style: none; border-left-style: none; border-color: red; ");
+    setStyleSheet("border-width: 2px; border-top-style: none; border-right-style: solid; border-bottom-style: none; border-left-style: none; border-color: red; ");
   } else {
     setStyleSheet("");
   }

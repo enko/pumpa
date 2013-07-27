@@ -24,7 +24,7 @@
 
 //------------------------------------------------------------------------------
 
-#define PURGE_WAIT 20
+#define PURGE_WAIT 0
 
 //------------------------------------------------------------------------------
 
@@ -182,9 +182,43 @@ void ASWidget::update() {
     m_object_set.insert(cObj);
 
     bool countAsNew = false;
-    ObjectWidgetWithSignals* ow = createWidget(cObj, countAsNew);
-    ObjectWidgetWithSignals::connectSignals(ow, this);
-    m_itemLayout->insertWidget(li++, ow);
+    bool reuseWidgets = true;
+    int n = 20;
+
+    if (li >= n)
+      continue;
+
+    bool doReuse = !older && reuseWidgets && (count() > n);
+
+    if (doReuse && m_purgeCounter > 0) {
+      m_purgeCounter--;
+      qDebug() << "purgeCounter" << m_purgeCounter << m_list->url();
+      doReuse = false;
+    }
+
+    if (doReuse) {
+      ObjectWidgetWithSignals* ow = NULL;
+      int idx = m_itemLayout->count();
+      while (!ow && --idx > 0)
+        ow = widgetAt(idx);
+
+      qDebug() << "reused widget" << idx << li << m_list->url();
+
+      QASAbstractObject* obj = ow->asObject();
+      // qDebug() << "Deleting widget " << idx << obj->apiLink() << m_list->url();
+      m_itemLayout->removeWidget(ow);
+      // /*QLayoutItem* item = */m_itemLayout->removetakeAt(idx);
+      m_object_set.remove(obj);
+
+      ow->changeObject(cObj);
+      m_itemLayout->insertWidget(li++, ow);
+    } else {
+      ObjectWidgetWithSignals* ow = createWidget(cObj, countAsNew);
+      ObjectWidgetWithSignals::connectSignals(ow, this);
+      m_itemLayout->insertWidget(li++, ow);
+      
+      qDebug() << "created widget";
+    }
 
     if (countAsNew && !older)
       newCount++;
@@ -215,7 +249,8 @@ int ASWidget::purgeOldWidgets(int numToKeep, bool deleteObjects) {
   if (count() <= numToKeep)
     return 0;
 
-  if (--m_purgeCounter > 0) {
+  if (m_purgeCounter > 0) {
+    m_purgeCounter--;
     qDebug() << "purgeCounter" << m_purgeCounter << m_list->url();
     return 0;
   }

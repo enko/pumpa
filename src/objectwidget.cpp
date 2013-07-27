@@ -21,18 +21,20 @@
 
 //------------------------------------------------------------------------------
 
-ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) : 
+ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) : 
   ObjectWidgetWithSignals(parent),
   m_objectWidget(NULL),
   m_shortObjectWidget(NULL),
   m_contextLabel(NULL),
   m_contextButton(NULL),
   m_topLayout(NULL),
-  m_object(obj),
+  m_object(NULL),
   m_irtObject(NULL),
-  m_short(shortWidget)
+  m_short(false)
 {
-  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+#ifdef DEBUG_WIDGETS
+  qDebug() << "Creating ObjectWidget";
+#endif
 
   m_layout = new QVBoxLayout;
   m_layout->setContentsMargins(0, 0, 0, 0);
@@ -40,68 +42,116 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent, bool shortWidget) :
 
   // Add label with context "Re:" text and "show context" button for
   // replies.
-  if (m_object->type() == "comment") {
-    m_irtObject = m_object->inReplyTo();
-    if (m_irtObject) {
-      m_topLayout = new QHBoxLayout;
-      m_topLayout->setContentsMargins(0, 0, 0, 0);
+  // if (m_object->type() == "comment") {
+  //m_irtObject = m_object->inReplyTo();
+  // if (m_irtObject) {
+  m_topLayout = new QHBoxLayout;
+  m_topLayout->setContentsMargins(0, 0, 0, 0);
 
-      m_contextLabel = new RichTextLabel(this, true);
-      connect(m_irtObject, SIGNAL(changed()), this, SLOT(updateContextLabel()));
-      m_topLayout->addWidget(m_contextLabel, 0, Qt::AlignVCenter);
+  m_contextLabel = new RichTextLabel(this, true);
+  m_topLayout->addWidget(m_contextLabel, 0, Qt::AlignVCenter);
 
-      m_topLayout->addSpacing(10);
-      m_contextButton = new TextToolButton(this);
-      connect(m_contextButton, SIGNAL(clicked()), this, SLOT(onShowContext()));
-      m_topLayout->addWidget(m_contextButton, 0, Qt::AlignVCenter);
+  m_topLayout->addSpacing(10);
+  m_contextButton = new TextToolButton(this);
+  connect(m_contextButton, SIGNAL(clicked()), this, SLOT(onShowContext()));
+  m_topLayout->addWidget(m_contextButton, 0, Qt::AlignVCenter);
 
-      if (m_irtObject->url().isEmpty()) {
-        m_contextLabel->setVisible(false);
-        m_contextButton->setVisible(false);
-        refreshObject(m_irtObject);
-      } else {
-        updateContextLabel();
-      }
-      m_layout->addLayout(m_topLayout);
-    }
-  }
+  // if (m_irtObject->url().isEmpty()) {
+  //   m_contextLabel->setVisible(false);
+  //   m_contextButton->setVisible(false);
+  //   refreshObject(m_irtObject);
+  // } else {
+  //   updateContextLabel();
+  // }
+  m_layout->addLayout(m_topLayout);
+  //   }
+  // }
 
   m_objectWidget = new FullObjectWidget(m_object, this);
   ObjectWidgetWithSignals::connectSignals(m_objectWidget, this);
   m_layout->addWidget(m_objectWidget);
 
-  if (m_short) {
-    m_shortObjectWidget = new ShortObjectWidget(m_object, this);
-    connect(m_shortObjectWidget, SIGNAL(moreClicked()),
-            this, SLOT(showMore()));
-    if (m_contextLabel)
-      m_contextLabel->setVisible(false);
-    if (m_contextButton)
-      m_contextButton->setVisible(false);
-    m_objectWidget->setVisible(false);
-    m_layout->addWidget(m_shortObjectWidget);
-  }
+  // if (m_short) {
+  m_shortObjectWidget = new ShortObjectWidget(m_object, this);
+  connect(m_shortObjectWidget, SIGNAL(moreClicked()),
+          this, SLOT(showMore()));
+  m_layout->addWidget(m_shortObjectWidget);
   
-  QASActor* author = m_object->author();
-  if (author && author->url().isEmpty())
-    refreshObject(m_object);
+  changeObject(obj);
 
   setLayout(m_layout);
 }
 
 //------------------------------------------------------------------------------
 
+ObjectWidget::~ObjectWidget() {
+#ifdef DEBUG_WIDGETS
+  qDebug() << "Deleting ObjectWidget" << m_object->id();
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+void ObjectWidget::changeObject(QASAbstractObject* obj, bool fullObject) {
+  if (m_object)
+    disconnect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+  if (m_irtObject)
+    disconnect(m_irtObject, SIGNAL(changed()),
+               this, SLOT(updateContextLabel()));
+  m_irtObject = NULL;
+
+  m_object = qobject_cast<QASObject*>(obj);
+  if (!obj)
+    return;
+  m_short = !fullObject;
+
+  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+
+  m_objectWidget->changeObject(obj);
+  m_shortObjectWidget->changeObject(obj);
+
+  m_contextLabel->setVisible(false);
+  m_contextButton->setVisible(false);
+  if (m_object->type() == "comment" && m_object->inReplyTo()) {
+    m_irtObject = m_object->inReplyTo();
+    connect(m_irtObject, SIGNAL(changed()), this, SLOT(updateContextLabel()));
+
+    if (m_irtObject->url().isEmpty()) {
+      refreshObject(m_irtObject);
+    } else {
+      updateContextLabel();
+    }
+  }
+
+  if (m_short) {
+    m_contextLabel->setVisible(false);
+    m_contextButton->setVisible(false);
+    m_objectWidget->setVisible(false);
+    m_shortObjectWidget->setVisible(true);
+  } else {
+    m_shortObjectWidget->setVisible(false);
+    m_objectWidget->setVisible(true);
+  }
+
+  QASActor* author = m_object->author();
+  if (author && author->url().isEmpty())
+    refreshObject(m_object);
+}
+
+//------------------------------------------------------------------------------
+
 void ObjectWidget::showMore() {
+  qDebug() << "showMore";
   if (!m_short || !m_shortObjectWidget)
     return;
 
   m_short = false;
   m_shortObjectWidget->setVisible(false);
   m_objectWidget->setVisible(true);
-  if (m_contextLabel && !m_irtObject->url().isEmpty())
+  if (m_irtObject && !m_irtObject->url().isEmpty()) {
     m_contextLabel->setVisible(true);
-  if (m_contextButton && !m_irtObject->url().isEmpty())
     m_contextButton->setVisible(true);
+  }
   emit moreClicked();
 }
   

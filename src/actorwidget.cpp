@@ -25,6 +25,9 @@
 ActorWidget::ActorWidget(QASActor* a, QWidget* parent, bool small) :
   QLabel(parent), m_actor(a)
 {
+#ifdef DEBUG_WIDGETS
+  qDebug() << "Creating ActorWidget" << (m_actor ? m_actor->id() : "NULL");
+#endif
   int max_size = small ? 32 : 64;
 
   setScaledContents(true);
@@ -32,6 +35,14 @@ ActorWidget::ActorWidget(QASActor* a, QWidget* parent, bool small) :
   setFocusPolicy(Qt::NoFocus);
 
   onImageChanged();
+}
+
+//------------------------------------------------------------------------------
+
+ActorWidget::~ActorWidget() {
+#ifdef DEBUG_WIDGETS
+  qDebug() << "Deleting ActorWidget" << m_actor->id();
+#endif
 }
 
 //------------------------------------------------------------------------------

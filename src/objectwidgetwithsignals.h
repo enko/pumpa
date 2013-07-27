@@ -31,9 +31,12 @@ class ObjectWidgetWithSignals : public QFrame {
 public:
   ObjectWidgetWithSignals(QWidget* parent = 0);
 
+  virtual void changeObject(QASAbstractObject* obj) = 0;
+
   virtual QASAbstractObject* asObject() const = 0;
 
   static void connectSignals(ObjectWidgetWithSignals* ow, QWidget* w);
+  static void disconnectSignals(ObjectWidgetWithSignals* ow, QWidget* w);
 
   virtual void refreshTimeLabels() = 0;
   
