@@ -101,6 +101,12 @@ void ASWidget::refreshTimeLabels() {
     if (ow)
       ow->refreshTimeLabels();
   }
+  if (m_purgeCounter > 0) {
+    m_purgeCounter--;
+#ifdef DEBUG_WIDGETS
+    qDebug() << "purgeCounter" << m_purgeCounter << m_list->url();
+#endif
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -183,13 +189,8 @@ void ASWidget::update() {
 
     bool countAsNew = false;
 
-    bool doReuse = !older && m_reuseWidgets && (count() > m_widgetLimit);
-
-    if (doReuse && m_purgeCounter > 0) {
-      m_purgeCounter--;
-      qDebug() << "purgeCounter" << m_purgeCounter << m_list->url();
-      doReuse = false;
-    }
+    bool doReuse = !older && m_reuseWidgets && (count() > m_widgetLimit) &&
+      m_purgeCounter == 0;
 
     if (doReuse) {
       ObjectWidgetWithSignals* ow = NULL;

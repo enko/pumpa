@@ -76,11 +76,11 @@ protected:
   QASAbstractObjectList* m_list;
 
   int m_asMode;
-  int m_purgeCounter;
 
   bool m_reuseWidgets;
-  int m_widgetLimit;
   int m_purgeWait;
+  int m_purgeCounter;
+  int m_widgetLimit;
 };
 
 #endif /* _ASWIDGET_H_ */
