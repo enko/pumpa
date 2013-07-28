@@ -42,9 +42,6 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
 
   // Add label with context "Re:" text and "show context" button for
   // replies.
-  // if (m_object->type() == "comment") {
-  //m_irtObject = m_object->inReplyTo();
-  // if (m_irtObject) {
   m_topLayout = new QHBoxLayout;
   m_topLayout->setContentsMargins(0, 0, 0, 0);
 
@@ -56,22 +53,12 @@ ObjectWidget::ObjectWidget(QASObject* obj, QWidget* parent) :
   connect(m_contextButton, SIGNAL(clicked()), this, SLOT(onShowContext()));
   m_topLayout->addWidget(m_contextButton, 0, Qt::AlignVCenter);
 
-  // if (m_irtObject->url().isEmpty()) {
-  //   m_contextLabel->setVisible(false);
-  //   m_contextButton->setVisible(false);
-  //   refreshObject(m_irtObject);
-  // } else {
-  //   updateContextLabel();
-  // }
   m_layout->addLayout(m_topLayout);
-  //   }
-  // }
 
   m_objectWidget = new FullObjectWidget(m_object, this);
   ObjectWidgetWithSignals::connectSignals(m_objectWidget, this);
   m_layout->addWidget(m_objectWidget);
 
-  // if (m_short) {
   m_shortObjectWidget = new ShortObjectWidget(m_object, this);
   connect(m_shortObjectWidget, SIGNAL(moreClicked()),
           this, SLOT(showMore()));
@@ -141,7 +128,6 @@ void ObjectWidget::changeObject(QASAbstractObject* obj, bool fullObject) {
 //------------------------------------------------------------------------------
 
 void ObjectWidget::showMore() {
-  qDebug() << "showMore";
   if (!m_short || !m_shortObjectWidget)
     return;
 

@@ -26,8 +26,10 @@
 #include <QDebug>
 #include <QFile>
 
+#ifdef DEBUG_MEMORY
 #include <sys/resource.h>
 #include <unistd.h>
+#endif
 
 #include "sundown/markdown.h"
 #include "sundown/html.h"
@@ -159,14 +161,19 @@ bool splitWebfingerId(QString accountId, QString& username, QString& server) {
 //------------------------------------------------------------------------------
 
 long getMaxRSS() {
+#ifdef DEBUG_MEMORY
   struct rusage rusage;
   getrusage(RUSAGE_SELF, &rusage);
   return rusage.ru_maxrss;
+#else
+  return 0;
+#endif
 }
 
 //------------------------------------------------------------------------------
 
 long getCurrentRSS() {
+#ifdef DEBUG_MEMORY
   QFile fp("/proc/self/statm");
   if (!fp.open(QIODevice::ReadOnly))
     return -1;
@@ -176,6 +183,9 @@ long getCurrentRSS() {
   QStringList parts = line.split(" ");
 
   return parts[1].toLong() * sysconf( _SC_PAGESIZE);
+#else
+  return 0;
+#endif
 }
 
 //------------------------------------------------------------------------------
