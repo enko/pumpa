@@ -27,6 +27,7 @@
 
 ContextWidget::ContextWidget(QWidget* parent) :
   ASWidget(parent),
+  m_numReplies(-1),
   m_object(NULL)
 {}
 
@@ -48,18 +49,26 @@ void ContextWidget::setObject(QASObject* obj) {
   m_itemLayout->addStretch();
 
   refreshObject(m_object);
-  // m_object->refresh();
   refreshObject(m_object->replies());
-  // if (m_object->replies())
-    // m_object->replies()->refresh();
 
+  updateNumReplies();
   m_firstTime = false;
 }
 
 //------------------------------------------------------------------------------
 
+bool ContextWidget::updateNumReplies() {
+  int oldNr = m_numReplies;
+  m_numReplies = m_object->replies() ? m_object->replies()->size() : -1;
+
+  return oldNr != m_numReplies;
+}
+
+
+//------------------------------------------------------------------------------
+
 void ContextWidget::update() {
-  if (!isVisible())
+  if (!isVisible() && updateNumReplies())
     emit highlightMe();
 }
 
