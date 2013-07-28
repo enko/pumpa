@@ -104,7 +104,8 @@ void ASWidget::refreshTimeLabels() {
   if (m_purgeCounter > 0) {
     m_purgeCounter--;
 #ifdef DEBUG_WIDGETS
-    qDebug() << "purgeCounter" << m_purgeCounter << m_list->url();
+    qDebug() << "purgeCounter" << m_purgeCounter <<
+      (m_list ? m_list->url() : "NULL");
 #endif
   }
 }
