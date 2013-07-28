@@ -104,9 +104,3 @@ QString QASActor::displayNameOrWebFinger() const {
   return displayName();
 }
 
-//------------------------------------------------------------------------------
-
-QString QASActor::displayNameOrWebFingerShort() const {
-  return displayNameOrWebFinger().remove(QRegExp("[\\@- ].*"));
-}
-
