@@ -122,6 +122,7 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
   acrossLayout->addLayout(rightLayout);
 
   changeObject(obj);
+  setSizePolicy(QSizePolicy::Ignored, QSizePolicy::MinimumExpanding);
   
   setLayout(acrossLayout);
 }
