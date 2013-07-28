@@ -40,10 +40,12 @@ public:
   QString webFingerName() const { return m_webFingerName; }
   QString displayNameOrWebFinger() const;
   QString displayNameOrWebFingerShort() const;
+  QString preferredUsername() const { return m_preferredUsername; }
 
   QString displayNameOrYou() const { return isYou() ? "You" : displayName(); }
   bool isYou() const { return m_isYou; }
   void setYou() { m_isYou = true; }
+
   bool followed() const { return m_followed; }
   bool followedJson() const { return m_followed_json; }
   void setFollowed(bool b);
@@ -59,6 +61,7 @@ private:
 
   QString m_webFinger;
   QString m_webFingerName;
+  QString m_preferredUsername;
 };
 
 #endif /* _QASACTOR_H_ */

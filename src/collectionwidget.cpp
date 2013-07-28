@@ -25,8 +25,9 @@
 
 //------------------------------------------------------------------------------
 
-CollectionWidget::CollectionWidget(QWidget* parent) :
-  ASWidget(parent),
+CollectionWidget::CollectionWidget(QWidget* parent, int widgetLimit,
+                                   int purgeWait) :
+  ASWidget(parent, widgetLimit, purgeWait),
   m_loadOlderButton(NULL)
 {}
 

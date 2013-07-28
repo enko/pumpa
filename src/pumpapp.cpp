@@ -28,9 +28,6 @@
 #include "util.h"
 #include "filedownloader.h"
 
-#include <sys/resource.h>
-#include <unistd.h>
-
 //------------------------------------------------------------------------------
 
 PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
@@ -88,16 +85,19 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
 
   m_notifyMap = new QSignalMapper(this);
 
-  m_inboxWidget = new CollectionWidget(this);
+  int max_tl = m_s->maxTimelineItems();
+  int max_fh = m_s->maxFirehoseItems();
+
+  m_inboxWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_inboxWidget);
 
-  m_inboxMinorWidget = new CollectionWidget(this);
+  m_inboxMinorWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_inboxMinorWidget);
 
-  m_directMajorWidget = new CollectionWidget(this);
+  m_directMajorWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_directMajorWidget);
 
-  m_directMinorWidget = new CollectionWidget(this);
+  m_directMinorWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_directMinorWidget);
 
   m_followersWidget = new ObjectListWidget(this);
@@ -106,7 +106,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_followingWidget = new ObjectListWidget(this);
   connectCollection(m_followingWidget, false);
 
-  m_firehoseWidget = new CollectionWidget(this);
+  m_firehoseWidget = new CollectionWidget(this, max_fh, 0);
   connectCollection(m_firehoseWidget);
 
   m_tabWidget = new TabWidget(this);
@@ -256,7 +256,6 @@ void PumpApp::timerEvent(QTimerEvent* event) {
     fetchAll();
   }
   
-  purgeTimelines();
   refreshTimeLabels();
 }
 
@@ -272,78 +271,10 @@ void PumpApp::resetTimer() {
 //------------------------------------------------------------------------------
 
 void PumpApp::debugAction() {
-  purgeTimelines();
-}
-
-//------------------------------------------------------------------------------
-
-long getMaxRSS() {
-  struct rusage rusage;
-  getrusage(RUSAGE_SELF, &rusage);
-  return rusage.ru_maxrss;
-}
-
-//------------------------------------------------------------------------------
-
-long getCurrentRSS() {
-  QFile fp("/proc/self/statm");
-  if (!fp.open(QIODevice::ReadOnly))
-    return -1;
-
-  QTextStream in(&fp);
-  QString line = in.readLine();
-  QStringList parts = line.split(" ");
-
-  return parts[1].toLong() * sysconf( _SC_PAGESIZE);
-}
-
-//------------------------------------------------------------------------------
-
-void checkMemory(QString desc="") {
-  static long oldMem = -1;
-  
-  long mem = getCurrentRSS();
-  long diff = 0;
-  if (oldMem > 0)
-    diff = mem-oldMem;
-
-  QString msg("RESIDENT MEMORY");
-  if (!desc.isEmpty())
-    msg += " (" + desc + ")";
-  msg += QString(": %1 KB").arg((float)mem/1024.0, 0, 'f', 2);
-  if (diff != 0)
-    msg += QString(" (%2%1)").arg(diff).arg(diff > 0 ? '+' : '-');
-
-  qDebug() << msg;
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::purgeTimelines() {
-  checkMemory("before purge");
-
-  // int n = m_s->maxTimelineItems();
-  // int m = m_s->maxFirehoseItems();
-  // int n = 10;
-  // int m = 10;
-  // m_inboxWidget->purgeOldWidgets(n);
-  // m_directMinorWidget->purgeOldWidgets(n);
-  // m_directMajorWidget->purgeOldWidgets(n);
-  // m_inboxMinorWidget->purgeOldWidgets(n);
-  // m_firehoseWidget->purgeOldWidgets(m, true);
-
-  qDebug() << "meanwhile items:" << m_inboxMinorWidget->count();
-  qDebug() << "firehose items:" << m_firehoseWidget->count();
-
-  // int obj_n = QASObject::cacheItems();
-  // float obj_kb = float(sizeof(QASObject) * obj_n) / 1024.0;
-  // qDebug() << "QASObjects in memory:" << obj_n << obj_kb
-  //          << "KB.";
-
-  // int m = QASObject::objectsUnconnected();
-  // qDebug() << "QASObjects unconnected:" << m;
-
-  checkMemory("after purge");
+  checkMemory("debug");
+  qDebug() << "inbox" << m_inboxWidget->count();
+  qDebug() << "meanwhile" << m_inboxMinorWidget->count();
+  qDebug() << "firehose" << m_firehoseWidget->count();
 }
 
 //------------------------------------------------------------------------------
@@ -537,6 +468,7 @@ void PumpApp::createActions() {
   m_debugAction = new QAction("Debug", this);
   m_debugAction->setShortcut(tr("Ctrl+D"));
   connect(m_debugAction, SIGNAL(triggered()), this, SLOT(debugAction()));
+  addAction(m_debugAction);
 
   m_showHideAction = new QAction(showHideText(true), this);
   connect(m_showHideAction, SIGNAL(triggered()), this, SLOT(toggleVisible()));
@@ -556,7 +488,7 @@ void PumpApp::createMenu() {
   // fileMenu->addAction(pauseAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openPrefsAction);
-  fileMenu->addAction(m_debugAction);
+  // fileMenu->addAction(m_debugAction);
   fileMenu->addSeparator();
   fileMenu->addAction(exitAction);
   menuBar()->addMenu(fileMenu);
@@ -1050,9 +982,6 @@ KQOAuthRequest* PumpApp::initRequest(QString endpoint,
   oaRequest->setToken(m_s->token());
   oaRequest->setTokenSecret(m_s->tokenSecret());
   oaRequest->setHttpMethod(method); 
-
-  qDebug() << "initRequest" << sizeof(*oaRequest);
-
   return oaRequest;
 }
 

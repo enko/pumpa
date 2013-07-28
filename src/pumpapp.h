@@ -155,7 +155,6 @@ private:
 
   void resetTimer();
 
-  void purgeTimelines();
   void refreshTimeLabels();
 
   void syncOAuthInfo();

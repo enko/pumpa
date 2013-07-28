@@ -21,6 +21,7 @@
 
 #include "util.h"
 
+#include <QUrl>
 #include <QDebug>
 
 //------------------------------------------------------------------------------
@@ -140,14 +141,27 @@ void QASAbstractObjectList::addObject(QASAbstractObject* obj) {
 
 //------------------------------------------------------------------------------
 
-void QASAbstractObjectList::removeObject(QASAbstractObject* obj) {
-  m_items.removeAll(obj);
-  m_item_set.remove(obj);
-
+void QASAbstractObjectList::removeObject(QASAbstractObject* obj, bool signal) {
 #ifdef DEBUG_QAS
   qDebug() << "removeObject" << obj->apiLink();
 #endif
 
+  int idx = m_items.indexOf(obj);
+  bool updatePrevLink = idx == 0;
+  bool updateNextLink = idx == m_items.count()-1;
+
+  m_items.removeAt(idx);
+  m_item_set.remove(obj);
+
+  if (updateNextLink)
+    m_nextLink = m_url + "?before=" +
+      QUrl::toPercentEncoding(m_items.last()->apiLink());
+
+  if (updatePrevLink)
+    m_prevLink = m_url + "?since=" +
+      QUrl::toPercentEncoding(m_items.first()->apiLink());
+
   // m_totalItems--;
-  emit changed();
+  if (signal)
+    emit changed();
 }

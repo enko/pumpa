@@ -56,6 +56,7 @@ void QASActor::update(QVariantMap json) {
   updateVar(json, m_url, "url", ch); 
   updateVar(json, m_displayName, "displayName", ch);
   updateVar(json, m_objectType, "objectType", ch);
+  updateVar(json, m_preferredUsername, "preferredUsername", ch);
 
   // this seems to be unreliable
   updateVar(json, m_followed_json, "pump_io", "followed", dummy);

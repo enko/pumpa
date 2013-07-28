@@ -19,8 +19,15 @@
 
 #include "util.h"
 
+#include <QTextStream>
+#include <QStringList>
 #include <QRegExp>
 #include <QObject>
+#include <QDebug>
+#include <QFile>
+
+#include <sys/resource.h>
+#include <unistd.h>
 
 #include "sundown/markdown.h"
 #include "sundown/html.h"
@@ -148,3 +155,46 @@ bool splitWebfingerId(QString accountId, QString& username, QString& server) {
   server = rx.cap(2);
   return true;
 }
+
+//------------------------------------------------------------------------------
+
+long getMaxRSS() {
+  struct rusage rusage;
+  getrusage(RUSAGE_SELF, &rusage);
+  return rusage.ru_maxrss;
+}
+
+//------------------------------------------------------------------------------
+
+long getCurrentRSS() {
+  QFile fp("/proc/self/statm");
+  if (!fp.open(QIODevice::ReadOnly))
+    return -1;
+
+  QTextStream in(&fp);
+  QString line = in.readLine();
+  QStringList parts = line.split(" ");
+
+  return parts[1].toLong() * sysconf( _SC_PAGESIZE);
+}
+
+//------------------------------------------------------------------------------
+
+void checkMemory(QString desc) {
+  static long oldMem = -1;
+  
+  long mem = getCurrentRSS();
+  long diff = 0;
+  if (oldMem > 0)
+    diff = mem-oldMem;
+
+  QString msg("RESIDENT MEMORY");
+  if (!desc.isEmpty())
+    msg += " (" + desc + ")";
+  msg += QString(": %1 KB").arg((float)mem/1024.0, 0, 'f', 2);
+  if (diff != 0)
+    msg += QString(" (%2%1)").arg(diff).arg(diff > 0 ? '+' : '-');
+
+  qDebug() << msg;
+}
+
