@@ -151,6 +151,8 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
   acrossLayout->setSpacing(10);
   acrossLayout->addWidget(actorWidget, 0, Qt::AlignTop);
   acrossLayout->addLayout(rightLayout);
+
+  setSizePolicy(QSizePolicy::Ignored, QSizePolicy::MinimumExpanding);
   
   setLayout(acrossLayout);
 }
