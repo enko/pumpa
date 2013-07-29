@@ -1,4 +1,4 @@
-# Pumpa v0.6
+# Pumpa v0.7
 
 Greetings, fellow pumpkins!
 
@@ -10,6 +10,9 @@ If that doesn't work for some reason, you can always contact me via
 e-mail: <mats@sjoberg.fi>.
 
 The Pumpa source code includes codes and graphics from other projects:
+
+- [Tim Schumacher][16] contributed several improvements and installer
+  code for Microsoft Windows systems.
 
 - The [kQOAuth library][2] is copyrighted by [Johan Paul][3] and
   licensed under LGPL 2.1.
@@ -36,6 +39,7 @@ verb) or "pumpkin" (as a noun) :-)
 [8]: https://github.com/vmg/sundown
 [9]: https://github.com/vmg/sundown#license
 [13]: https://bugs.saz.im/pumpa
+[16]: https://fmrl.me/0xAFFE
 
 ## Build dependencies
   
