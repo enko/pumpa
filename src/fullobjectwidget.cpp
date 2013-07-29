@@ -692,3 +692,20 @@ void FullObjectWidget::clearObjectList() {
   m_repliesList.clear();
   m_hasMoreButton = NULL;
 }
+
+//------------------------------------------------------------------------------
+
+void FullObjectWidget::refreshTimeLabels() { 
+  updateInfoText();
+
+  for (int i=0; i<m_commentsLayout->count(); i++) {
+    QLayoutItem* item = m_commentsLayout->itemAt(i);
+
+    if (dynamic_cast<QWidgetItem*>(item)) {
+      ObjectWidgetWithSignals* ow =
+        qobject_cast<ObjectWidgetWithSignals*>(item->widget());
+      if (ow)
+        ow->refreshTimeLabels();
+    }
+  }
+}
