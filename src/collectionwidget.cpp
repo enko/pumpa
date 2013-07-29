@@ -96,11 +96,6 @@ CollectionWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
   connect(aw, SIGNAL(showContext(QASObject*)),
           this, SIGNAL(showContext(QASObject*)));
 
-  // QASObject* obj = act->object();
-  // if (obj)
-  //   connect(obj, SIGNAL(request(QString, int)), 
-  //           this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
-
   countAsNew = !act->actor()->isYou();
   return aw;
 }

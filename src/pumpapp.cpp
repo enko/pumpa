@@ -1086,9 +1086,10 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   int id = rp.second;
   if (m_nextRequestId-1 == rid)
     m_nextRequestId = rid;
+  QString reqUrl = request->requestEndpoint().toString();
 
 #ifdef DEBUG_NET
-  qDebug() << "[DEBUG] request done [" << rid << id << "]"
+  qDebug() << "[DEBUG] request done [" << rid << id << "]" << reqUrl
            << response.count() << "bytes";
 #endif
 #ifdef DEBUG_NET_MOAR
@@ -1110,8 +1111,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
       qDebug() << "[WARNING] unable to fetch context for object.";
     } else {
       errorMessage(QString(tr("Network or authorisation error [%1/%2] %3.")).
-                   arg(oaManager->lastError()).arg(id).
-                   arg(request->requestEndpoint().toString()));
+                   arg(oaManager->lastError()).arg(id).arg(reqUrl));
     }
     return;
   }
@@ -1122,26 +1122,39 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
 
   if (sid == QAS_COLLECTION) {
     QASCollection* coll = QASCollection::getCollection(json, this, id);
-    if (coll && (id & QAS_FOLLOW)) {
+    if (coll) {
+      bool checkFollows = (id & QAS_FOLLOW);
+
       for (size_t i=0; i<coll->size(); ++i) {
         QASActivity* activity = coll->at(i);
-        QASActor* actor = activity->actor();
-        if (activity->verb() == "post" && actor &&
-            actor->followedJson() && !actor->followed()) {
-          actor->setFollowed(true);
-          // qDebug() << "[WARNING] Setting followed "
-          //          << actor->id() << " according to feed.";
+        QASObject* obj = activity->object();
+
+        if (obj) {
+          QASObject* irtObj = obj->inReplyTo();
+          if (irtObj && irtObj->url().isEmpty())
+            refreshObject(irtObj);
+        }
+
+        if (checkFollows) {
+          QASActor* actor = activity->actor();
+          if (activity->verb() == "post" && actor &&
+              actor->followedJson() && !actor->followed()) {
+            actor->setFollowed(true);
+            // qDebug() << "[WARNING] Setting followed "
+            //          << actor->id() << " according to feed.";
+          }
         }
       }
     }
   } else if (sid == QAS_ACTIVITY) {
     QASActivity* act = QASActivity::getActivity(json, this);
+    QASObject* obj = act->object();
 
-    if ((id & QAS_TOGGLE_LIKE) && act->object())
-      act->object()->toggleLiked();
+    if ((id & QAS_TOGGLE_LIKE) && obj)
+      obj->toggleLiked();
 
     if ((id & QAS_FOLLOW) || (id & QAS_UNFOLLOW)) {
-      QASActor* actor = act->object() ? act->object()->asActor() : NULL;
+      QASActor* actor = obj ? obj->asActor() : NULL;
       if (actor) {
         bool doFollow = (id & QAS_FOLLOW);
         actor->setFollowed(doFollow);
@@ -1181,3 +1194,19 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   }
 }
 
+//------------------------------------------------------------------------------
+// FIXME: this shouldn't be implemented in millions of places
+
+void PumpApp::refreshObject(QASAbstractObject* obj) {
+  if (!obj)
+    return;
+  
+  QDateTime now = QDateTime::currentDateTime();
+  QDateTime lr = obj->lastRefreshed();
+
+  if (lr.isNull() || lr.secsTo(now) > 10) {
+    obj->lastRefreshed(now);
+    request(obj->apiLink(), obj->asType());
+  }
+}
+ 

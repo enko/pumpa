@@ -103,11 +103,8 @@ void ObjectWidget::changeObject(QASAbstractObject* obj, bool fullObject) {
     m_irtObject = m_object->inReplyTo();
     connect(m_irtObject, SIGNAL(changed()), this, SLOT(updateContextLabel()));
 
-    if (m_irtObject->url().isEmpty()) {
-      refreshObject(m_irtObject);
-    } else {
+    if (!m_irtObject->url().isEmpty())
       updateContextLabel();
-    }
   }
 
   if (m_short) {

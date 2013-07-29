@@ -19,6 +19,8 @@
 
 #include "objectwidgetwithsignals.h"
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 ObjectWidgetWithSignals::ObjectWidgetWithSignals(QWidget* parent) :
@@ -76,7 +78,7 @@ void ObjectWidgetWithSignals::refreshObject(QASAbstractObject* obj) {
   QDateTime lr = obj->lastRefreshed();
 
   if (lr.isNull() || lr.secsTo(now) > 10) {
-    emit request(obj->apiLink(), obj->asType());
     obj->lastRefreshed(now);
+    emit request(obj->apiLink(), obj->asType());
   }
 }

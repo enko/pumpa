@@ -131,6 +131,8 @@ private:
   QMap<int, QPair<KQOAuthRequest*, int> > m_requestMap;
   int m_nextRequestId;
 
+  void refreshObject(QASAbstractObject* obj);
+
   void uploadFile(QString filename);
 
   void updatePostedImage(QVariantMap obj);
