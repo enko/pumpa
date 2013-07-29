@@ -351,13 +351,13 @@ void KQOAuthManager::executeAuthorizedRequest(KQOAuthRequest *request, int id) {
         if (contentLength != -1)
           networkRequest.setHeader(QNetworkRequest::ContentLengthHeader, contentLength);
 
-// #ifdef DEBUG_NET
-//         QList<QByteArray> nrhl = networkRequest.rawHeaderList();
-//         for (int i=0; i<nrhl.size(); ++i) {
-//           const QByteArray& h = nrhl.at(i);
-//           qDebug() << h << ":" << networkRequest.rawHeader(h);
-//         }
-// #endif
+#ifdef DEBUG_NET_MOAR
+        QList<QByteArray> nrhl = networkRequest.rawHeaderList();
+        for (int i=0; i<nrhl.size(); ++i) {
+          const QByteArray& h = nrhl.at(i);
+          qDebug() << h << ":" << networkRequest.rawHeader(h);
+        }
+#endif
 
         if (request->contentType() == "application/x-www-form-urlencoded") {
           reply = d->networkManager->post(networkRequest, request->requestBody());

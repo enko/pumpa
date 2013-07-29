@@ -31,6 +31,7 @@ QT += core gui network
 # Enable debugging output for different things
 # DEFINES += DEBUG_QAS
 # DEFINES += DEBUG_NET
+# DEFINES += DEBUG_NET_MOAR
 # DEFINES += DEBUG_MEMORY
 # DEFINES += DEBUG_MARKUP
 # DEFINES += DEBUG_WIDGETS

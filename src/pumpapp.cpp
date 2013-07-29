@@ -1090,6 +1090,8 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
 #ifdef DEBUG_NET
   qDebug() << "[DEBUG] request done [" << rid << id << "]"
            << response.count() << "bytes";
+#endif
+#ifdef DEBUG_NET_MOAR
   qDebug() << response;
 #endif
 
