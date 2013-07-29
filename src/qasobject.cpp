@@ -99,7 +99,7 @@ void QASObject::update(QVariantMap json, bool ignoreLike) {
     updateUrlOrProxy(json["image"].toMap(), m_imageUrl, ch);
 
     if (json.contains("fullImage"))
-      updateUrlOrProxy(json["fullImage"].toMap(), m_fullImageUrl, ch);
+      updateVar(json["fullImage"].toMap(), m_fullImageUrl, "url", ch);
   }
 
   updateVar(json, m_published, "published", ch);
