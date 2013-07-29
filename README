@@ -185,6 +185,8 @@ steps:
 
       lrelease pumpa.pro
 
+  (You need to use `lrelease-qt4` on some systems, e.g. Fedora.)
+
   Pumpa should detect your systems locale setting and use the correct
   language.  If that doesn't work, or your locale is different, you
   can always force Pumpa to pick the right one, e.g. for Spanish:
