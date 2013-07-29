@@ -898,8 +898,10 @@ void PumpApp::uploadProgress(qint64 bytesSent, qint64 bytesTotal) {
   QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
 
   m_uploadDialog->setValue((100*bytesSent)/bytesTotal);
-  if (m_uploadDialog->wasCanceled() && reply)
+  if (m_uploadDialog->wasCanceled() && reply) {
     reply->abort();
+    m_uploadDialog->hide();
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -1088,7 +1090,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
 #ifdef DEBUG_NET
   qDebug() << "[DEBUG] request done [" << rid << id << "]"
            << response.count() << "bytes";
-  // qDebug() << response;
+  qDebug() << response;
 #endif
 
   request->deleteLater();
