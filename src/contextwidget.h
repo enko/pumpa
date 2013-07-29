@@ -36,6 +36,8 @@ public:
 protected:
   virtual void update();
 
+  bool updateNumReplies();
+  int m_numReplies;
   QASObject* m_object;
 };
 

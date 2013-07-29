@@ -151,6 +151,8 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
   acrossLayout->setSpacing(10);
   acrossLayout->addWidget(actorWidget, 0, Qt::AlignTop);
   acrossLayout->addLayout(rightLayout);
+
+  setSizePolicy(QSizePolicy::Ignored, QSizePolicy::MinimumExpanding);
   
   setLayout(acrossLayout);
 }
@@ -589,7 +591,8 @@ QString FullObjectWidget::processText(QString old_text, bool getImages) {
                   Qt::UniqueConnection);
           if (fd->ready())
             imagePlaceholder = 
-              QString("<img src=\"%1\" />").arg(fd->fileName());
+              QString("<a href=\"%2\"><img border=\"0\" src=\"%1\" /></a>").
+              arg(fd->fileName()).arg(imgSrc);
         }
       }
       text.replace(pos, len, imagePlaceholder);

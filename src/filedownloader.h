@@ -63,6 +63,8 @@ private:
   FileDownloader();
   FileDownloader(const QString&);
 
+  static void resizeImage(QPixmap pix, QString fn);
+
   KQOAuthManager *oaManager;
   KQOAuthRequest *oaRequest;
   QNetworkAccessManager* m_nam;

@@ -39,7 +39,6 @@ public:
   QString webFinger() const { return m_webFinger; }
   QString webFingerName() const { return m_webFingerName; }
   QString displayNameOrWebFinger() const;
-  QString displayNameOrWebFingerShort() const;
 
   QString displayNameOrYou() const { return isYou() ? "You" : displayName(); }
   bool isYou() const { return m_isYou; }

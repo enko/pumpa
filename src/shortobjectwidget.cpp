@@ -32,7 +32,7 @@ ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
 {
   static QSet<QString> expandableTypes;
   if (expandableTypes.isEmpty())
-    expandableTypes << "person" << "note" << "comment";
+    expandableTypes << "person" << "note" << "comment" << "image";
 
   connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
 
