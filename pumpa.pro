@@ -52,6 +52,10 @@ unix:!macx {
   DEFINES += USE_DBUS
 }
 
+win32 {
+  RC_FILE = win32/pumpa.rc
+}
+
 # Additions for Qt 4
 lessThan(QT_MAJOR_VERSION, 5) {
   message("Configuring for Qt 4")

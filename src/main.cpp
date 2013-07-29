@@ -18,6 +18,9 @@
 */
 
 #include <QApplication>
+#ifdef Q_OS_WIN32
+#include <QStyleFactory>
+#endif
 
 #include "pumpapp.h"
 #include "util.h"
@@ -40,8 +43,10 @@ int testMarkup(QString str) {
 
 int main(int argc, char** argv) {
   QApplication app(argc, argv);
-
   QString locale = QLocale::system().name();
+  #ifdef Q_OS_WIN32
+  app.setStyle(QStyleFactory::create("Fusion"));
+  #endif
 
   QString settingsFile;
   if (argc > 1) {
