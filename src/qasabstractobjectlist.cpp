@@ -153,14 +153,15 @@ void QASAbstractObjectList::removeObject(QASAbstractObject* obj, bool signal) {
   m_items.removeAt(idx);
   m_item_set.remove(obj);
 
-  if (updateNextLink)
-    m_nextLink = m_url + "?before=" +
-      QUrl::toPercentEncoding(m_items.last()->apiLink());
+  if (m_items.count() > 0) {
+    if (updateNextLink)
+      m_nextLink = m_url + "?before=" +
+        QUrl::toPercentEncoding(m_items.last()->apiLink());
 
-  if (updatePrevLink)
-    m_prevLink = m_url + "?since=" +
-      QUrl::toPercentEncoding(m_items.first()->apiLink());
-
+    if (updatePrevLink)
+      m_prevLink = m_url + "?since=" +
+        QUrl::toPercentEncoding(m_items.first()->apiLink());
+  }
   // m_totalItems--;
   if (signal)
     emit changed();

@@ -690,4 +690,5 @@ void FullObjectWidget::clearObjectList() {
   }
   m_repliesMap.clear();
   m_repliesList.clear();
+  m_hasMoreButton = NULL;
 }
