@@ -762,7 +762,6 @@ void PumpApp::onShowContext(QASObject* obj) {
 
 QString PumpApp::addTextMarkup(QString text) {
   QString oldText = text;
-  return oldText;
 
 #ifdef DEBUG_MARKUP
   qDebug() << "\n[DEBUG] MARKUP\n" << text;
