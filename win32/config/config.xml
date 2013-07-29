@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <Installer>
+     <Name>Pumpa</Name>
+     <Version>0.6</Version>
+     <Title>Pumpa</Title>
+     <Publisher>Tim Schumacher</Publisher>
+     <StartMenuDir>Pumpa</StartMenuDir>
+     <AllowSpaceInPath>true</AllowSpaceInPath>
+     <TargetDir>@rootDir@InstallationDirectory</TargetDir>
+ </Installer>

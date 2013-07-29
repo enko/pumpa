@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <Package>
+     <DisplayName>Pumpa</DisplayName>
+     <Description>Pumpa Main Components</Description>
+     <Version>0.6-1</Version>
+     <ReleaseDate>2013-07-26</ReleaseDate>
+     <Name>pumpa</Name>
+     <!-- Licenses>
+         <License name="GNU General Public License (GPL) 3.0" file="../../../../LICENSE" />
+     </Licenses -->
+     <!--Translations>
+         <Translation>de_de.qm</Translation>
+     </Translations-->
+     <Default>script</Default>
+     <Script>userscript.qs</Script>
+ </Package>
