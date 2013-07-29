@@ -25,16 +25,26 @@ OBJECTS_DIR = obj
 
 QT += core gui network
 
-# To enable for gdb debug info, uncomment this
-# CONFIG += debug
+#
+# To enable debug mode, run as:
+# qmake CONFIG+=debug
+# or uncomment this:
+# CONFIG+=debug
+#
 
+CONFIG(release, debug|release) {
+  message("Release mode on")
+} else {
+  message("Debug mode on")
+  CONFIG -= release
 # Enable debugging output for different things
-# DEFINES += DEBUG_QAS
-# DEFINES += DEBUG_NET
-# DEFINES += DEBUG_NET_MOAR
-# DEFINES += DEBUG_MEMORY
-# DEFINES += DEBUG_MARKUP
-# DEFINES += DEBUG_WIDGETS
+#  DEFINES += DEBUG_QAS
+  DEFINES += DEBUG_NET
+#  DEFINES += DEBUG_NET_MOAR
+  DEFINES += DEBUG_MEMORY
+  DEFINES += DEBUG_MARKUP
+#  DEFINES += DEBUG_WIDGETS
+}
 
 unix:!macx {
   message("Enabling dbus")
