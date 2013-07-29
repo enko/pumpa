@@ -593,7 +593,7 @@ void FullObjectWidget::onFollowAuthor() {
 QString FullObjectWidget::processText(QString old_text, bool getImages) {
   if (s_allowedTags.isEmpty()) {
     s_allowedTags 
-      << "br" << "p" << "b" << "i" << "blockquote" << "div"
+      << "br" << "p" << "b" << "i" << "blockquote" << "div" << "abbr"
       << "code" << "h1" << "h2" << "h3" << "h4" << "h5"
       << "em" << "ol" << "li" << "ul" << "hr" << "strong" << "u";
     s_allowedTags << "pre";
