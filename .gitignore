@@ -8,3 +8,10 @@ moc_*.cpp
 /src/TAGS
 *.dll
 *.exe
+release/*
+debug/*
+*.pro.user
+Makefile.Debug
+Makefile.Release
+object_script.pumpa.Debug
+object_script.pumpa.Release
