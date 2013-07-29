@@ -5,7 +5,18 @@ set qt_dir=K:\Qt\Qt5.1.0\5.1.0\mingw48_32
 set qif_dir=K:\Qt\QtIFW-1.3.0\bin
 set openssl_dir=C:\OpenSSL-Win32
 
-cd packages\pumpa\data
+set pwd=%~dp0
+
+@call %qt_dir%\bin\qtenv2.bat
+
+cd /D %pwd%
+
+cd ..
+
+mingw32-make clean
+mingw32-make release
+
+cd win32\packages\pumpa\data
 
 :: Removing existing dlls
 del /q imageformats
