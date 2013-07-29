@@ -126,6 +126,10 @@ protected:
 private:
   KQOAuthRequest* initRequest(QString endpoint,
                               KQOAuthRequest::RequestHttpMethod method);
+  QNetworkReply* executeRequest(KQOAuthRequest* request, int response_id);
+
+  QMap<int, QPair<KQOAuthRequest*, int> > m_requestMap;
+  int m_nextRequestId;
 
   void uploadFile(QString filename);
 
@@ -215,7 +219,6 @@ private:
 
   int m_timerId;
   int m_timerCount;
-  int m_requests;
 
   QVariantMap m_imageObject;
   int m_imageTo;

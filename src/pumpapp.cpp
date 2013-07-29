@@ -33,11 +33,11 @@
 
 PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
   QMainWindow(parent),
+  m_nextRequestId(0),
   m_contextWidget(NULL),
   m_wiz(NULL),
   m_messageWindow(NULL),
   m_trayIcon(NULL),
-  m_requests(0),
   m_uploadDialog(NULL)
 {
   m_s = new PumpaSettings(settingsFile, this);
@@ -872,9 +872,9 @@ void PumpApp::uploadFile(QString filename) {
   m_uploadDialog->setValue(0);
   m_uploadDialog->show();
 
-  connect(oaManager, SIGNAL(uploadProgress(qint64, qint64)),
+  const QNetworkReply* nr = executeRequest(oaRequest, QAS_IMAGE_UPLOAD);
+  connect(nr, SIGNAL(uploadProgress(qint64, qint64)),
           this, SLOT(uploadProgress(qint64, qint64)));
-  oaManager->executeAuthorizedRequest(oaRequest, QAS_IMAGE_UPLOAD);
 }
 
 //------------------------------------------------------------------------------
@@ -896,9 +896,11 @@ void PumpApp::uploadProgress(qint64 bytesSent, qint64 bytesTotal) {
   if (!m_uploadDialog || bytesTotal <= 0)
     return;
 
+  QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+
   m_uploadDialog->setValue((100*bytesSent)/bytesTotal);
-  if (m_uploadDialog->wasCanceled())
-    qDebug() << "abort mission"; // FIXME: here call QNetworkReply::abort()
+  if (m_uploadDialog->wasCanceled() && reply)
+    reply->abort();
 }
 
 //------------------------------------------------------------------------------
@@ -1058,23 +1060,41 @@ void PumpApp::request(QString endpoint, int response_id,
 #endif
   }
 
-  oaManager->executeAuthorizedRequest(oaRequest, response_id);
+  executeRequest(oaRequest, response_id);
   
   notifyMessage(tr("Loading ..."));
-  m_requests++;
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
+QNetworkReply* PumpApp::executeRequest(KQOAuthRequest* request,
+                                       int response_id) {
+  int id = m_nextRequestId++;
+
+  m_requestMap.insert(id, qMakePair(request, response_id));
+  oaManager->executeAuthorizedRequest(request, id);
+
+  return oaManager->getReply(request);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
+  QPair<KQOAuthRequest*, int> rp = m_requestMap.take(rid);
+  KQOAuthRequest* request = rp.first;
+  int id = rp.second;
+  if (m_nextRequestId-1 == rid)
+    m_nextRequestId = rid;
+
 #ifdef DEBUG_NET
-  qDebug() << "[DEBUG] request done [" << id << "]"
+  qDebug() << "[DEBUG] request done [" << rid << id << "]"
            << response.count() << "bytes";
   // qDebug() << response;
 #endif
 
-  m_requests--;
-  if (!m_requests) 
+  request->deleteLater();
+
+  if (m_requestMap.isEmpty())
     notifyMessage(tr("Ready!"));
 
   int sid = id & 0xFF;
@@ -1086,8 +1106,9 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     } else if (sid == QAS_OBJECT) {
       qDebug() << "[WARNING] unable to fetch context for object.";
     } else {
-      errorMessage(QString(tr("Network or authorisation error [%1/%2].")).
-                   arg(oaManager->lastError()).arg(id));
+      errorMessage(QString(tr("Network or authorisation error [%1/%2] %3.")).
+                   arg(oaManager->lastError()).arg(id).
+                   arg(request->requestEndpoint().toString()));
     }
     return;
   }

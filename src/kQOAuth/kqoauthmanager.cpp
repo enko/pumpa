@@ -363,8 +363,6 @@ void KQOAuthManager::executeAuthorizedRequest(KQOAuthRequest *request, int id) {
           reply = d->networkManager->post(networkRequest, request->requestBody());
         } else {
           reply = d->networkManager->post(networkRequest, request->rawData());
-          connect(reply, SIGNAL(uploadProgress(qint64, qint64)),
-                  this, SIGNAL(uploadProgress(qint64, qint64)));
         }
 
         connect(reply, SIGNAL(error(QNetworkReply::NetworkError)),
@@ -742,4 +740,14 @@ void KQOAuthManager::requestTimeout() {
     }
     else
         qWarning() << "KQOAuthManager::requestTimeout: The KQOAuthRequest was not found";
+}
+
+
+QNetworkReply* KQOAuthManager::getReply(KQOAuthRequest* request) {
+  Q_D(KQOAuthManager);
+  KQOAuthRequest* tmp = request;
+  if (!d->requestMap.contains(tmp))
+    return NULL;
+
+  return d->requestMap.value(request);
 }
