@@ -32,7 +32,6 @@ ShortObjectWidget::ShortObjectWidget(QASObject* obj, QWidget* parent) :
 #ifdef DEBUG_WIDGETS
   qDebug() << "Creating ShortObjectWidget";
 #endif
-
   m_textLabel = new RichTextLabel(this, true);
 
   m_actorWidget = new ActorWidget(NULL, this, true);
