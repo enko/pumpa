@@ -119,7 +119,9 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget->addTab(m_inboxMinorWidget, tr("Mean&while"));
   m_tabWidget->addTab(m_firehoseWidget, tr("Fi&rehose"));
   m_tabWidget->addTab(m_followersWidget, tr("&Followers"));
-  m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false);
+  m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false, true);
+
+  // emits QTabBar::tabCloseRequested(index)
 
   m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
   m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);

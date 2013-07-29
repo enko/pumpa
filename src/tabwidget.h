@@ -31,10 +31,8 @@ class TabWidget : public QTabWidget {
 public:
   TabWidget(QWidget* parent=0);
 
-  int addTab(QWidget* page, const QString& label, bool highlight=true);
-
-  int addTab(QWidget* page, const QIcon& icon, const QString& label, 
-             bool highlight=true);
+  int addTab(QWidget* page, const QString& label, bool highlight=true,
+             bool closable=false);
 
 public slots:
   void highlightTab(int index=-1);

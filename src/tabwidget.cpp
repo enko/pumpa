@@ -24,25 +24,23 @@
 TabWidget::TabWidget(QWidget* parent) : QTabWidget(parent) {
   sMap = new QSignalMapper(this);
   connect(sMap, SIGNAL(mapped(int)), this, SLOT(highlightTab(int)));
+  setTabsClosable(true);
 }
 
 //------------------------------------------------------------------------------
 
 int TabWidget::addTab(QWidget* page, const QString& label, 
-                           bool highlight) {
+                      bool highlight, bool closable) {
   int index = QTabWidget::addTab(page, label);
+
   if (highlight)
     addHighlightConnection(page, index);
-  return index;
-}
 
-//------------------------------------------------------------------------------
+  if (!closable) {
+    tabBar()->setTabButton(index, QTabBar::LeftSide, 0);
+    tabBar()->setTabButton(index, QTabBar::RightSide, 0);
+  }
 
-int TabWidget::addTab(QWidget* page, const QIcon& icon, 
-                           const QString& label, bool highlight) {
-  int index = QTabWidget::addTab(page, icon, label);
-  if (highlight)
-    addHighlightConnection(page, index);
   return index;
 }
 
