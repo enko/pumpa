@@ -751,8 +751,9 @@ void PumpApp::onShowContext(QASObject* obj) {
   if (!m_contextWidget) {
     m_contextWidget = new ContextWidget(this);
     connectCollection(m_contextWidget);
-    m_tabWidget->addTab(m_contextWidget, tr("&Context"));
   }
+  if (m_tabWidget->indexOf(m_contextWidget) == -1)
+    m_tabWidget->addTab(m_contextWidget, tr("&Context"), true, true);
 
   m_contextWidget->setObject(obj);
   m_tabWidget->setCurrentWidget(m_contextWidget);

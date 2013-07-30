@@ -20,6 +20,7 @@
 #ifndef TABWIDGET_H
 #define TABWIDGET_H
 
+#include <QSet>
 #include <QWidget>
 #include <QTabBar>
 #include <QTabWidget>
@@ -31,21 +32,21 @@ class TabWidget : public QTabWidget {
 public:
   TabWidget(QWidget* parent=0);
 
-  int addTab(QWidget* page, const QString& label, bool highlight=true);
-
-  int addTab(QWidget* page, const QIcon& icon, const QString& label, 
-             bool highlight=true);
+  int addTab(QWidget* page, const QString& label, bool highlight=true,
+             bool closable=false);
 
 public slots:
   void highlightTab(int index=-1);
 
   void deHighlightTab(int index=-1);
 
+protected slots:
+  void closeTab(int index);
+
 protected:
   void addHighlightConnection(QWidget* page, int index);
-
-private:
   QSignalMapper* sMap;
+  QSet<int> okToClose;
 };
 
 #endif
