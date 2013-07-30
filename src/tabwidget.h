@@ -20,6 +20,7 @@
 #ifndef TABWIDGET_H
 #define TABWIDGET_H
 
+#include <QSet>
 #include <QWidget>
 #include <QTabBar>
 #include <QTabWidget>
@@ -39,11 +40,13 @@ public slots:
 
   void deHighlightTab(int index=-1);
 
+protected slots:
+  void closeTab(int index);
+
 protected:
   void addHighlightConnection(QWidget* page, int index);
-
-private:
   QSignalMapper* sMap;
+  QSet<int> okToClose;
 };
 
 #endif

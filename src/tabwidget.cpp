@@ -19,12 +19,17 @@
 
 #include "tabwidget.h"
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 TabWidget::TabWidget(QWidget* parent) : QTabWidget(parent) {
   sMap = new QSignalMapper(this);
   connect(sMap, SIGNAL(mapped(int)), this, SLOT(highlightTab(int)));
   setTabsClosable(true);
+
+  connect(tabBar(), SIGNAL(tabCloseRequested(int)),
+          this, SLOT(closeTab(int)));
 }
 
 //------------------------------------------------------------------------------
@@ -39,9 +44,22 @@ int TabWidget::addTab(QWidget* page, const QString& label,
   if (!closable) {
     tabBar()->setTabButton(index, QTabBar::LeftSide, 0);
     tabBar()->setTabButton(index, QTabBar::RightSide, 0);
+  } else {
+    okToClose.insert(index);
   }
 
   return index;
+}
+
+//------------------------------------------------------------------------------
+
+void TabWidget::closeTab(int index) {
+  if (!okToClose.contains(index)) {
+    qDebug() << "[ERROR] Tried to close unclosable tab" << index;
+    return;
+  }
+
+  removeTab(index);
 }
 
 //------------------------------------------------------------------------------

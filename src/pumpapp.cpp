@@ -119,9 +119,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_tabWidget->addTab(m_inboxMinorWidget, tr("Mean&while"));
   m_tabWidget->addTab(m_firehoseWidget, tr("Fi&rehose"));
   m_tabWidget->addTab(m_followersWidget, tr("&Followers"));
-  m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false, true);
-
-  // emits QTabBar::tabCloseRequested(index)
+  m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false);
 
   m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
   m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);
@@ -753,8 +751,9 @@ void PumpApp::onShowContext(QASObject* obj) {
   if (!m_contextWidget) {
     m_contextWidget = new ContextWidget(this);
     connectCollection(m_contextWidget);
-    m_tabWidget->addTab(m_contextWidget, tr("&Context"));
   }
+  if (m_tabWidget->indexOf(m_contextWidget) == -1)
+    m_tabWidget->addTab(m_contextWidget, tr("&Context"), true, true);
 
   m_contextWidget->setObject(obj);
   m_tabWidget->setCurrentWidget(m_contextWidget);
