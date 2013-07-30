@@ -24,6 +24,7 @@
 #include <QWidget>
 
 #include "qactivitystreams.h"
+#include "texttoolbutton.h"
 #include "richtextlabel.h"
 #include "actorwidget.h"
 
@@ -34,6 +35,9 @@ class ShortObjectWidget : public QFrame {
 
 public:
   ShortObjectWidget(QASObject* obj, QWidget* parent = 0);
+  virtual ~ShortObjectWidget();
+
+  virtual void changeObject(QASAbstractObject* obj);
 
   QASObject* object() const { return m_object; }
 
@@ -51,6 +55,7 @@ private:
   void updateText();
   void updateAvatar();
 
+  TextToolButton* m_moreButton;
   RichTextLabel* m_textLabel;
   ActorWidget* m_actorWidget;
   QASObject* m_object;

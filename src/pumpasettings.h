@@ -86,6 +86,14 @@ public:
                     "https://ofirehose.com/feed.json").toString(); 
   }
 
+  int maxTimelineItems() const {
+    return getValue("max_timeline_items", 80).toInt();
+  }
+
+  int maxFirehoseItems() const {
+    return getValue("max_timeline_items", 40).toInt();
+  }
+
   // setters
   void siteUrl(QString s) { setValue("site_url", s, "Account"); }
   void userName(QString s) { setValue("username", s, "Account"); }

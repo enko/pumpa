@@ -44,28 +44,28 @@ QASAbstractObject::QASAbstractObject(int asType, QObject* parent) :
 //------------------------------------------------------------------------------
 
 void QASAbstractObject::connectSignals(QASAbstractObject* obj,
-                                       bool changed, bool req) {
+                                       bool changed, bool) {
   if (!obj)
     return;
 
   if (changed)
     connect(obj, SIGNAL(changed()),
             this, SIGNAL(changed()), Qt::UniqueConnection);
-  if (req)
-    connect(obj, SIGNAL(request(QString, int)),
-            parent(), SLOT(request(QString, int)), Qt::UniqueConnection);
+  // if (req)
+  //   connect(obj, SIGNAL(request(QString, int)),
+  //           parent(), SLOT(request(QString, int)), Qt::UniqueConnection);
 }
 
 //------------------------------------------------------------------------------
 
-void QASAbstractObject::refresh() {
-  QDateTime now = QDateTime::currentDateTime();
+// void QASAbstractObject::refresh() {
+//   QDateTime now = QDateTime::currentDateTime();
 
-  if (m_lastRefreshed.isNull() || m_lastRefreshed.secsTo(now) > 1)
-    emit request(apiLink(), m_asType);
+//   if (m_lastRefreshed.isNull() || m_lastRefreshed.secsTo(now) > 1)
+//     emit request(apiLink(), m_asType);
 
-  m_lastRefreshed = now;
-}
+//   m_lastRefreshed = now;
+// }
 
 //------------------------------------------------------------------------------
 

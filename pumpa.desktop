@@ -1,5 +1,5 @@
 [Desktop Entry]
-Version=0.6
+Version=0.7
 Name=Pumpa
 Exec=./pumpa
 Icon=./pumpa/images/pumpa.png

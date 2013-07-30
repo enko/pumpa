@@ -33,11 +33,11 @@
 
 PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
   QMainWindow(parent),
+  m_nextRequestId(0),
   m_contextWidget(NULL),
   m_wiz(NULL),
   m_messageWindow(NULL),
   m_trayIcon(NULL),
-  m_requests(0),
   m_uploadDialog(NULL)
 {
   m_s = new PumpaSettings(settingsFile, this);
@@ -86,16 +86,19 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
 
   m_notifyMap = new QSignalMapper(this);
 
-  m_inboxWidget = new CollectionWidget(this);
+  int max_tl = m_s->maxTimelineItems();
+  int max_fh = m_s->maxFirehoseItems();
+
+  m_inboxWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_inboxWidget);
 
-  m_inboxMinorWidget = new CollectionWidget(this);
+  m_inboxMinorWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_inboxMinorWidget);
 
-  m_directMajorWidget = new CollectionWidget(this);
+  m_directMajorWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_directMajorWidget);
 
-  m_directMinorWidget = new CollectionWidget(this);
+  m_directMinorWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_directMinorWidget);
 
   m_followersWidget = new ObjectListWidget(this);
@@ -104,7 +107,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_followingWidget = new ObjectListWidget(this);
   connectCollection(m_followingWidget, false);
 
-  m_firehoseWidget = new CollectionWidget(this);
+  m_firehoseWidget = new CollectionWidget(this, max_fh, 0);
   connectCollection(m_firehoseWidget);
 
   m_tabWidget = new TabWidget(this);
@@ -253,6 +256,7 @@ void PumpApp::timerEvent(QTimerEvent* event) {
     m_timerCount = 0;
     fetchAll();
   }
+  
   refreshTimeLabels();
 }
 
@@ -267,6 +271,15 @@ void PumpApp::resetTimer() {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::debugAction() {
+  checkMemory("debug");
+  qDebug() << "inbox" << m_inboxWidget->count();
+  qDebug() << "meanwhile" << m_inboxMinorWidget->count();
+  qDebug() << "firehose" << m_firehoseWidget->count();
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::refreshTimeLabels() {
   m_inboxWidget->refreshTimeLabels();
   m_directMinorWidget->refreshTimeLabels();
@@ -275,9 +288,6 @@ void PumpApp::refreshTimeLabels() {
   m_firehoseWidget->refreshTimeLabels();
   if (m_contextWidget)
     m_contextWidget->refreshTimeLabels();
-
-  qDebug() << "meanwhile items:" << m_inboxMinorWidget->count();
-  qDebug() << "firehose items:" << m_firehoseWidget->count();
 }
 
 //------------------------------------------------------------------------------
@@ -463,6 +473,11 @@ void PumpApp::createActions() {
   // newPictureAction->setShortcut(tr("Ctrl+P"));
   // connect(newPictureAction, SIGNAL(triggered()), this, SLOT(newPicture()));
 
+  m_debugAction = new QAction("Debug", this);
+  m_debugAction->setShortcut(tr("Ctrl+D"));
+  connect(m_debugAction, SIGNAL(triggered()), this, SLOT(debugAction()));
+  addAction(m_debugAction);
+
   m_showHideAction = new QAction(showHideText(true), this);
   connect(m_showHideAction, SIGNAL(triggered()), this, SLOT(toggleVisible()));
 }
@@ -481,6 +496,7 @@ void PumpApp::createMenu() {
   // fileMenu->addAction(pauseAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openPrefsAction);
+  // fileMenu->addAction(m_debugAction);
   fileMenu->addSeparator();
   fileMenu->addAction(exitAction);
   menuBar()->addMenu(fileMenu);
@@ -855,9 +871,9 @@ void PumpApp::uploadFile(QString filename) {
   m_uploadDialog->setValue(0);
   m_uploadDialog->show();
 
-  connect(oaManager, SIGNAL(uploadProgress(qint64, qint64)),
+  const QNetworkReply* nr = executeRequest(oaRequest, QAS_IMAGE_UPLOAD);
+  connect(nr, SIGNAL(uploadProgress(qint64, qint64)),
           this, SLOT(uploadProgress(qint64, qint64)));
-  oaManager->executeAuthorizedRequest(oaRequest, QAS_IMAGE_UPLOAD);
 }
 
 //------------------------------------------------------------------------------
@@ -879,9 +895,13 @@ void PumpApp::uploadProgress(qint64 bytesSent, qint64 bytesTotal) {
   if (!m_uploadDialog || bytesTotal <= 0)
     return;
 
+  QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+
   m_uploadDialog->setValue((100*bytesSent)/bytesTotal);
-  if (m_uploadDialog->wasCanceled())
-    qDebug() << "abort mission"; // FIXME: here call QNetworkReply::abort()
+  if (m_uploadDialog->wasCanceled() && reply) {
+    reply->abort();
+    m_uploadDialog->hide();
+  }
 }
 
 //------------------------------------------------------------------------------
@@ -1041,23 +1061,44 @@ void PumpApp::request(QString endpoint, int response_id,
 #endif
   }
 
-  oaManager->executeAuthorizedRequest(oaRequest, response_id);
+  executeRequest(oaRequest, response_id);
   
   notifyMessage(tr("Loading ..."));
-  m_requests++;
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
+QNetworkReply* PumpApp::executeRequest(KQOAuthRequest* request,
+                                       int response_id) {
+  int id = m_nextRequestId++;
+
+  m_requestMap.insert(id, qMakePair(request, response_id));
+  oaManager->executeAuthorizedRequest(request, id);
+
+  return oaManager->getReply(request);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
+  QPair<KQOAuthRequest*, int> rp = m_requestMap.take(rid);
+  KQOAuthRequest* request = rp.first;
+  int id = rp.second;
+  if (m_nextRequestId-1 == rid)
+    m_nextRequestId = rid;
+  QString reqUrl = request->requestEndpoint().toString();
+
 #ifdef DEBUG_NET
-  qDebug() << "[DEBUG] request done [" << id << "]"
+  qDebug() << "[DEBUG] request done [" << rid << id << "]" << reqUrl
            << response.count() << "bytes";
-  // qDebug() << response;
+#endif
+#ifdef DEBUG_NET_MOAR
+  qDebug() << response;
 #endif
 
-  m_requests--;
-  if (!m_requests) 
+  request->deleteLater();
+
+  if (m_requestMap.isEmpty())
     notifyMessage(tr("Ready!"));
 
   int sid = id & 0xFF;
@@ -1069,8 +1110,8 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
     } else if (sid == QAS_OBJECT) {
       qDebug() << "[WARNING] unable to fetch context for object.";
     } else {
-      errorMessage(QString(tr("Network or authorisation error [%1/%2].")).
-                   arg(oaManager->lastError()).arg(id));
+      errorMessage(QString(tr("Network or authorisation error [%1/%2] %3.")).
+                   arg(oaManager->lastError()).arg(id).arg(reqUrl));
     }
     return;
   }
@@ -1081,26 +1122,39 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
 
   if (sid == QAS_COLLECTION) {
     QASCollection* coll = QASCollection::getCollection(json, this, id);
-    if (coll && (id & QAS_FOLLOW)) {
+    if (coll) {
+      bool checkFollows = (id & QAS_FOLLOW);
+
       for (size_t i=0; i<coll->size(); ++i) {
         QASActivity* activity = coll->at(i);
-        QASActor* actor = activity->actor();
-        if (activity->verb() == "post" && actor &&
-            actor->followedJson() && !actor->followed()) {
-          actor->setFollowed(true);
-          // qDebug() << "[WARNING] Setting followed "
-          //          << actor->id() << " according to feed.";
+        QASObject* obj = activity->object();
+
+        if (obj) {
+          QASObject* irtObj = obj->inReplyTo();
+          if (irtObj && irtObj->url().isEmpty())
+            refreshObject(irtObj);
+        }
+
+        if (checkFollows) {
+          QASActor* actor = activity->actor();
+          if (activity->verb() == "post" && actor &&
+              actor->followedJson() && !actor->followed()) {
+            actor->setFollowed(true);
+            // qDebug() << "[WARNING] Setting followed "
+            //          << actor->id() << " according to feed.";
+          }
         }
       }
     }
   } else if (sid == QAS_ACTIVITY) {
     QASActivity* act = QASActivity::getActivity(json, this);
+    QASObject* obj = act->object();
 
-    if ((id & QAS_TOGGLE_LIKE) && act->object())
-      act->object()->toggleLiked();
+    if ((id & QAS_TOGGLE_LIKE) && obj)
+      obj->toggleLiked();
 
     if ((id & QAS_FOLLOW) || (id & QAS_UNFOLLOW)) {
-      QASActor* actor = act->object() ? act->object()->asActor() : NULL;
+      QASActor* actor = obj ? obj->asActor() : NULL;
       if (actor) {
         bool doFollow = (id & QAS_FOLLOW);
         actor->setFollowed(doFollow);
@@ -1140,3 +1194,19 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int id) {
   }
 }
 
+//------------------------------------------------------------------------------
+// FIXME: this shouldn't be implemented in millions of places
+
+void PumpApp::refreshObject(QASAbstractObject* obj) {
+  if (!obj)
+    return;
+  
+  QDateTime now = QDateTime::currentDateTime();
+  QDateTime lr = obj->lastRefreshed();
+
+  if (lr.isNull() || lr.secsTo(now) > 10) {
+    obj->lastRefreshed(now);
+    request(obj->apiLink(), obj->asType());
+  }
+}
+ 

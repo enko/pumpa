@@ -25,11 +25,12 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 
-#include "qactivitystreams.h"
-#include "richtextlabel.h"
-#include "texttoolbutton.h"
-#include "imagelabel.h"
 #include "objectwidgetwithsignals.h"
+#include "qactivitystreams.h"
+#include "texttoolbutton.h"
+#include "richtextlabel.h"
+#include "actorwidget.h"
+#include "imagelabel.h"
 
 //------------------------------------------------------------------------------
 
@@ -38,10 +39,14 @@ class FullObjectWidget : public ObjectWidgetWithSignals {
 
 public:
   FullObjectWidget(QASObject* obj, QWidget* parent = 0, bool childWidget=false);
+  virtual ~FullObjectWidget();
+
+  virtual void changeObject(QASAbstractObject* obj);
 
   QASObject* object() const { return m_object; }
+  virtual QASAbstractObject* asObject() const { return object(); }
 
-  virtual void refreshTimeLabels() { updateInfoText(); }
+  virtual void refreshTimeLabels();
 
 private slots:
   void onChanged();
@@ -76,12 +81,14 @@ private:
   bool isFollowable(QASObject* obj) const;
 
   void addObjectList(QASObjectList* ol);
+  void clearObjectList();
 
   QString m_imageUrl;
   QString m_localFile;
 
   RichTextLabel* m_textLabel;
   ImageLabel* m_imageLabel;
+  ActorWidget* m_actorWidget;
 
   RichTextLabel* m_infoLabel;
   RichTextLabel* m_likesLabel;
@@ -108,6 +115,7 @@ private:
   QSet<QString> m_repliesMap;
 
   bool m_childWidget;
+  bool m_commentable;
 };
 
 #endif /* _FULLOBJECTWIDGET_H_ */

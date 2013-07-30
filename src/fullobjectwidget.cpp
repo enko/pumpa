@@ -18,7 +18,6 @@
 */
 
 #include "fullobjectwidget.h"
-#include "actorwidget.h"
 #include "pumpa_defines.h"
 #include "util.h"
 #include "shortobjectwidget.h"
@@ -46,40 +45,27 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
   m_followButton(NULL),
   m_followAuthorButton(NULL),
   m_deleteButton(NULL),
-  m_object(obj),
+  m_object(NULL),
   m_actor(NULL),
   m_author(NULL),
   m_childWidget(childWidget)
 {
-  const QString objType = m_object->type();
-
-  if (objType == "comment") {
-    setLineWidth(1);
-    setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
-  }
-
+#ifdef DEBUG_WIDGETS
+  qDebug() << "Creating FullObjectWidget";
+#endif
   QVBoxLayout* rightLayout = new QVBoxLayout;
   rightLayout->setContentsMargins(0, 0, 0, 0);
 
   m_contentLayout = new QVBoxLayout;
   m_contentLayout->setContentsMargins(0, 0, 0, 0);
 
-  if (!m_object->displayName().isEmpty()) {
-    m_titleLabel = new QLabel("<b>" + m_object->displayName() + "</b>");
-    m_contentLayout->addWidget(m_titleLabel);
-  }
+  m_titleLabel = new QLabel(this); 
+  m_contentLayout->addWidget(m_titleLabel);
 
-  if (objType == "image") {
-    m_imageLabel = new ImageLabel(this);
-    if (!m_object->fullImageUrl().isEmpty()) {
-      connect(m_imageLabel, SIGNAL(clicked()), this, SLOT(imageClicked()));
-      m_imageLabel->setCursor(Qt::PointingHandCursor);
-    }
-    m_imageUrl = m_object->imageUrl();
-    updateImage();
-
-    m_contentLayout->addWidget(m_imageLabel);
-  }
+  m_imageLabel = new ImageLabel(this);
+  connect(m_imageLabel, SIGNAL(clicked()), this, SLOT(imageClicked()));
+  m_imageLabel->setCursor(Qt::PointingHandCursor);
+  m_contentLayout->addWidget(m_imageLabel);
 
   m_textLabel = new RichTextLabel(this);
   connect(m_textLabel, SIGNAL(linkHovered(const QString&)),
@@ -91,70 +77,136 @@ FullObjectWidget::FullObjectWidget(QASObject* obj, QWidget* parent,
           this, SIGNAL(linkHovered(const QString&)));
   m_contentLayout->addWidget(m_infoLabel, 0, Qt::AlignTop);
 
-  m_author = m_object->author();
-  
   m_buttonLayout = new QHBoxLayout;
 
-  if (objType == "note" || objType == "comment" || objType == "image") {
-    m_favourButton = new TextToolButton(this);
-    connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
-    m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
+  m_favourButton = new TextToolButton(this);
+  connect(m_favourButton, SIGNAL(clicked()), this, SLOT(favourite()));
+  m_buttonLayout->addWidget(m_favourButton, 0, Qt::AlignTop);
 
-    m_followAuthorButton = new TextToolButton(this);
-    connect(m_followAuthorButton, SIGNAL(clicked()),
-            this, SLOT(onFollowAuthor()));
-    m_buttonLayout->addWidget(m_followAuthorButton, 0, Qt::AlignTop);
+  m_followAuthorButton = new TextToolButton(this);
+  connect(m_followAuthorButton, SIGNAL(clicked()),
+          this, SLOT(onFollowAuthor()));
+  m_buttonLayout->addWidget(m_followAuthorButton, 0, Qt::AlignTop);
 
-    m_shareButton = new TextToolButton(this);
-    connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
-    m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
+  m_shareButton = new TextToolButton(this);
+  connect(m_shareButton, SIGNAL(clicked()), this, SLOT(repeat()));
+  m_buttonLayout->addWidget(m_shareButton, 0, Qt::AlignTop);
 
-    if (m_author && m_author->isYou()) {
-      m_deleteButton = new TextToolButton(tr("delete"), this);
-      connect(m_deleteButton, SIGNAL(clicked()), this, SLOT(onDeleteClicked()));
-      m_buttonLayout->addWidget(m_deleteButton, 0, Qt::AlignTop);
-    }
+  m_deleteButton = new TextToolButton(tr("delete"), this);
+  connect(m_deleteButton, SIGNAL(clicked()), this, SLOT(onDeleteClicked()));
+  m_buttonLayout->addWidget(m_deleteButton, 0, Qt::AlignTop);
 
-    m_commentButton = new TextToolButton(tr("comment"), this);
-    connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
-    m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
-  }
+  m_commentButton = new TextToolButton(tr("comment"), this);
+  connect(m_commentButton, SIGNAL(clicked()), this, SLOT(reply()));
+  m_buttonLayout->addWidget(m_commentButton, 0, Qt::AlignTop);
 
-  if (objType == "person") {
-    m_followButton = new TextToolButton(this);
-    connect(m_followButton, SIGNAL(clicked()), this, SLOT(onFollow()));
-    m_buttonLayout->addWidget(m_followButton, 0, Qt::AlignTop);
-    m_actor = m_object->asActor();
-  }
+  m_followButton = new TextToolButton(this);
+  connect(m_followButton, SIGNAL(clicked()), this, SLOT(onFollow()));
+  m_buttonLayout->addWidget(m_followButton, 0, Qt::AlignTop);
 
   m_buttonLayout->addStretch();
 
   m_commentsLayout = new QVBoxLayout;
-  onChanged();
-  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
-  if (m_author)
-    connect(m_author, SIGNAL(changed()),
-            this, SLOT(updateFollowAuthorButton()));
 
   rightLayout->addLayout(m_contentLayout);
   rightLayout->addLayout(m_buttonLayout);
   rightLayout->addLayout(m_commentsLayout);
 
-  bool smallActor = m_childWidget;
-
   // If this object is not an actor itself, show the author in the
   // avatar image.
-  QASActor* actorOnAvatar = m_actor ? m_actor : m_author;
-  ActorWidget* actorWidget = new ActorWidget(actorOnAvatar , this, smallActor);
+  m_actorWidget = new ActorWidget(NULL, this);
 
   QHBoxLayout* acrossLayout = new QHBoxLayout;
   acrossLayout->setSpacing(10);
-  acrossLayout->addWidget(actorWidget, 0, Qt::AlignTop);
+  acrossLayout->addWidget(m_actorWidget, 0, Qt::AlignTop);
   acrossLayout->addLayout(rightLayout);
 
+  changeObject(obj);
   setSizePolicy(QSizePolicy::Ignored, QSizePolicy::MinimumExpanding);
   
   setLayout(acrossLayout);
+}
+
+//------------------------------------------------------------------------------
+
+FullObjectWidget::~FullObjectWidget() {
+#ifdef DEBUG_WIDGETS
+  qDebug() << "Deleting FullObjectWidget" << m_object->id();
+#endif
+}
+
+//------------------------------------------------------------------------------
+
+void FullObjectWidget::changeObject(QASAbstractObject* obj) {
+  if (m_object != NULL) {
+    disconnect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+    if (m_author)
+      disconnect(m_author, SIGNAL(changed()),
+                 this, SLOT(updateFollowAuthorButton()));
+    QASObjectList* ol = m_object->replies();
+    if (ol)
+      disconnect(ol, SIGNAL(changed()), this, SLOT(onChanged()));
+
+    clearObjectList();
+  }
+
+  m_object = qobject_cast<QASObject*>(obj);
+  if (!m_object)
+    return;
+
+  const QString objType = m_object->type();
+
+  connect(m_object, SIGNAL(changed()), this, SLOT(onChanged()));
+
+  if (objType == "comment") {
+    setLineWidth(1);
+    setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
+  }
+
+  if (!m_object->displayName().isEmpty()) {
+    m_titleLabel->setText("<b>" + m_object->displayName() + "</b>");
+    m_titleLabel->setVisible(true);
+  } else {
+    m_titleLabel->setVisible(false);
+  }
+
+  if (objType == "image") {
+    m_imageLabel->setVisible(true);
+    m_imageUrl = m_object->imageUrl();
+    updateImage();
+  } else {
+    m_imageLabel->setVisible(false);
+  }
+
+  m_author = m_object->author();
+  if (m_author)
+    connect(m_author, SIGNAL(changed()),
+            this, SLOT(updateFollowAuthorButton()));
+  
+  m_commentable = objType == "note" || objType == "comment" ||
+    objType == "image";
+  if (m_commentable) {
+    m_favourButton->setVisible(true);
+    m_followAuthorButton->setVisible(true);
+    m_shareButton->setVisible(true);
+    m_deleteButton->setVisible(m_author && m_author->isYou());
+    m_commentButton->setVisible(true);
+  } else {
+    m_favourButton->setVisible(false);
+    m_followAuthorButton->setVisible(false);
+    m_shareButton->setVisible(false);
+    m_deleteButton->setVisible(false);
+    m_commentButton->setVisible(false);
+  }
+
+  m_followButton->setVisible(objType == "person");
+
+  m_actor = m_object->asActor();
+
+  QASActor* actorOrAuthor = m_actor ? m_actor : m_author;
+  m_actorWidget->setActor(actorOrAuthor);
+
+  onChanged();
 }
 
 //------------------------------------------------------------------------------
@@ -167,14 +219,17 @@ bool FullObjectWidget::hasValidIrtObject() {
 //------------------------------------------------------------------------------
 
 void FullObjectWidget::onChanged() {
+  if (!m_object)
+    return;
+
   updateLikes();
   updateShares();
 
   updateFavourButton();
   updateShareButton();
-  if (m_commentButton)
-    m_commentButton->setVisible(m_object->type() != "comment" ||
-                                hasValidIrtObject());
+  m_commentButton->setVisible(m_commentable && 
+                              (m_object->type() != "comment" ||
+                               hasValidIrtObject()));
   updateFollowButton();
   updateFollowAuthorButton();
 
@@ -188,12 +243,13 @@ void FullObjectWidget::onChanged() {
   setText(processText(text, true));
 
   updateInfoText();
-  if (m_object->numReplies() > 0) {
-    QASObjectList* ol = m_object->replies();
-    if (ol) 
-      connect(ol, SIGNAL(changed()), this, SLOT(onChanged()),
-              Qt::UniqueConnection);
-    addObjectList(ol);
+
+  QASObjectList* ol = m_object->replies();
+  if (ol) {
+    connect(ol, SIGNAL(changed()), this, SLOT(onChanged()),
+            Qt::UniqueConnection);
+    if (ol->size() > 0)
+      addObjectList(ol);
   }
 }
 
@@ -293,7 +349,7 @@ void FullObjectWidget::updateFollowAuthorButton(bool /*wait*/) {
 
   QString text = (m_author->followed() ? tr("stop following") : tr("follow"))
     + " ";
-  text += m_author->webFingerName();
+  text += m_author->preferredUsername();
 
   m_followAuthorButton->setText(text);
 }
@@ -461,7 +517,7 @@ void FullObjectWidget::addHasMoreButton(QASObjectList* ol, int li) {
 
 void FullObjectWidget::onHasMoreClicked() {
   m_hasMoreButton->setText("...");
-  m_object->replies()->refresh();
+  refreshObject(m_object->replies());
 }
 
 //------------------------------------------------------------------------------
@@ -537,7 +593,7 @@ void FullObjectWidget::onFollowAuthor() {
 QString FullObjectWidget::processText(QString old_text, bool getImages) {
   if (s_allowedTags.isEmpty()) {
     s_allowedTags 
-      << "br" << "p" << "b" << "i" << "blockquote" << "div"
+      << "br" << "p" << "b" << "i" << "blockquote" << "div" << "abbr"
       << "code" << "h1" << "h2" << "h3" << "h4" << "h5"
       << "em" << "ol" << "li" << "ul" << "hr" << "strong" << "u";
     s_allowedTags << "pre";
@@ -614,4 +670,42 @@ QString FullObjectWidget::processText(QString old_text, bool getImages) {
     text.chop(4);
 
   return text;
+}
+
+//------------------------------------------------------------------------------
+
+void FullObjectWidget::clearObjectList() {
+  QLayoutItem* item;
+  while ((item = m_commentsLayout->takeAt(0)) != 0) {
+    if (dynamic_cast<QWidgetItem*>(item)) {
+      QWidget* w = item->widget();
+
+      FullObjectWidget* ow = qobject_cast<FullObjectWidget*>(w);
+      if (ow)
+        ObjectWidgetWithSignals::disconnectSignals(ow, this);
+
+      delete w;
+    }
+    delete item;
+  }
+  m_repliesMap.clear();
+  m_repliesList.clear();
+  m_hasMoreButton = NULL;
+}
+
+//------------------------------------------------------------------------------
+
+void FullObjectWidget::refreshTimeLabels() { 
+  updateInfoText();
+
+  for (int i=0; i<m_commentsLayout->count(); i++) {
+    QLayoutItem* item = m_commentsLayout->itemAt(i);
+
+    if (dynamic_cast<QWidgetItem*>(item)) {
+      ObjectWidgetWithSignals* ow =
+        qobject_cast<ObjectWidgetWithSignals*>(item->widget());
+      if (ow)
+        ow->refreshTimeLabels();
+    }
+  }
 }

@@ -36,6 +36,10 @@ protected:
 
 public:
   static void clearCache();
+  static int cacheItems() { return s_objects.count(); }
+  static int objectsUnconnected();
+
+  int connections() const;
 
   static QASObject* getObject(QVariantMap json, QObject* parent,
                               bool ignoreLike=false);

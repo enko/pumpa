@@ -143,9 +143,18 @@ QString FileDownloader::fileName(QString defaultImage) const {
 //------------------------------------------------------------------------------
 
 QPixmap FileDownloader::pixmap(QString defaultImage) const {
-  QPixmap pix(fileName(defaultImage));
+  QString fn = fileName(defaultImage);
+  QPixmap pix(fn);
+
+  if (pix.isNull())
+    pix.load(fn,"JPEG");
+
+  if (pix.isNull())
+    pix.load(fn,"PNG");
+
   if (pix.isNull())
     pix.load(defaultImage);
+
   return pix;
 }
 
@@ -220,6 +229,9 @@ void FileDownloader::resizeImage(QPixmap pix, QString fn) {
 
 QString FileDownloader::urlToPath(const QString& url) {
   static QCryptographicHash hash(QCryptographicHash::Md5);
+  static QStringList knownEndings;
+  if (knownEndings.isEmpty())
+    knownEndings << ".png" << ".jpeg" << ".jpg" << ".gif";
 
   if (m_cacheDir.isEmpty()) {
     m_cacheDir = 
@@ -238,8 +250,17 @@ QString FileDownloader::urlToPath(const QString& url) {
   QDir d;
   d.mkpath(path);
 
+  QString ending;
+  for (int i=0; i<knownEndings.count() && ending.isEmpty(); i++)
+    if (url.endsWith(knownEndings[i]))
+      ending = knownEndings[i];
+  if (ending.isEmpty())
+    ending = ".png";
+
   hash.reset();
   hash.addData(url.toUtf8());
-    
-  return path + QString(hash.result().toHex()) + "-" + url.section('/',-1);
+
+  QString hashStr = hash.result().toHex();
+
+  return path + hashStr + ending;
 }

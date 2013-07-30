@@ -56,6 +56,7 @@ void QASActor::update(QVariantMap json) {
   updateVar(json, m_url, "url", ch); 
   updateVar(json, m_displayName, "displayName", ch);
   updateVar(json, m_objectType, "objectType", ch);
+  updateVar(json, m_preferredUsername, "preferredUsername", ch);
 
   // this seems to be unreliable
   updateVar(json, m_followed_json, "pump_io", "followed", dummy);
@@ -66,7 +67,10 @@ void QASActor::update(QVariantMap json) {
   QString oldUrl = m_imageUrl;
   if (json.contains("image")) {
     QVariantMap im = json["image"].toMap();
-    updateUrlOrProxy(im, m_imageUrl, ch);
+    if (json.contains("status_net"))
+      updateVar(im, m_imageUrl, "url", ch);
+    else
+      updateUrlOrProxy(im, m_imageUrl, ch);
   }
 
   if (ch)

@@ -109,6 +109,8 @@ private slots:
 
   void launchOAuthWizard();
 
+  void debugAction();
+
 protected:
   void timerEvent(QTimerEvent*);
   virtual bool event(QEvent* e) {
@@ -124,6 +126,12 @@ protected:
 private:
   KQOAuthRequest* initRequest(QString endpoint,
                               KQOAuthRequest::RequestHttpMethod method);
+  QNetworkReply* executeRequest(KQOAuthRequest* request, int response_id);
+
+  QMap<int, QPair<KQOAuthRequest*, int> > m_requestMap;
+  int m_nextRequestId;
+
+  void refreshObject(QASAbstractObject* obj);
 
   void uploadFile(QString filename);
 
@@ -186,6 +194,8 @@ private:
   QAction* aboutQtAction;
   QMenu* helpMenu;
 
+  QAction* m_debugAction;
+
   KQOAuthManager *oaManager;
   // KQOAuthRequest *oaRequest;
 
@@ -211,7 +221,6 @@ private:
 
   int m_timerId;
   int m_timerCount;
-  int m_requests;
 
   QVariantMap m_imageObject;
   int m_imageTo;

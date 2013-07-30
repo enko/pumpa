@@ -55,7 +55,7 @@ public:
   bool hasMore() const { return m_hasMore; }
 
   void addObject(QASAbstractObject*);
-  void removeObject(QASAbstractObject*);
+  void removeObject(QASAbstractObject*, bool signal=true);
   bool contains(QASAbstractObject* obj) const {
     return m_item_set.contains(obj);
   }

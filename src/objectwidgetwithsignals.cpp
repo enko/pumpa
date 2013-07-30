@@ -19,6 +19,8 @@
 
 #include "objectwidgetwithsignals.h"
 
+#include <QDebug>
+
 //------------------------------------------------------------------------------
 
 ObjectWidgetWithSignals::ObjectWidgetWithSignals(QWidget* parent) :
@@ -41,5 +43,42 @@ void ObjectWidgetWithSignals::connectSignals(ObjectWidgetWithSignals* ow,
           w, SIGNAL(follow(QString, bool)));
   connect(ow, SIGNAL(deleteObject(QASObject*)),
           w, SIGNAL(deleteObject(QASObject*)));
+  connect(ow, SIGNAL(request(QString, int)),
+          w, SIGNAL(request(QString, int)));
 }
 
+//------------------------------------------------------------------------------
+
+void ObjectWidgetWithSignals::disconnectSignals(ObjectWidgetWithSignals* ow, 
+                                                QWidget* w) 
+{
+  disconnect(ow, SIGNAL(linkHovered(const QString&)),
+             w, SIGNAL(linkHovered(const QString&)));
+  disconnect(ow, SIGNAL(like(QASObject*)),
+             w, SIGNAL(like(QASObject*)));
+  disconnect(ow, SIGNAL(share(QASObject*)),
+             w, SIGNAL(share(QASObject*)));
+  disconnect(ow, SIGNAL(newReply(QASObject*)),
+             w, SIGNAL(newReply(QASObject*)));
+  disconnect(ow, SIGNAL(follow(QString, bool)),
+             w, SIGNAL(follow(QString, bool)));
+  disconnect(ow, SIGNAL(deleteObject(QASObject*)),
+             w, SIGNAL(deleteObject(QASObject*)));
+  disconnect(ow, SIGNAL(request(QString, int)),
+             w, SIGNAL(request(QString, int)));
+}
+
+//------------------------------------------------------------------------------
+
+void ObjectWidgetWithSignals::refreshObject(QASAbstractObject* obj) {
+  if (!obj)
+    return;
+  
+  QDateTime now = QDateTime::currentDateTime();
+  QDateTime lr = obj->lastRefreshed();
+
+  if (lr.isNull() || lr.secsTo(now) > 10) {
+    obj->lastRefreshed(now);
+    emit request(obj->apiLink(), obj->asType());
+  }
+}

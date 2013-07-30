@@ -37,9 +37,3 @@ void resetActivityStreams() {
 }
 
 //------------------------------------------------------------------------------
-
-// bool timeNewer(QDateTime thisT, QDateTime thatT) {
-//   return sortIntByDateTime(thisT) > sortIntByDateTime(thatT);
-// }
-
-//------------------------------------------------------------------------------

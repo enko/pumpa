@@ -48,9 +48,8 @@ void ContextWidget::setObject(QASObject* obj) {
   m_itemLayout->insertWidget(0, ow);
   m_itemLayout->addStretch();
 
-  m_object->refresh();
-  if (m_object->replies())
-    m_object->replies()->refresh();
+  refreshObject(m_object);
+  refreshObject(m_object->replies());
 
   updateNumReplies();
   m_firstTime = false;

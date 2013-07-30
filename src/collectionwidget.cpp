@@ -25,8 +25,9 @@
 
 //------------------------------------------------------------------------------
 
-CollectionWidget::CollectionWidget(QWidget* parent) :
-  ASWidget(parent),
+CollectionWidget::CollectionWidget(QWidget* parent, int widgetLimit,
+                                   int purgeWait) :
+  ASWidget(parent, widgetLimit, purgeWait),
   m_loadOlderButton(NULL)
 {}
 
@@ -94,11 +95,6 @@ CollectionWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
   ActivityWidget* aw = new ActivityWidget(act, this);
   connect(aw, SIGNAL(showContext(QASObject*)),
           this, SIGNAL(showContext(QASObject*)));
-
-  QASObject* obj = act->object();
-  if (obj)
-    connect(obj, SIGNAL(request(QString, int)), 
-            this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
 
   countAsNew = !act->actor()->isYou();
   return aw;

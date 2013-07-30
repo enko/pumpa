@@ -73,6 +73,8 @@ template <class T> void deleteMap(QMap<QString, T>& map) {
   map.clear();
 }
 
+void checkMemory(QString desc="");
+
 //------------------------------------------------------------------------------
 
 #endif /* _UTIL_H_ */

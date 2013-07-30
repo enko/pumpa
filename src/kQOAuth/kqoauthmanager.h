@@ -52,6 +52,8 @@ public:
 
     KQOAuthError lastError();
 
+    QNetworkReply* getReply(KQOAuthRequest* request);
+
     /**
      * The manager executes the given request. It takes the HTTP parameters from the
      * request and uses QNetworkAccessManager to submit the HTTP request to the net.
@@ -172,8 +174,6 @@ Q_SIGNALS:
     void authorizedRequestDone();
 
     void errorMessage(QString);
-
-    void uploadProgress(qint64, qint64);
 
 private Q_SLOTS:
     void onRequestReplyReceived( QNetworkReply *reply );

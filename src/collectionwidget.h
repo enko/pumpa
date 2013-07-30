@@ -30,7 +30,8 @@ class CollectionWidget : public ASWidget {
   Q_OBJECT
 
 public:
-  CollectionWidget(QWidget* parent);
+  CollectionWidget(QWidget* parent, int widgetLimit=-1, int purgeWait=10);
+
   // virtual void fetchNewer();
 
 protected slots:

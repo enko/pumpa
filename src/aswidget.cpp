@@ -24,12 +24,17 @@
 
 //------------------------------------------------------------------------------
 
-ASWidget::ASWidget(QWidget* parent) :
+ASWidget::ASWidget(QWidget* parent, int widgetLimit, int purgeWait) :
   QScrollArea(parent),
   m_firstTime(true),
   m_list(NULL),
-  m_asMode(QAS_NULL)
+  m_asMode(QAS_NULL),
+  m_purgeWait(purgeWait),
+  m_purgeCounter(purgeWait),
+  m_widgetLimit(widgetLimit)
 {
+  m_reuseWidgets = (m_widgetLimit > 0);
+
   m_itemLayout = new QVBoxLayout;
   m_itemLayout->setSpacing(10);
 
@@ -69,8 +74,8 @@ void ASWidget::setEndpoint(QString endpoint, int asMode) {
 
   connect(m_list, SIGNAL(changed()),
           this, SLOT(update()), Qt::UniqueConnection);
-  connect(m_list, SIGNAL(request(QString, int)),
-          this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
+  // connect(m_list, SIGNAL(request(QString, int)),
+  //         this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
 }
 
 //------------------------------------------------------------------------------
@@ -82,6 +87,7 @@ void ASWidget::fetchNewer() {
 //------------------------------------------------------------------------------
 
 void ASWidget::fetchOlder() {
+  m_purgeCounter = m_purgeWait;
   QString nextLink = m_list->nextLink();
   if (!nextLink.isEmpty())
     emit request(nextLink, m_asMode | QAS_OLDER);
@@ -94,6 +100,13 @@ void ASWidget::refreshTimeLabels() {
     ObjectWidgetWithSignals* ow = widgetAt(i);
     if (ow)
       ow->refreshTimeLabels();
+  }
+  if (m_purgeCounter > 0) {
+    m_purgeCounter--;
+#ifdef DEBUG_WIDGETS
+    qDebug() << "purgeCounter" << m_purgeCounter <<
+      (m_list ? m_list->url() : "NULL");
+#endif
   }
 }
 
@@ -176,9 +189,38 @@ void ASWidget::update() {
     m_object_set.insert(cObj);
 
     bool countAsNew = false;
-    ObjectWidgetWithSignals* ow = createWidget(cObj, countAsNew);
-    ObjectWidgetWithSignals::connectSignals(ow, this);
-    m_itemLayout->insertWidget(li++, ow);
+
+    bool doReuse = !older && m_reuseWidgets && (count() > m_widgetLimit) &&
+      m_purgeCounter == 0;
+
+    if (doReuse) {
+      ObjectWidgetWithSignals* ow = NULL;
+      int idx = m_itemLayout->count();
+      while (!ow && --idx > 0)
+        ow = widgetAt(idx);
+
+#ifdef DEBUG_WIDGETS
+      qDebug() << "Reused widget" << idx << li << cObj->apiLink()
+               << m_list->url();
+#endif
+
+      QASAbstractObject* obj = ow->asObject();
+      m_itemLayout->removeWidget(ow);
+
+      m_object_set.remove(obj);
+      m_list->removeObject(obj);
+
+      ow->changeObject(cObj);
+      m_itemLayout->insertWidget(li++, ow);
+    } else {
+      ObjectWidgetWithSignals* ow = createWidget(cObj, countAsNew);
+      ObjectWidgetWithSignals::connectSignals(ow, this);
+      m_itemLayout->insertWidget(li++, ow);
+      
+#ifdef DEBUG_WIDGETS
+      qDebug() << "Created widget" << cObj->apiLink() << m_list->url();
+#endif
+    }
 
     if (countAsNew && !older)
       newCount++;
@@ -199,4 +241,19 @@ ObjectWidgetWithSignals* ASWidget::createWidget(QASAbstractObject*, bool&) {
 
 QASAbstractObjectList* ASWidget::initList(QString, QObject*) {
   return NULL;
+}
+
+//------------------------------------------------------------------------------
+
+void ASWidget::refreshObject(QASAbstractObject* obj) {
+  if (!obj)
+    return;
+  
+  QDateTime now = QDateTime::currentDateTime();
+  QDateTime lr = obj->lastRefreshed();
+
+  if (lr.isNull() || lr.secsTo(now) > 10) {
+    emit request(obj->apiLink(), obj->asType());
+    obj->lastRefreshed(now);
+  }
 }

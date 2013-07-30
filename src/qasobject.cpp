@@ -25,12 +25,40 @@
 #include "util.h"
 
 #include <QDebug>
+#include <QList>
+#include <QtAlgorithms>
 
 //------------------------------------------------------------------------------
 
 QMap<QString, QASObject*> QASObject::s_objects;
 
 void QASObject::clearCache() { deleteMap<QASObject*>(s_objects); }
+
+int QASObject::objectsUnconnected() {
+  int noConnections = 0;
+  QMap<int, int> hist;
+  for (QMap<QString, QASObject*>::const_iterator it = s_objects.begin();
+       it != s_objects.end(); ++it) {
+    int n = it.value()->connections();
+    hist[n] = hist.value(n, 0) + 1;
+    if (n == 0)
+      noConnections++;
+  }
+
+  qDebug() << "QASObject connections:";
+  QList<int> keys = hist.keys();
+  qSort(keys);
+  for (int i=0; i<keys.count(); ++i) {
+    const int& k = keys[i];
+    qDebug() << "   " << k << hist[k];
+  }
+
+  return noConnections;
+}
+
+int QASObject::connections() const {
+  return receivers(SIGNAL(changed()));
+}
 
 //------------------------------------------------------------------------------
 
@@ -71,7 +99,7 @@ void QASObject::update(QVariantMap json, bool ignoreLike) {
     updateUrlOrProxy(json["image"].toMap(), m_imageUrl, ch);
 
     if (json.contains("fullImage"))
-      updateUrlOrProxy(json["fullImage"].toMap(), m_fullImageUrl, ch);
+      updateVar(json["fullImage"].toMap(), m_fullImageUrl, "url", ch);
   }
 
   updateVar(json, m_published, "published", ch);
@@ -83,12 +111,12 @@ void QASObject::update(QVariantMap json, bool ignoreLike) {
 
   if (json.contains("inReplyTo")) {
     m_inReplyTo = QASObject::getObject(json["inReplyTo"].toMap(), parent());
-    connectSignals(m_inReplyTo, true, true);
+    //connectSignals(m_inReplyTo, true, true);
   }
 
   if (json.contains("author")) {
     m_author = QASActor::getActor(json["author"].toMap(), parent());
-    connectSignals(m_author);
+    //connectSignals(m_author);
   }
 
   if (json.contains("replies")) {
@@ -98,7 +126,7 @@ void QASObject::update(QVariantMap json, bool ignoreLike) {
     if (repliesMap["items"].toList().size()) {
       m_replies = QASObjectList::getObjectList(repliesMap, parent());
       m_replies->isReplies(true);
-      connectSignals(m_replies);
+      // connectSignals(m_replies);
     }
   }
 
@@ -147,12 +175,13 @@ void QASObject::addReply(QASObject* obj) {
   if (!m_replies) {
     m_replies = QASObjectList::initObjectList(id() + "/replies", parent());
     m_replies->isReplies(true);
-    connectSignals(m_replies);
+    // connectSignals(m_replies);
   }
   m_replies->addObject(obj);
 #ifdef DEBUG_QAS
   qDebug() << "addReply" << obj->id() << "to" << id();
 #endif
+  emit changed();
 }
 
 //------------------------------------------------------------------------------

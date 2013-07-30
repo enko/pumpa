@@ -33,13 +33,13 @@ class ASWidget : public QScrollArea {
   Q_OBJECT
 
 public:
-  ASWidget(QWidget* parent);
+  ASWidget(QWidget* parent, int widgetLimit=-1, int purgeWait=10);
   virtual void refreshTimeLabels();
   virtual void fetchNewer();
   virtual void fetchOlder();
   void setEndpoint(QString endpoint, int asMode=-1);
 
-  int count() const { return m_list->size(); }
+  int count() const { return m_object_set.size(); }
 
 signals:
   void highlightMe();  
@@ -66,6 +66,8 @@ protected:
   void keyPressEvent(QKeyEvent* event);
   virtual void clear();
 
+  void refreshObject(QASAbstractObject* obj);
+
   QVBoxLayout* m_itemLayout;
   QWidget* m_listContainer;
   bool m_firstTime;
@@ -74,6 +76,11 @@ protected:
   QASAbstractObjectList* m_list;
 
   int m_asMode;
+
+  bool m_reuseWidgets;
+  int m_purgeWait;
+  int m_purgeCounter;
+  int m_widgetLimit;
 };
 
 #endif /* _ASWIDGET_H_ */
