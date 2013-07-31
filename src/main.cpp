@@ -20,6 +20,11 @@
 #include <QApplication>
 #ifdef Q_OS_WIN32
 #include <QStyleFactory>
+#include <QStandardPaths>
+#include <QFile>
+#include <QTextStream>
+#include <QtGlobal>
+#include <QDateTime>
 #endif
 
 #include "pumpapp.h"
@@ -41,7 +46,49 @@ int testMarkup(QString str) {
 
 //------------------------------------------------------------------------------
 
+#ifdef Q_OS_WIN32
+void MessageOutputHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+  //in this function, you can write the message to any stream!
+  QString logfile = QStandardPaths::writableLocation(QStandardPaths::DataLocation)+"/pumpa.log";
+  QFile file(logfile);
+  file.open(QIODevice::Append | QIODevice::Text);
+  QTextStream out(&file);
+  QString logmsg = QString("[%1] %6: %2 (%3:%4, %5)\n")
+      .arg((QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss")))
+      .arg(msg)
+      .arg(context.file)
+      .arg(context.line)
+      .arg(context.function)
+      .arg("%1");
+  switch (type) {
+    case QtDebugMsg:
+      out << logmsg
+             .arg("Debug");
+      break;
+    case QtWarningMsg:
+    out << logmsg
+           .arg("Warning");
+      break;
+    case QtCriticalMsg:
+      out << logmsg
+             .arg("Critical");
+      break;
+    case QtFatalMsg:
+      out << logmsg
+             .arg("Fatal");
+      abort();
+  }
+  file.close();
+}
+#endif
+
+
+//------------------------------------------------------------------------------
+
 int main(int argc, char** argv) {
+  #ifdef Q_OS_WIN32
+  qInstallMessageHandler(MessageOutputHandler);
+  #endif
   QApplication app(argc, argv);
   QString locale = QLocale::system().name();
   #ifdef Q_OS_WIN32
