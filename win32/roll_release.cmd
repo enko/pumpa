@@ -13,8 +13,8 @@ cd /D %pwd%
 
 cd ..
 
+mingw32-make dist-clean
 qmake
-mingw32-make clean
 mingw32-make release
 
 cd win32\packages\pumpa\data
