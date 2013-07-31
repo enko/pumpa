@@ -13,7 +13,7 @@ cd /D %pwd%
 
 cd ..
 
-mingw32-make dist-clean
+mingw32-make distclean
 qmake
 mingw32-make release
 
