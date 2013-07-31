@@ -60,8 +60,8 @@ protected:
 
   QASAbstractObject* objectAt(int idx);
   ObjectWidgetWithSignals* widgetAt(int idx);
-  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj,
-                                                bool& countAsNew);
+  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj);
+  virtual bool countAsNew(QASAbstractObject*) { return true; }
 
   void keyPressEvent(QKeyEvent* event);
   virtual void clear();

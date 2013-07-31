@@ -35,8 +35,7 @@ public:
 protected:
   virtual QASAbstractObjectList* initList(QString endpoint, QObject* parent);
   virtual void update();
-  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj,
-                                                bool& countAsNew);
+  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj);
 };
 
 #endif /* _OBJECTLISTWIDGET_H_ */

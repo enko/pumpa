@@ -85,7 +85,7 @@ void CollectionWidget::update() {
 //------------------------------------------------------------------------------
 
 ObjectWidgetWithSignals*
-CollectionWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
+CollectionWidget::createWidget(QASAbstractObject* aObj) {
   QASActivity* act = qobject_cast<QASActivity*>(aObj);
   if (!act) {
     qDebug() << "ERROR CollectionWidget::createWidget passed non-activity";
@@ -96,12 +96,16 @@ CollectionWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
   connect(aw, SIGNAL(showContext(QASObject*)),
           this, SIGNAL(showContext(QASObject*)));
 
-  countAsNew = !act->actor()->isYou();
   return aw;
 }
 
 //------------------------------------------------------------------------------
 
-// void CollectionWidget::fetchNewer() {
-//   emit request(m_list->url(), m_asMode | QAS_NEWER);
-// }
+bool CollectionWidget::countAsNew(QASAbstractObject* aObj) {
+  QASActivity* act = qobject_cast<QASActivity*>(aObj);
+  if (!act)
+    return false;
+  
+  return !act->actor()->isYou();
+}
+  

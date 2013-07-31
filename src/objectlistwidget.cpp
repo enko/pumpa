@@ -47,7 +47,7 @@ void ObjectListWidget::update() {
 //------------------------------------------------------------------------------
 
 ObjectWidgetWithSignals*
-ObjectListWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
+ObjectListWidget::createWidget(QASAbstractObject* aObj) {
   QASObject* obj = qobject_cast<QASObject*>(aObj);
   if (!obj) {
     qDebug() << "ERROR ObjectListWidget::createWidget passed non-object";
@@ -55,9 +55,5 @@ ObjectListWidget::createWidget(QASAbstractObject* aObj, bool& countAsNew) {
   }
 
   ObjectWidget* ow = new ObjectWidget(obj, this);
-  // connect(obj, SIGNAL(request(QString, int)), 
-  //         this, SIGNAL(request(QString, int)), Qt::UniqueConnection);
-
-  countAsNew = true;
   return ow;
 }
