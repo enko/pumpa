@@ -132,6 +132,8 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(CLIENT_ICON));
   setCentralWidget(m_tabWidget);
+  qApp->setApplicationName(CLIENT_FANCY_NAME);
+  qApp->setApplicationVersion(CLIENT_VERSION);
 
   // oaRequest->setEnableDebugOutput(true);
   syncOAuthInfo();
