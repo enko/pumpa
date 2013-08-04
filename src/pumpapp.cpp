@@ -1144,6 +1144,9 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
       errorMessage(QString(tr("Network or authorisation error [%1/%2] %3.")).
                    arg(oaManager->lastError()).arg(id).arg(reqUrl));
     }
+#ifdef DEBUG_NET
+    qDebug() << "[ERROR]" << response;
+#endif
     return;
   }
 

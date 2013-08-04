@@ -710,14 +710,15 @@ void KQOAuthManager::slotError(QNetworkReply::NetworkError error) {
     Q_D(KQOAuthManager);
 
     d->error = KQOAuthManager::NetworkError;
-    QByteArray emptyResponse;
+
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    QByteArray errorResponse = reply->readAll();
     d->r = d->requestMap.key(reply);
     d->currentRequestType = d->r ? d->r->requestType() :
       KQOAuthRequest::AuthorizedRequest;
     if( d->requestIds.contains(reply) ) {
         int id = d->requestIds.value(reply);
-        emit authorizedRequestReady(emptyResponse, id);
+        emit authorizedRequestReady(errorResponse, id);
     }
     else if ( d->currentRequestType == KQOAuthRequest::AuthorizedRequest) {
         // does this signal always have to be emitted if there is an error
@@ -725,7 +726,7 @@ void KQOAuthManager::slotError(QNetworkReply::NetworkError error) {
         emit authorizedRequestDone();
     }
     else
-        emit requestReady(emptyResponse);
+        emit requestReady(errorResponse);
 
     reply->deleteLater();
 }
