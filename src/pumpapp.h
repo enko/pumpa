@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QSystemTrayIcon>
 #include <QProgressDialog>
+#include <QMovie>
 
 #ifdef USE_DBUS
 #include <QDBusInterface>
@@ -134,6 +135,7 @@ private:
   QMap<int, QPair<KQOAuthRequest*, int> > m_requestMap;
   int m_nextRequestId;
 
+  void setLoading(bool on);
   void refreshObject(QASAbstractObject* obj);
 
   void uploadFile(QString filename);
@@ -215,6 +217,10 @@ private:
   ContextWidget* m_contextWidget;
   ObjectListWidget* m_followersWidget;
   ObjectListWidget* m_followingWidget;
+
+  QLabel* m_loadIcon;
+  QMovie* m_loadMovie;
+  bool m_isLoading;
 
   QASActor* m_selfActor;
 

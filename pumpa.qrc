@@ -4,5 +4,6 @@
   <file>images/pumpa_glow.png</file>
   <file>images/default.png</file>
   <file>images/broken_image.png</file>
+  <file>images/loader.gif</file>
 </qresource>
 </RCC>

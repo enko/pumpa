@@ -35,6 +35,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   QMainWindow(parent),
   m_nextRequestId(0),
   m_contextWidget(NULL),
+  m_isLoading(false),
   m_wiz(NULL),
   m_messageWindow(NULL),
   m_trayIcon(NULL),
@@ -130,6 +131,10 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
 
   connect(m_notifyMap, SIGNAL(mapped(int)),
           this, SLOT(timelineHighlighted(int)));
+
+  m_loadIcon = new QLabel(this);
+  m_loadMovie = new QMovie(":/images/loader.gif");
+  statusBar()->addPermanentWidget(m_loadIcon);
 
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(CLIENT_ICON));
@@ -1084,7 +1089,8 @@ void PumpApp::request(QString endpoint, int response_id,
   }
 
   executeRequest(oaRequest, response_id);
-  
+
+  setLoading(true);
   notifyMessage(tr("Loading ..."));
 }
 
@@ -1120,8 +1126,10 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
 
   request->deleteLater();
 
-  if (m_requestMap.isEmpty())
+  if (m_requestMap.isEmpty()) {
+    setLoading(false);
     notifyMessage(tr("Ready!"));
+  }
 
   int sid = id & 0xFF;
 
@@ -1232,3 +1240,19 @@ void PumpApp::refreshObject(QASAbstractObject* obj) {
   }
 }
  
+//------------------------------------------------------------------------------
+
+void PumpApp::setLoading(bool on) {
+  if (!m_loadIcon || m_isLoading == on)
+    return;
+
+  m_isLoading = on;
+
+  if (!on) {
+    m_loadIcon->setMovie(NULL);
+    m_loadIcon->setText(" ");
+  } else if (m_loadMovie->isValid()) {
+    m_loadIcon->setMovie(m_loadMovie);
+    m_loadMovie->start();
+  }
+}
