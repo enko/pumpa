@@ -1110,7 +1110,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   qDebug() << response;
 #endif
 
-  request->deleteLater();
+  // request->deleteLater();
 
   if (m_requestMap.isEmpty()) {
     setLoading(false);
