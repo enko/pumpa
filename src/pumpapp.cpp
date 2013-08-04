@@ -1040,6 +1040,7 @@ KQOAuthRequest* PumpApp::initRequest(QString endpoint,
   oaRequest->setToken(m_s->token());
   oaRequest->setTokenSecret(m_s->tokenSecret());
   oaRequest->setHttpMethod(method); 
+  oaRequest->setTimeout(60000); // one minute time-out
   return oaRequest;
 }
 
@@ -1129,7 +1130,18 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   if (m_requestMap.isEmpty()) {
     setLoading(false);
     notifyMessage(tr("Ready!"));
+  } 
+#ifdef DEBUG_NET_MOAR
+  else {
+    qDebug() << "[DEBUG] Still waiting for requests:";
+    QMapIterator<int, requestInfo_t> i(m_requestMap);
+    while (i.hasNext()) {
+      i.next();
+      requestInfo_t ri = i.value();
+      qDebug() << "   " << ri.first->requestEndpoint() << ri.second;
+    }    
   }
+#endif
 
   int sid = id & 0xFF;
 
@@ -1250,8 +1262,9 @@ void PumpApp::setLoading(bool on) {
 
   if (!on) {
     m_loadIcon->setMovie(NULL);
-    m_loadIcon->setText(" ");
+    m_loadIcon->setPixmap(QPixmap(":/images/empty.gif"));
   } else if (m_loadMovie->isValid()) {
+    m_loadIcon->setPixmap(NULL);
     m_loadIcon->setMovie(m_loadMovie);
     m_loadMovie->start();
   }

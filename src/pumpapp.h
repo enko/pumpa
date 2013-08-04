@@ -132,7 +132,8 @@ private:
                               KQOAuthRequest::RequestHttpMethod method);
   QNetworkReply* executeRequest(KQOAuthRequest* request, int response_id);
 
-  QMap<int, QPair<KQOAuthRequest*, int> > m_requestMap;
+  typedef QPair<KQOAuthRequest*, int> requestInfo_t;
+  QMap<int, requestInfo_t> m_requestMap;
   int m_nextRequestId;
 
   void setLoading(bool on);
