@@ -389,7 +389,7 @@ void FullObjectWidget::updateLikes() {
 
   QString nstr = likes->actorNames();
   if (likes->onlyYou())
-    text = " " + QString(tr("%1 like this.")).arg(nstr);
+    text = QString(" ") + tr("You like this.");
   else if (nl==1) 
     text = " " + QString(tr("%1 likes this.")).arg(nstr);
   else 
@@ -421,17 +421,12 @@ void FullObjectWidget::updateShares() {
   if (m_object->shares()->size()) {
     text = m_object->shares()->actorNames();
     int others = ns-m_object->shares()->size();
-    if (others == 1)
-      text += " " +tr("and 1 other person");
-    else if (others > 1)
-      text += " " + QString(tr("and %1 other persons")).
-        arg(others);
-    text += " " + tr("shared this.");
+    if (others >= 1)
+      text += QString(" ") + tr("and %Ln other person(s)", 0, others);
+    text += QString(" ") + tr("shared this.");
   } else {
-    if (ns == 1)
-      text = tr("1 person shared this.");
-    else
-      text = QString(tr("%1 persons shared this.")).arg(ns);
+    if (ns >= 1)
+      text = tr("%Ln person(s) shared this.", 0, ns);
   }
   
   m_sharesLabel->setText(text);
@@ -551,8 +546,17 @@ void FullObjectWidget::onDeleteClicked() {
     excerpt += " ...";
   }
   
+  QString typeName = tr("post");
+  QString tn = m_object->type();
+  if (tn == "note")
+    typeName = tr("note");
+  else if (tn == "comment")
+    typeName = tr("comment");
+  else if (tn == "image")
+    typeName = tr("image");
+
   QString msg = QString(tr("Are you sure you want to delete this %1?")).
-    arg(m_object->type()) + "\n\"" + excerpt.trimmed() + "\"";
+    arg(typeName) + "\n\"" + excerpt.trimmed() + "\"";
 
   int ret = QMessageBox::warning(this, CLIENT_FANCY_NAME, msg,
                                  QMessageBox::Cancel | QMessageBox::Yes,

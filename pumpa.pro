@@ -121,8 +121,8 @@ SOURCES += $$OBJECT_SOURCES $$SUNDOWN_SOURCES
 TRANSLATIONS = \
 	translations/pumpa_es.ts \
 	translations/pumpa_fr.ts \
-	translations/pumpa_de.ts \
-	translations/pumpa_nvi.ts
+	translations/pumpa_nvi.ts \
+	translations/pumpa_en.ts 
 
 
 ######################################################################

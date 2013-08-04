@@ -137,11 +137,9 @@ QString relativeFuzzyTime(QDateTime sTime) {
   } else if (mins == 1) {
     dateStr = QObject::tr("one minute ago");
   } else if (mins < 60) {
-    dateStr = QString(QObject::tr("%1 minutes ago")).arg(mins);
-  } else if (hours == 1) {
-    dateStr = QObject::tr("1 hour ago");
-  } else if (hours < 24) {
-    dateStr = QString(QObject::tr("%1 hours ago")).arg(hours);
+    dateStr = QObject::tr("%n minute(s) ago", 0, mins);
+  } else if (hours >= 1 && hours < 24) {
+    dateStr = QObject::tr("%n hour(s) ago", 0, hours);
   }
   return dateStr;
 }
