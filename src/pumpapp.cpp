@@ -104,6 +104,10 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_directMinorWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_directMinorWidget);
 
+  m_favouritesWidget = new ObjectListWidget(m_tabWidget);
+  connectCollection(m_favouritesWidget);
+  m_favouritesWidget->hide();
+
   m_followersWidget = new ObjectListWidget(m_tabWidget);
   connectCollection(m_followersWidget);
   m_followersWidget->hide();
@@ -189,11 +193,12 @@ void PumpApp::startPumping() {
   m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
   m_followersWidget->setEndpoint(apiUrl(apiUser("followers")));
   m_followingWidget->setEndpoint(apiUrl(apiUser("following")), QAS_FOLLOW);
+  m_favouritesWidget->setEndpoint(apiUrl(apiUser("favorites")));
   m_firehoseWidget->setEndpoint(m_s->firehoseUrl());
   show();
 
   request("/api/user/" + m_s->userName(), QAS_SELF_PROFILE);
-  fetchAll();
+  fetchAll(true);
 
   resetTimer();
 }
@@ -261,7 +266,7 @@ void PumpApp::timerEvent(QTimerEvent* event) {
 
   if (m_timerCount >= m_s->reloadTime()) {
     m_timerCount = 0;
-    fetchAll();
+    fetchAll(false);
   }
   
   refreshTimeLabels();
@@ -487,6 +492,10 @@ void PumpApp::createActions() {
   m_followingAction = new QAction(tr("Following"), this);
   connect(m_followingAction, SIGNAL(triggered()), this, SLOT(showFollowing()));
 
+  m_favouritesAction = new QAction(tr("Favorites"), this);
+  connect(m_favouritesAction, SIGNAL(triggered()),
+          this, SLOT(showFavourites()));
+
   m_showHideAction = new QAction(showHideText(true), this);
   connect(m_showHideAction, SIGNAL(triggered()), this, SLOT(toggleVisible()));
 }
@@ -509,6 +518,7 @@ void PumpApp::createMenu() {
   m_tabsMenu = new QMenu(tr("&Tabs"), this);
   m_tabsMenu->addAction(m_followersAction);
   m_tabsMenu->addAction(m_followingAction);
+  m_tabsMenu->addAction(m_favouritesAction);
   menuBar()->addMenu(m_tabsMenu);
 
   helpMenu = new QMenu(tr("&Help"), this);
@@ -604,21 +614,26 @@ void PumpApp::newNote(QASObject* obj) {
 //------------------------------------------------------------------------------
 
 void PumpApp::reload() {
-  fetchAll();
+  fetchAll(true);
   refreshTimeLabels();
 
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::fetchAll() {
+void PumpApp::fetchAll(bool all) {
   m_inboxWidget->fetchNewer();
   m_directMinorWidget->fetchNewer();
   m_directMajorWidget->fetchNewer();
   m_inboxMinorWidget->fetchNewer();
-  m_followersWidget->fetchNewer();
-  m_followingWidget->fetchNewer();
   m_firehoseWidget->fetchNewer();
+
+  if (all || m_followersWidget->isVisible())
+    m_followersWidget->fetchNewer();
+  if (all || m_followingWidget->isVisible())
+    m_followingWidget->fetchNewer();
+  if (all || m_favouritesWidget->isVisible())
+    m_favouritesWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
@@ -775,6 +790,7 @@ void PumpApp::showFollowers() {
   if (m_tabWidget->indexOf(m_followersWidget) == -1)
     m_tabWidget->addTab(m_followersWidget, tr("&Followers"), true, true);
   m_tabWidget->setCurrentWidget(m_followersWidget);
+  m_followersWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
@@ -783,6 +799,16 @@ void PumpApp::showFollowing() {
   if (m_tabWidget->indexOf(m_followingWidget) == -1)
     m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false, true);
   m_tabWidget->setCurrentWidget(m_followingWidget);
+  m_followingWidget->fetchNewer();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::showFavourites() {
+  if (m_tabWidget->indexOf(m_favouritesWidget) == -1)
+    m_tabWidget->addTab(m_favouritesWidget, tr("F&avorites"), false, true);
+  m_tabWidget->setCurrentWidget(m_favouritesWidget);
+  m_favouritesWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
@@ -1232,7 +1258,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
     m_messageWindow->clear();
 
   if (id & QAS_REFRESH) { 
-    fetchAll();
+    fetchAll(false);
   }
 }
 

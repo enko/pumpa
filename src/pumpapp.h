@@ -114,6 +114,7 @@ private slots:
 
   void showFollowers();
   void showFollowing();
+  void showFavourites();
 
 protected:
   void timerEvent(QTimerEvent*);
@@ -173,7 +174,7 @@ private:
 
   void syncOAuthInfo();
 
-  void fetchAll();
+  void fetchAll(bool);
   QString inboxEndpoint(QString path);
 
   void feed(QString verb, QVariantMap object, int response_id,
@@ -202,6 +203,7 @@ private:
 
   QAction* m_followersAction;
   QAction* m_followingAction;
+  QAction* m_favouritesAction;
   QMenu* m_tabsMenu;
 
   QAction* m_debugAction;
@@ -218,6 +220,7 @@ private:
   ContextWidget* m_contextWidget;
   ObjectListWidget* m_followersWidget;
   ObjectListWidget* m_followingWidget;
+  ObjectListWidget* m_favouritesWidget;
 
   QLabel* m_loadIcon;
   QMovie* m_loadMovie;

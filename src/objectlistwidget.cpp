@@ -55,5 +55,7 @@ ObjectListWidget::createWidget(QASAbstractObject* aObj) {
   }
 
   ObjectWidget* ow = new ObjectWidget(obj, this);
+  connect(ow, SIGNAL(showContext(QASObject*)),
+          this, SIGNAL(showContext(QASObject*)));
   return ow;
 }
