@@ -158,6 +158,7 @@ void MessageWindow::clear() {
   m_imageFileName = "";
   m_textEdit->clear();
   m_pictureTitle->clear();
+  m_previewLabel->clear();
 }
 
 //------------------------------------------------------------------------------
