@@ -813,51 +813,6 @@ void PumpApp::showFavourites() {
 
 //------------------------------------------------------------------------------
 
-QString PumpApp::addTextMarkup(QString text) {
-  QString oldText = text;
-
-#ifdef DEBUG_MARKUP
-  qDebug() << "\n[DEBUG] MARKUP\n" << text;
-#endif
-
-  // Remove any inline HTML tags
-  // text.replace(QRegExp(HTML_TAG_REGEX), "&lt;\\1&gt;");
-  QRegExp rx(HTML_TAG_REGEX);
-  QRegExp urlRx(URL_REGEX);
-  int pos = 0;
-  
-  while ((pos = rx.indexIn(text, pos)) != -1) {
-    int len = rx.matchedLength();
-    QString tag = rx.cap(1);
-    if (urlRx.exactMatch(tag)) {
-      pos += len;
-    } else {
-      QString newText = "&lt;" + tag + "&gt;";
-      text.replace(pos, len, newText);
-      pos += newText.length();
-    }
-  }
-
-#ifdef DEBUG_MARKUP
-  qDebug() << "\n[DEBUG] MARKUP (clean inline HTML)\n" << text;
-#endif
-
-  text = markDown(text);
-
-#ifdef DEBUG_MARKUP
-  qDebug() << "\n[DEBUG] MARKUP (apply Markdown)\n" << text;
-#endif
-  text = linkifyUrls(text);
-
-#ifdef DEBUG_MARKUP
-  qDebug() << "\n[DEBUG] MARKUP (linkify plain URLs)\n" << text;
-#endif
-  
-  return text;
-}
-
-//------------------------------------------------------------------------------
-
 void PumpApp::postNote(QString content, int to, int cc) {
   if (content.isEmpty())
     return;

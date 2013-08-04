@@ -59,8 +59,6 @@ public:
   PumpApp(QString settingsFile="", QWidget* parent=0);
   virtual ~PumpApp();                            
 
-  static QString addTextMarkup(QString content);
-
 signals:
   void userAuthorizationStarted();
                     

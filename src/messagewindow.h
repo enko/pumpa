@@ -34,6 +34,7 @@
 #include "qactivitystreams.h"
 #include "pumpasettings.h"
 #include "texttoolbutton.h"
+#include "richtextlabel.h"
 
 //------------------------------------------------------------------------------
 
@@ -58,6 +59,8 @@ signals:
 private slots:
   void onAddPicture();
   void onRemovePicture();
+  void togglePreview();
+  void updatePreview();
 
 private:
   void updateAddPicture();
@@ -72,18 +75,21 @@ private:
   QComboBox* m_ccComboBox;
   QFormLayout* m_addressLayout;
 
-  MessageEdit* textEdit;
+  MessageEdit* m_textEdit;
   QHBoxLayout* buttonLayout;
 
   QHBoxLayout* m_pictureButtonLayout;
   TextToolButton* m_addPictureButton;
   TextToolButton* m_removePictureButton;
 
+  RichTextLabel* m_previewLabel;
+
   QLabel* m_pictureLabel;
   QLineEdit* m_pictureTitle;
 
-  QPushButton* cancelButton;
-  QPushButton* sendButton;
+  QPushButton* m_cancelButton;
+  QPushButton* m_sendButton;
+  QPushButton* m_previewButton;
 
   QString m_imageFileName;
 

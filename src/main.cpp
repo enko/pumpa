@@ -36,7 +36,7 @@ int testMarkup(QString str) {
     str = "Hello *world*, [Some Url](http://www.foo.bar/baz). Some\n"
       "> block quoted text\n\n"
       "A `plain` url: http://saz.im";
-  PumpApp::addTextMarkup(str);
+  addTextMarkup(str);
   return 0;
 }
 
