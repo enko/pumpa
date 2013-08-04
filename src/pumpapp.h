@@ -111,6 +111,9 @@ private slots:
 
   void debugAction();
 
+  void showFollowers();
+  void showFollowing();
+
 protected:
   void timerEvent(QTimerEvent*);
   virtual bool event(QEvent* e) {
@@ -193,6 +196,10 @@ private:
   QAction* aboutAction;
   QAction* aboutQtAction;
   QMenu* helpMenu;
+
+  QAction* m_followersAction;
+  QAction* m_followingAction;
+  QMenu* m_tabsMenu;
 
   QAction* m_debugAction;
 

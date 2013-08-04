@@ -89,6 +89,8 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   int max_tl = m_s->maxTimelineItems();
   int max_fh = m_s->maxFirehoseItems();
 
+  m_tabWidget = new TabWidget(this);
+
   m_inboxWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_inboxWidget);
 
@@ -101,25 +103,25 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_directMinorWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_directMinorWidget);
 
-  m_followersWidget = new ObjectListWidget(this);
+  m_followersWidget = new ObjectListWidget(m_tabWidget);
   connectCollection(m_followersWidget);
+  m_followersWidget->hide();
 
-  m_followingWidget = new ObjectListWidget(this);
+  m_followingWidget = new ObjectListWidget(m_tabWidget);
   connectCollection(m_followingWidget, false);
+  m_followingWidget->hide();
 
   m_firehoseWidget = new CollectionWidget(this, max_fh, 0);
   connectCollection(m_firehoseWidget);
 
-  m_tabWidget = new TabWidget(this);
   connect(m_tabWidget, SIGNAL(currentChanged(int)),
           this, SLOT(tabSelected(int)));
+
   m_tabWidget->addTab(m_inboxWidget, tr("&Inbox"));
   m_tabWidget->addTab(m_directMinorWidget, tr("&Mentions"));
   m_tabWidget->addTab(m_directMajorWidget, tr("&Direct"));
   m_tabWidget->addTab(m_inboxMinorWidget, tr("Mean&while"));
   m_tabWidget->addTab(m_firehoseWidget, tr("Fi&rehose"));
-  m_tabWidget->addTab(m_followersWidget, tr("&Followers"));
-  m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false);
 
   m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
   m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);
@@ -469,14 +471,16 @@ void PumpApp::createActions() {
   newNoteAction->setShortcut(tr("Ctrl+N"));
   connect(newNoteAction, SIGNAL(triggered()), this, SLOT(newNote()));
 
-  // newPictureAction = new QAction(tr("New &Picture"), this);
-  // newPictureAction->setShortcut(tr("Ctrl+P"));
-  // connect(newPictureAction, SIGNAL(triggered()), this, SLOT(newPicture()));
-
   m_debugAction = new QAction("Debug", this);
   m_debugAction->setShortcut(tr("Ctrl+D"));
   connect(m_debugAction, SIGNAL(triggered()), this, SLOT(debugAction()));
   addAction(m_debugAction);
+
+  m_followersAction = new QAction(tr("Followers"), this);
+  connect(m_followersAction, SIGNAL(triggered()), this, SLOT(showFollowers()));
+
+  m_followingAction = new QAction(tr("Following"), this);
+  connect(m_followingAction, SIGNAL(triggered()), this, SLOT(showFollowing()));
 
   m_showHideAction = new QAction(showHideText(true), this);
   connect(m_showHideAction, SIGNAL(triggered()), this, SLOT(toggleVisible()));
@@ -488,18 +492,19 @@ void PumpApp::createMenu() {
   fileMenu = new QMenu(tr("&Pumpa"), this);
   fileMenu->addAction(newNoteAction);
   fileMenu->addSeparator();
-  // fileMenu->addAction(newPictureAction);
   fileMenu->addAction(followAction);
-  // fileMenu->addSeparator();
   fileMenu->addAction(reloadAction);
   fileMenu->addAction(loadOlderAction);
-  // fileMenu->addAction(pauseAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openPrefsAction);
-  // fileMenu->addAction(m_debugAction);
   fileMenu->addSeparator();
   fileMenu->addAction(exitAction);
   menuBar()->addMenu(fileMenu);
+
+  m_tabsMenu = new QMenu(tr("&Tabs"), this);
+  m_tabsMenu->addAction(m_followersAction);
+  m_tabsMenu->addAction(m_followingAction);
+  menuBar()->addMenu(m_tabsMenu);
 
   helpMenu = new QMenu(tr("&Help"), this);
   helpMenu->addAction(aboutAction);
@@ -757,6 +762,22 @@ void PumpApp::onShowContext(QASObject* obj) {
 
   m_contextWidget->setObject(obj);
   m_tabWidget->setCurrentWidget(m_contextWidget);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::showFollowers() {
+  if (m_tabWidget->indexOf(m_followersWidget) == -1)
+    m_tabWidget->addTab(m_followersWidget, tr("&Followers"), true, true);
+  m_tabWidget->setCurrentWidget(m_followersWidget);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::showFollowing() {
+  if (m_tabWidget->indexOf(m_followingWidget) == -1)
+    m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false, true);
+  m_tabWidget->setCurrentWidget(m_followingWidget);
 }
 
 //------------------------------------------------------------------------------
