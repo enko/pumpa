@@ -1082,6 +1082,12 @@ QNetworkReply* PumpApp::executeRequest(KQOAuthRequest* request,
                                        int response_id) {
   int id = m_nextRequestId++;
 
+  if (m_nextRequestId > 32000) { // bound to be smaller than any MAX_INT
+    m_nextRequestId = 0;
+    while (m_requestMap.contains(m_nextRequestId))
+      m_nextRequestId++;
+  }
+
   m_requestMap.insert(id, qMakePair(request, response_id));
   oaManager->executeAuthorizedRequest(request, id);
 
@@ -1094,8 +1100,6 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   QPair<KQOAuthRequest*, int> rp = m_requestMap.take(rid);
   KQOAuthRequest* request = rp.first;
   int id = rp.second;
-  if (m_nextRequestId-1 == rid)
-    m_nextRequestId = rid;
   QString reqUrl = request->requestEndpoint().toString();
 
 #ifdef DEBUG_NET
