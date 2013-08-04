@@ -1264,7 +1264,7 @@ void PumpApp::setLoading(bool on) {
     m_loadIcon->setMovie(NULL);
     m_loadIcon->setPixmap(QPixmap(":/images/empty.gif"));
   } else if (m_loadMovie->isValid()) {
-    m_loadIcon->setPixmap(NULL);
+    // m_loadIcon->setPixmap(QPixmap());
     m_loadIcon->setMovie(m_loadMovie);
     m_loadMovie->start();
   }
