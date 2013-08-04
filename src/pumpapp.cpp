@@ -1097,6 +1097,8 @@ QNetworkReply* PumpApp::executeRequest(KQOAuthRequest* request,
 //------------------------------------------------------------------------------
 
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
+  KQOAuthManager::KQOAuthError lastError = oaManager->lastError();
+
   QPair<KQOAuthRequest*, int> rp = m_requestMap.take(rid);
   KQOAuthRequest* request = rp.first;
   int id = rp.second;
@@ -1110,7 +1112,9 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   qDebug() << response;
 #endif
 
-  // request->deleteLater();
+  // FIXME: errored requests are never deleted :-/
+  if (!lastError)
+    request->deleteLater();
 
   if (m_requestMap.isEmpty()) {
     setLoading(false);
@@ -1130,7 +1134,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
 
   int sid = id & 0xFF;
 
-  if (oaManager->lastError()) {
+  if (lastError) {
     if (id & QAS_POST) {
       errorMessage(tr("Unable to post message!"));
       m_messageWindow->show();
