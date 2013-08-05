@@ -35,6 +35,7 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   QMainWindow(parent),
   m_nextRequestId(0),
   m_contextWidget(NULL),
+  m_isLoading(false),
   m_wiz(NULL),
   m_messageWindow(NULL),
   m_trayIcon(NULL),
@@ -89,6 +90,8 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   int max_tl = m_s->maxTimelineItems();
   int max_fh = m_s->maxFirehoseItems();
 
+  m_tabWidget = new TabWidget(this);
+
   m_inboxWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_inboxWidget);
 
@@ -101,25 +104,29 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_directMinorWidget = new CollectionWidget(this, max_tl);
   connectCollection(m_directMinorWidget);
 
-  m_followersWidget = new ObjectListWidget(this);
-  connectCollection(m_followersWidget);
+  m_favouritesWidget = new ObjectListWidget(m_tabWidget);
+  connectCollection(m_favouritesWidget);
+  m_favouritesWidget->hide();
 
-  m_followingWidget = new ObjectListWidget(this);
+  m_followersWidget = new ObjectListWidget(m_tabWidget);
+  connectCollection(m_followersWidget);
+  m_followersWidget->hide();
+
+  m_followingWidget = new ObjectListWidget(m_tabWidget);
   connectCollection(m_followingWidget, false);
+  m_followingWidget->hide();
 
   m_firehoseWidget = new CollectionWidget(this, max_fh, 0);
   connectCollection(m_firehoseWidget);
 
-  m_tabWidget = new TabWidget(this);
   connect(m_tabWidget, SIGNAL(currentChanged(int)),
           this, SLOT(tabSelected(int)));
+
   m_tabWidget->addTab(m_inboxWidget, tr("&Inbox"));
   m_tabWidget->addTab(m_directMinorWidget, tr("&Mentions"));
   m_tabWidget->addTab(m_directMajorWidget, tr("&Direct"));
   m_tabWidget->addTab(m_inboxMinorWidget, tr("Mean&while"));
   m_tabWidget->addTab(m_firehoseWidget, tr("Fi&rehose"));
-  m_tabWidget->addTab(m_followersWidget, tr("&Followers"));
-  m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false);
 
   m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
   m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);
@@ -128,6 +135,10 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
 
   connect(m_notifyMap, SIGNAL(mapped(int)),
           this, SLOT(timelineHighlighted(int)));
+
+  m_loadIcon = new QLabel(this);
+  m_loadMovie = new QMovie(":/images/loader.gif");
+  statusBar()->addPermanentWidget(m_loadIcon);
 
   setWindowTitle(CLIENT_FANCY_NAME);
   setWindowIcon(QIcon(CLIENT_ICON));
@@ -182,11 +193,12 @@ void PumpApp::startPumping() {
   m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
   m_followersWidget->setEndpoint(apiUrl(apiUser("followers")));
   m_followingWidget->setEndpoint(apiUrl(apiUser("following")), QAS_FOLLOW);
+  m_favouritesWidget->setEndpoint(apiUrl(apiUser("favorites")));
   m_firehoseWidget->setEndpoint(m_s->firehoseUrl());
   show();
 
   request("/api/user/" + m_s->userName(), QAS_SELF_PROFILE);
-  fetchAll();
+  fetchAll(true);
 
   resetTimer();
 }
@@ -254,7 +266,7 @@ void PumpApp::timerEvent(QTimerEvent* event) {
 
   if (m_timerCount >= m_s->reloadTime()) {
     m_timerCount = 0;
-    fetchAll();
+    fetchAll(false);
   }
   
   refreshTimeLabels();
@@ -469,14 +481,20 @@ void PumpApp::createActions() {
   newNoteAction->setShortcut(tr("Ctrl+N"));
   connect(newNoteAction, SIGNAL(triggered()), this, SLOT(newNote()));
 
-  // newPictureAction = new QAction(tr("New &Picture"), this);
-  // newPictureAction->setShortcut(tr("Ctrl+P"));
-  // connect(newPictureAction, SIGNAL(triggered()), this, SLOT(newPicture()));
-
   m_debugAction = new QAction("Debug", this);
   m_debugAction->setShortcut(tr("Ctrl+D"));
   connect(m_debugAction, SIGNAL(triggered()), this, SLOT(debugAction()));
   addAction(m_debugAction);
+
+  m_followersAction = new QAction(tr("Followers"), this);
+  connect(m_followersAction, SIGNAL(triggered()), this, SLOT(showFollowers()));
+
+  m_followingAction = new QAction(tr("Following"), this);
+  connect(m_followingAction, SIGNAL(triggered()), this, SLOT(showFollowing()));
+
+  m_favouritesAction = new QAction(tr("Favorites"), this);
+  connect(m_favouritesAction, SIGNAL(triggered()),
+          this, SLOT(showFavourites()));
 
   m_showHideAction = new QAction(showHideText(true), this);
   connect(m_showHideAction, SIGNAL(triggered()), this, SLOT(toggleVisible()));
@@ -488,18 +506,20 @@ void PumpApp::createMenu() {
   fileMenu = new QMenu(tr("&Pumpa"), this);
   fileMenu->addAction(newNoteAction);
   fileMenu->addSeparator();
-  // fileMenu->addAction(newPictureAction);
   fileMenu->addAction(followAction);
-  // fileMenu->addSeparator();
   fileMenu->addAction(reloadAction);
   fileMenu->addAction(loadOlderAction);
-  // fileMenu->addAction(pauseAct);
   fileMenu->addSeparator();
   fileMenu->addAction(openPrefsAction);
-  // fileMenu->addAction(m_debugAction);
   fileMenu->addSeparator();
   fileMenu->addAction(exitAction);
   menuBar()->addMenu(fileMenu);
+
+  m_tabsMenu = new QMenu(tr("&Tabs"), this);
+  m_tabsMenu->addAction(m_followersAction);
+  m_tabsMenu->addAction(m_followingAction);
+  m_tabsMenu->addAction(m_favouritesAction);
+  menuBar()->addMenu(m_tabsMenu);
 
   helpMenu = new QMenu(tr("&Help"), this);
   helpMenu->addAction(aboutAction);
@@ -594,21 +614,26 @@ void PumpApp::newNote(QASObject* obj) {
 //------------------------------------------------------------------------------
 
 void PumpApp::reload() {
-  fetchAll();
+  fetchAll(true);
   refreshTimeLabels();
 
 }
 
 //------------------------------------------------------------------------------
 
-void PumpApp::fetchAll() {
+void PumpApp::fetchAll(bool all) {
   m_inboxWidget->fetchNewer();
   m_directMinorWidget->fetchNewer();
   m_directMajorWidget->fetchNewer();
   m_inboxMinorWidget->fetchNewer();
-  m_followersWidget->fetchNewer();
-  m_followingWidget->fetchNewer();
   m_firehoseWidget->fetchNewer();
+
+  if (all || m_followersWidget->isVisible())
+    m_followersWidget->fetchNewer();
+  if (all || m_followingWidget->isVisible())
+    m_followingWidget->fetchNewer();
+  if (all || m_favouritesWidget->isVisible())
+    m_favouritesWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
@@ -761,47 +786,29 @@ void PumpApp::onShowContext(QASObject* obj) {
 
 //------------------------------------------------------------------------------
 
-QString PumpApp::addTextMarkup(QString text) {
-  QString oldText = text;
+void PumpApp::showFollowers() {
+  if (m_tabWidget->indexOf(m_followersWidget) == -1)
+    m_tabWidget->addTab(m_followersWidget, tr("&Followers"), true, true);
+  m_tabWidget->setCurrentWidget(m_followersWidget);
+  m_followersWidget->fetchNewer();
+}
 
-#ifdef DEBUG_MARKUP
-  qDebug() << "\n[DEBUG] MARKUP\n" << text;
-#endif
+//------------------------------------------------------------------------------
 
-  // Remove any inline HTML tags
-  // text.replace(QRegExp(HTML_TAG_REGEX), "&lt;\\1&gt;");
-  QRegExp rx(HTML_TAG_REGEX);
-  QRegExp urlRx(URL_REGEX);
-  int pos = 0;
-  
-  while ((pos = rx.indexIn(text, pos)) != -1) {
-    int len = rx.matchedLength();
-    QString tag = rx.cap(1);
-    if (urlRx.exactMatch(tag)) {
-      pos += len;
-    } else {
-      QString newText = "&lt;" + tag + "&gt;";
-      text.replace(pos, len, newText);
-      pos += newText.length();
-    }
-  }
+void PumpApp::showFollowing() {
+  if (m_tabWidget->indexOf(m_followingWidget) == -1)
+    m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false, true);
+  m_tabWidget->setCurrentWidget(m_followingWidget);
+  m_followingWidget->fetchNewer();
+}
 
-#ifdef DEBUG_MARKUP
-  qDebug() << "\n[DEBUG] MARKUP (clean inline HTML)\n" << text;
-#endif
+//------------------------------------------------------------------------------
 
-  text = markDown(text);
-
-#ifdef DEBUG_MARKUP
-  qDebug() << "\n[DEBUG] MARKUP (apply Markdown)\n" << text;
-#endif
-  text = linkifyUrls(text);
-
-#ifdef DEBUG_MARKUP
-  qDebug() << "\n[DEBUG] MARKUP (linkify plain URLs)\n" << text;
-#endif
-  
-  return text;
+void PumpApp::showFavourites() {
+  if (m_tabWidget->indexOf(m_favouritesWidget) == -1)
+    m_tabWidget->addTab(m_favouritesWidget, tr("F&avorites"), false, true);
+  m_tabWidget->setCurrentWidget(m_favouritesWidget);
+  m_favouritesWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
@@ -1014,6 +1021,7 @@ KQOAuthRequest* PumpApp::initRequest(QString endpoint,
   oaRequest->setToken(m_s->token());
   oaRequest->setTokenSecret(m_s->tokenSecret());
   oaRequest->setHttpMethod(method); 
+  oaRequest->setTimeout(60000); // one minute time-out
   return oaRequest;
 }
 
@@ -1063,7 +1071,8 @@ void PumpApp::request(QString endpoint, int response_id,
   }
 
   executeRequest(oaRequest, response_id);
-  
+
+  setLoading(true);
   notifyMessage(tr("Loading ..."));
 }
 
@@ -1072,6 +1081,12 @@ void PumpApp::request(QString endpoint, int response_id,
 QNetworkReply* PumpApp::executeRequest(KQOAuthRequest* request,
                                        int response_id) {
   int id = m_nextRequestId++;
+
+  if (m_nextRequestId > 32000) { // bound to be smaller than any MAX_INT
+    m_nextRequestId = 0;
+    while (m_requestMap.contains(m_nextRequestId))
+      m_nextRequestId++;
+  }
 
   m_requestMap.insert(id, qMakePair(request, response_id));
   oaManager->executeAuthorizedRequest(request, id);
@@ -1082,11 +1097,11 @@ QNetworkReply* PumpApp::executeRequest(KQOAuthRequest* request,
 //------------------------------------------------------------------------------
 
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
+  KQOAuthManager::KQOAuthError lastError = oaManager->lastError();
+
   QPair<KQOAuthRequest*, int> rp = m_requestMap.take(rid);
   KQOAuthRequest* request = rp.first;
   int id = rp.second;
-  if (m_nextRequestId-1 == rid)
-    m_nextRequestId = rid;
   QString reqUrl = request->requestEndpoint().toString();
 
 #ifdef DEBUG_NET
@@ -1097,14 +1112,29 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   qDebug() << response;
 #endif
 
-  request->deleteLater();
+  // FIXME: errored requests are never deleted :-/
+  if (!lastError)
+    request->deleteLater();
 
-  if (m_requestMap.isEmpty())
+  if (m_requestMap.isEmpty()) {
+    setLoading(false);
     notifyMessage(tr("Ready!"));
+  } 
+#ifdef DEBUG_NET_MOAR
+  else {
+    qDebug() << "[DEBUG] Still waiting for requests:";
+    QMapIterator<int, requestInfo_t> i(m_requestMap);
+    while (i.hasNext()) {
+      i.next();
+      requestInfo_t ri = i.value();
+      qDebug() << "   " << ri.first->requestEndpoint() << ri.second;
+    }    
+  }
+#endif
 
   int sid = id & 0xFF;
 
-  if (oaManager->lastError()) {
+  if (lastError) {
     if (id & QAS_POST) {
       errorMessage(tr("Unable to post message!"));
       m_messageWindow->show();
@@ -1114,6 +1144,9 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
       errorMessage(QString(tr("Network or authorisation error [%1/%2] %3.")).
                    arg(oaManager->lastError()).arg(id).arg(reqUrl));
     }
+#ifdef DEBUG_NET
+    qDebug() << "[ERROR]" << response;
+#endif
     return;
   }
 
@@ -1191,7 +1224,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
     m_messageWindow->clear();
 
   if (id & QAS_REFRESH) { 
-    fetchAll();
+    fetchAll(false);
   }
 }
 
@@ -1211,3 +1244,20 @@ void PumpApp::refreshObject(QASAbstractObject* obj) {
   }
 }
  
+//------------------------------------------------------------------------------
+
+void PumpApp::setLoading(bool on) {
+  if (!m_loadIcon || m_isLoading == on)
+    return;
+
+  m_isLoading = on;
+
+  if (!on) {
+    m_loadIcon->setMovie(NULL);
+    m_loadIcon->setPixmap(QPixmap(":/images/empty.gif"));
+  } else if (m_loadMovie->isValid()) {
+    // m_loadIcon->setPixmap(QPixmap());
+    m_loadIcon->setMovie(m_loadMovie);
+    m_loadMovie->start();
+  }
+}

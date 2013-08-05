@@ -57,7 +57,7 @@ If you want spell checking install the aspell library as well:
 
 On Fedora this should install what you need (courtesy of [Dick Turpin][10]):
 
-    yum install qt4-qmake libqt4-dev libqjson-dev gcc-c++ qt-devel qt-config qjson-devel
+    yum install gcc-c++ qt-devel qt-config qjson-devel
 
 [6]: http://qjson.sourceforge.net/
 [10]: https://microca.st/dick_turpin/note/toJY8CHTQlqinra0Hr6lFA

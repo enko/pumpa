@@ -41,8 +41,8 @@ protected slots:
 protected:
   void updateLoadOlderButton(bool wait=false);
   virtual QASAbstractObjectList* initList(QString endpoint, QObject* parent);
-  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj,
-                                                bool& countAsNew);
+  virtual ObjectWidgetWithSignals* createWidget(QASAbstractObject* aObj);
+  virtual bool countAsNew(QASAbstractObject* aObj);
   virtual void clear();
 
   QPushButton* m_loadOlderButton;

@@ -19,6 +19,7 @@
 
 #include "messagewindow.h"
 #include "pumpa_defines.h"
+#include "util.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
@@ -90,9 +91,14 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
   m_pictureTitle = new QLineEdit(this);
   m_pictureTitle->setPlaceholderText(tr("Picture title (optional)"));
 
-  textEdit = new MessageEdit(this);
+  m_previewLabel = new RichTextLabel(this);
+  m_previewLabel->setLineWidth(1);
+  m_previewLabel->setFrameStyle(QFrame::Box);
+  m_previewLabel->hide();
 
-  connect(textEdit, SIGNAL(ready()), this, SLOT(accept()));
+  m_textEdit = new MessageEdit(this);
+  connect(m_textEdit, SIGNAL(ready()), this, SLOT(accept()));
+  connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(updatePreview()));
 
   layout = new QVBoxLayout;
   layout->addLayout(infoLayout);
@@ -100,27 +106,32 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
   layout->addLayout(m_pictureButtonLayout);
   layout->addWidget(m_pictureLabel, 0, Qt::AlignHCenter);
   layout->addWidget(m_pictureTitle);
-  layout->addWidget(textEdit);
+  layout->addWidget(m_textEdit);
+  layout->addWidget(m_previewLabel);
 
-  cancelButton = new QPushButton(tr("Cancel"));
-  connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+  m_cancelButton = new QPushButton(tr("Cancel"));
+  connect(m_cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+
+  m_previewButton = new QPushButton(tr("Preview"));
+  connect(m_previewButton, SIGNAL(clicked()), this, SLOT(togglePreview()));
   
-  sendButton = new QPushButton(tr("Send message"));
-  connect(sendButton, SIGNAL(clicked()), this, SLOT(accept()));
-  sendButton->setDefault(true);
+  m_sendButton = new QPushButton(tr("Send message"));
+  connect(m_sendButton, SIGNAL(clicked()), this, SLOT(accept()));
+  m_sendButton->setDefault(true);
 
   buttonLayout = new QHBoxLayout;
-  buttonLayout->addWidget(cancelButton);
-  buttonLayout->addWidget(sendButton);
+  buttonLayout->addWidget(m_cancelButton);
+  buttonLayout->addWidget(m_previewButton);
+  buttonLayout->addWidget(m_sendButton);
   layout->addLayout(buttonLayout);
   
   setLayout(layout);
 
-  textEdit->setFocus(Qt::OtherFocusReason);
+  m_textEdit->setFocus(Qt::OtherFocusReason);
 
-  QTextCursor cursor = textEdit->textCursor();
+  QTextCursor cursor = m_textEdit->textCursor();
   cursor.movePosition(QTextCursor::End);
-  textEdit->setTextCursor(cursor);
+  m_textEdit->setTextCursor(cursor);
 }
 
 //------------------------------------------------------------------------------
@@ -145,22 +156,23 @@ void MessageWindow::newMessage(QASObject* obj) {
 
 void MessageWindow::clear() {
   m_imageFileName = "";
-  textEdit->clear();
+  m_textEdit->clear();
   m_pictureTitle->clear();
+  m_previewLabel->clear();
 }
 
 //------------------------------------------------------------------------------
 
 void MessageWindow::showEvent(QShowEvent*) {
-  textEdit->setFocus(Qt::OtherFocusReason);
-  textEdit->selectAll();
+  m_textEdit->setFocus(Qt::OtherFocusReason);
+  m_textEdit->selectAll();
   activateWindow();
 }
 
 //------------------------------------------------------------------------------
 
 void MessageWindow::accept() {
-  QString msg = textEdit->toPlainText();
+  QString msg = m_textEdit->toPlainText();
 
   if (m_obj == NULL) {
     int to = m_toComboBox->currentIndex();
@@ -229,11 +241,24 @@ void MessageWindow::updateAddPicture() {
     m_pictureLabel->setVisible(false);
     m_pictureTitle->setVisible(false);
   } else {
-      
     m_pictureLabel->setPixmap(p);
     m_addPictureButton->setText(tr("&Change picture"));
     m_removePictureButton->setVisible(true);
     m_pictureLabel->setVisible(true);
     m_pictureTitle->setVisible(true);
   }
+}
+
+//------------------------------------------------------------------------------
+
+void MessageWindow::updatePreview() {
+  if (m_previewLabel->isVisible()) 
+    m_previewLabel->setText(addTextMarkup(m_textEdit->toPlainText()));
+}
+
+//------------------------------------------------------------------------------
+
+void MessageWindow::togglePreview() {
+  m_previewLabel->setVisible(!m_previewLabel->isVisible());
+  updatePreview();
 }

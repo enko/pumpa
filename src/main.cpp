@@ -29,6 +29,7 @@
 
 #include "pumpapp.h"
 #include "util.h"
+#include "pumpa_defines.h"
 
 #include <QTranslator>
 #include <QLocale>
@@ -40,7 +41,7 @@ int testMarkup(QString str) {
     str = "Hello *world*, [Some Url](http://www.foo.bar/baz). Some\n"
       "> block quoted text\n\n"
       "A `plain` url: http://saz.im";
-  PumpApp::addTextMarkup(str);
+  addTextMarkup(str);
   return 0;
 }
 
@@ -90,18 +91,23 @@ int main(int argc, char** argv) {
   qInstallMessageHandler(MessageOutputHandler);
   #endif
   QApplication app(argc, argv);
+
+  app.setApplicationName(CLIENT_FANCY_NAME);
+  app.setApplicationVersion(CLIENT_VERSION);
+
   QString locale = QLocale::system().name();
   #ifdef Q_OS_WIN32
   app.setStyle(QStyleFactory::create("Fusion"));
   #endif
 
   QString settingsFile;
-  if (argc > 1) {
-    QString arg(argv[1]);
+  QStringList args = app.arguments();
+  if (args.count() > 1) {
+    QString arg(args[1]);
     if (arg == "testmarkup")
-      return testMarkup(argc > 2 ? argv[2] : "");
+      return testMarkup(argc > 2 ? args[2] : "");
     else if (arg == "testfeedint") {
-      qDebug() << PumpaSettingsDialog::feedIntToComboIndex(atoi(argv[2]));
+      qDebug() << PumpaSettingsDialog::feedIntToComboIndex(args[2].toInt());
       return 0;
     }
     else if (arg == "autotestfeedint") {
@@ -134,9 +140,9 @@ int main(int argc, char** argv) {
       return 0;
     }
     else if (arg == "-l" && argc == 3) {
-      locale = argv[2];
+      locale = args[2];
     } else if (arg == "-c" && argc == 3) {
-      settingsFile = argv[2];
+      settingsFile = args[2];
     }
     else {
       qDebug() << "Usage: ./pumpa [-c alternative.conf] [-l locale]";

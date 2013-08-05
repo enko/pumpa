@@ -188,7 +188,7 @@ void ASWidget::update() {
     }
     m_object_set.insert(cObj);
 
-    bool countAsNew = false;
+    bool doCountAsNew = false;
 
     bool doReuse = !older && m_reuseWidgets && (count() > m_widgetLimit) &&
       m_purgeCounter == 0;
@@ -212,8 +212,11 @@ void ASWidget::update() {
 
       ow->changeObject(cObj);
       m_itemLayout->insertWidget(li++, ow);
+
+      doCountAsNew = countAsNew(cObj);
     } else {
-      ObjectWidgetWithSignals* ow = createWidget(cObj, countAsNew);
+      ObjectWidgetWithSignals* ow = createWidget(cObj);
+      doCountAsNew = countAsNew(cObj);
       ObjectWidgetWithSignals::connectSignals(ow, this);
       m_itemLayout->insertWidget(li++, ow);
       
@@ -222,7 +225,7 @@ void ASWidget::update() {
 #endif
     }
 
-    if (countAsNew && !older)
+    if (doCountAsNew && !older)
       newCount++;
   }
 
@@ -233,7 +236,7 @@ void ASWidget::update() {
 
 //------------------------------------------------------------------------------
 
-ObjectWidgetWithSignals* ASWidget::createWidget(QASAbstractObject*, bool&) {
+ObjectWidgetWithSignals* ASWidget::createWidget(QASAbstractObject*) {
   return NULL;
 }
 

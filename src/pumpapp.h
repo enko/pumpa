@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QSystemTrayIcon>
 #include <QProgressDialog>
+#include <QMovie>
 
 #ifdef USE_DBUS
 #include <QDBusInterface>
@@ -57,8 +58,6 @@ class PumpApp : public QMainWindow {
 public:
   PumpApp(QString settingsFile="", QWidget* parent=0);
   virtual ~PumpApp();                            
-
-  static QString addTextMarkup(QString content);
 
 signals:
   void userAuthorizationStarted();
@@ -111,6 +110,10 @@ private slots:
 
   void debugAction();
 
+  void showFollowers();
+  void showFollowing();
+  void showFavourites();
+
 protected:
   void timerEvent(QTimerEvent*);
   virtual bool event(QEvent* e) {
@@ -128,9 +131,11 @@ private:
                               KQOAuthRequest::RequestHttpMethod method);
   QNetworkReply* executeRequest(KQOAuthRequest* request, int response_id);
 
-  QMap<int, QPair<KQOAuthRequest*, int> > m_requestMap;
+  typedef QPair<KQOAuthRequest*, int> requestInfo_t;
+  QMap<int, requestInfo_t> m_requestMap;
   int m_nextRequestId;
 
+  void setLoading(bool on);
   void refreshObject(QASAbstractObject* obj);
 
   void uploadFile(QString filename);
@@ -167,7 +172,7 @@ private:
 
   void syncOAuthInfo();
 
-  void fetchAll();
+  void fetchAll(bool);
   QString inboxEndpoint(QString path);
 
   void feed(QString verb, QVariantMap object, int response_id,
@@ -194,6 +199,11 @@ private:
   QAction* aboutQtAction;
   QMenu* helpMenu;
 
+  QAction* m_followersAction;
+  QAction* m_followingAction;
+  QAction* m_favouritesAction;
+  QMenu* m_tabsMenu;
+
   QAction* m_debugAction;
 
   KQOAuthManager *oaManager;
@@ -208,6 +218,11 @@ private:
   ContextWidget* m_contextWidget;
   ObjectListWidget* m_followersWidget;
   ObjectListWidget* m_followingWidget;
+  ObjectListWidget* m_favouritesWidget;
+
+  QLabel* m_loadIcon;
+  QMovie* m_loadMovie;
+  bool m_isLoading;
 
   QASActor* m_selfActor;
 
