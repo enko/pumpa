@@ -174,6 +174,7 @@ void PumpApp::launchOAuthWizard() {
     connect(m_wiz, SIGNAL(rejected()), this, SLOT(exit()));
     connect(m_wiz, SIGNAL(accepted()), this, SLOT(show()));
   }
+  m_wiz->restart();
   m_wiz->show();
 }
 

@@ -43,13 +43,12 @@ QASAbstractObjectList* CollectionWidget::initList(QString endpoint,
 
 void CollectionWidget::clear() {
   ASWidget::clear();
-  if (!m_loadOlderButton) {
-    m_loadOlderButton = new QPushButton(this);
-    m_loadOlderButton->setFocusPolicy(Qt::NoFocus);
-    connect(m_loadOlderButton, SIGNAL(clicked()),
-            this, SLOT(onLoadOlderClicked()));
-    m_loadOlderButton->setVisible(false);
-  }
+
+  m_loadOlderButton = new QPushButton(this);
+  m_loadOlderButton->setFocusPolicy(Qt::NoFocus);
+  connect(m_loadOlderButton, SIGNAL(clicked()),
+          this, SLOT(onLoadOlderClicked()));
+  m_loadOlderButton->setVisible(false);
   m_itemLayout->addWidget(m_loadOlderButton);
 }
 
