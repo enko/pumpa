@@ -37,7 +37,6 @@ public:
   virtual void update(QVariantMap json);
 
   QString webFinger() const { return m_webFinger; }
-  QString webFingerName() const { return m_webFingerName; }
   QString displayNameOrWebFinger() const;
   QString preferredUsername() const { return m_preferredUsername; }
 
@@ -59,7 +58,6 @@ private:
   QString m_location;
 
   QString m_webFinger;
-  QString m_webFingerName;
   QString m_preferredUsername;
 };
 

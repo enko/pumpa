@@ -19,65 +19,112 @@
 
 #include "messageedit.h"
 
+#include <QDebug>
+#include <QScrollBar>
+#include <QAbstractItemView>
+
 //------------------------------------------------------------------------------
 
-MessageEdit::MessageEdit(QWidget* parent) : QTextEdit(parent) {
+MessageEdit::MessageEdit(QWidget* parent) : QTextEdit(parent),
+                                            m_completions(NULL)
+{
   setAcceptRichText(false);
-  highlighter = new FancyHighlighter(document());
+
+  m_completer = new QCompleter(this);
+  m_completer->setWidget(this);
+
+  m_completer->setCaseSensitivity(Qt::CaseInsensitive);
+  m_completer->setMaxVisibleItems(10);
+  
+  m_model = new QStringListModel(this);
+  m_completer->setModel(m_model);
+
+  connect(m_completer, SIGNAL(activated(QString)),
+          this, SLOT(insertCompletion(QString)));
 }
 
 //------------------------------------------------------------------------------
+
+void MessageEdit::setCompletions(const QMap<QString, QString>* completions) {
+  m_completions = completions;
+  m_model->setStringList(m_completions->keys());
+}
+
+//------------------------------------------------------------------------------
+
+// completion code partially from here:
+// http://qt-project.org/forums/viewthread/5376
 
 void MessageEdit::keyPressEvent(QKeyEvent* event) {
   int key = event->key();
   int mods = event->modifiers();
 
+  QAbstractItemView* popup = m_completer->popup();
+
+  if (popup->isVisible()) {
+    switch (key) {
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+    case Qt::Key_Tab:
+    case Qt::Key_Escape:
+    case Qt::Key_Backtab:
+      event->ignore();
+      return;
+    }
+  }
+
   if (key == Qt::Key_Return && (mods & Qt::ControlModifier)) {
     emit ready();
-  // } else if (key == Qt::Key_Tab && mods == Qt::NoModifier) {
-  //   complete();    
+    return;
+  }
+
+  QTextEdit::keyPressEvent(event);
+
+  const QString completionPrefix = wordAtCursor();
+
+  if (completionPrefix != m_completer->completionPrefix()) {
+    m_completer->setCompletionPrefix(completionPrefix);
+    QModelIndex idx = m_completer->completionModel()->index(0, 0);
+    popup->setCurrentIndex(idx);
+  }
+
+  if (!event->text().isEmpty() && completionPrefix.length() > 2) {
+    QRect r = cursorRect();
+    r.setWidth(popup->sizeHintForColumn(0) +
+               popup->verticalScrollBar()->sizeHint().width());
+    r.setHeight(popup->sizeHintForRow(0));
+    m_model->setStringList(m_completions->keys());
+    m_completer->complete(r);
   } else {
-    QTextEdit::keyPressEvent(event);
+    m_completer->popup()->hide();
   }
 }
 
 //------------------------------------------------------------------------------
 
-// void MessageEdit::complete() {
-//   QTextCursor cur = textCursor();
-//   cur.movePosition(QTextCursor::StartOfWord, QTextCursor::KeepAnchor);
-//   cur.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+void MessageEdit::insertCompletion(QString completion) {
+  m_completer->popup()->hide();
 
-//   QString word = cur.selectedText().trimmed();
-//   if (word.isEmpty())
-//     return;
+  QTextCursor tc = textCursor();
+  tc.select(QTextCursor::WordUnderCursor);
 
-//   QChar ch = word.at(0);
+  tc.removeSelectedText();
+  tc.insertText(m_completions->value(completion));
+  setTextCursor(tc);
+}
 
-//   // qDebug() << "complete():" << word;
+//------------------------------------------------------------------------------
+ 
+QString MessageEdit::wordAtCursor() const {
+  QTextCursor tc = textCursor();
+  tc.select(QTextCursor::WordUnderCursor);
+  return tc.selectedText();
+}
 
-//   // // Auto completion only for groups 
-//   // if (ch != '!' && ch != '@')
-//   //   return;
-  
-//   // word = word.mid(1);
+//------------------------------------------------------------------------------
 
-//   // QStringList list;
-
-//   // if (ch == '!')
-//   //   list = YAICSWindow::getGroups();
-//   // else if (ch == '@')
-//   //   list = YAICSWindow::getFriends();
-
-//   // if (list.isEmpty())
-//   //   return;
-
-//   // QStringList completions = list.filter(QRegExp("^"+word));
-//   // // qDebug() << "complete():" << completions;
-
-//   // if (completions.count() != 1)
-//   //   return;
-
-//   // QString cWord = completions.at(0);
-//   // insertPlainText(cWord.mid(word.count()));
-// }
+void MessageEdit::focusInEvent(QFocusEvent *event) {
+  if (m_completer)
+    m_completer->setWidget(this);
+  QTextEdit::focusInEvent(event);
+}

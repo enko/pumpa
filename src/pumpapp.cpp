@@ -601,7 +601,9 @@ void PumpApp::newNote(QASObject* obj) {
             this, SLOT(postImage(QString, QString, QString, int, int)));
     connect(m_messageWindow, SIGNAL(sendReply(QASObject*, QString)),
             this, SLOT(postReply(QASObject*, QString)));
+    m_messageWindow->setCompletions(&m_completions);
   }
+
   m_messageWindow->newMessage(obj);
   m_messageWindow->show();
 }
@@ -1096,6 +1098,33 @@ QNetworkReply* PumpApp::executeRequest(KQOAuthRequest* request,
 
 //------------------------------------------------------------------------------
 
+void PumpApp::followActor(QASActor* actor, bool doFollow) {
+  actor->setFollowed(doFollow);
+
+  QString dn = actor->displayName();
+  QString un = actor->webFinger();
+  QString from = QString("%2 (%1)").arg(dn).arg(un);
+  QString md = QString("[%1](%2)").arg(dn).arg(actor->url());
+
+  addCompletion(from, md, doFollow);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::addCompletion(QString from, QString to, bool add) {
+  if (from.isEmpty() || from.startsWith("http://") ||
+      from.startsWith("https://"))
+    return;
+
+  qDebug() << "addCompletion" << from << to << add;
+  if (add)
+    m_completions.insert(from, to);
+  else
+    m_completions.remove(from);
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   KQOAuthManager::KQOAuthError lastError = oaManager->lastError();
 
@@ -1172,11 +1201,8 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
         if (checkFollows) {
           QASActor* actor = activity->actor();
           if (activity->verb() == "post" && actor &&
-              actor->followedJson() && !actor->followed()) {
-            actor->setFollowed(true);
-            // qDebug() << "[WARNING] Setting followed "
-            //          << actor->id() << " according to feed.";
-          }
+              actor->followedJson() && !actor->followed()) 
+            followActor(actor);
         }
       }
     }
@@ -1191,7 +1217,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
       QASActor* actor = obj ? obj->asActor() : NULL;
       if (actor) {
         bool doFollow = (id & QAS_FOLLOW);
-        actor->setFollowed(doFollow);
+        followActor(actor, doFollow);
         notifyMessage(QString(doFollow ? tr("Successfully followed ") :
                               tr("Successfully unfollowed ")) +
                       actor->displayNameOrWebFinger());
@@ -1203,7 +1229,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
       for (size_t i=0; i<ol->size(); ++i) {
         QASActor* actor = ol->at(i)->asActor();
         if (actor)
-          actor->setFollowed(true);
+          followActor(actor);
       }
     }
   } else if (sid == QAS_OBJECT) {

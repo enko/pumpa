@@ -183,6 +183,9 @@ private:
   PumpaSettingsDialog* m_settingsDialog;
   PumpaSettings* m_s;
 
+  void followActor(QASActor* actor, bool doFollow=true);
+  void addCompletion(QString from, QString to, bool add);
+
   void createActions();
   void createMenu();
 
@@ -240,6 +243,8 @@ private:
   QVariantMap m_imageObject;
   int m_imageTo;
   int m_imageCc;
+
+  QMap<QString, QString> m_completions;
 
   QProgressDialog* m_uploadDialog;
 

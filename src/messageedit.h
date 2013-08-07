@@ -21,8 +21,9 @@
 #define MESSAGE_EDIT_H
 
 #include <QTextEdit>
-
-#include "fancyhighlighter.h"
+#include <QKeyEvent>
+#include <QCompleter>
+#include <QStringListModel>
 
 //------------------------------------------------------------------------------
 
@@ -31,16 +32,25 @@ class MessageEdit : public QTextEdit {
 public:
   MessageEdit(QWidget* parent=0);
 
+  void setCompletions(const QMap<QString, QString>* completions);
+  void hideCompletion() {
+    if (m_completer) m_completer->popup()->hide();
+  }
+
 signals:
   void ready();
 
+protected slots:
+  void insertCompletion(QString);
+
 protected:
+  virtual void focusInEvent(QFocusEvent *event);
   virtual void keyPressEvent(QKeyEvent* event);
+  QString wordAtCursor() const;
 
-  // void complete();
-
-private:
-  FancyHighlighter* highlighter;
+  QCompleter* m_completer;
+  QStringListModel* m_model;
+  const QMap<QString, QString>* m_completions;
 };
 
 #endif
