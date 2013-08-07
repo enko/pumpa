@@ -113,6 +113,7 @@ private slots:
   void showFollowers();
   void showFollowing();
   void showFavourites();
+  void showUserActivities();
 
 protected:
   void timerEvent(QTimerEvent*);
@@ -205,6 +206,7 @@ private:
   QAction* m_followersAction;
   QAction* m_followingAction;
   QAction* m_favouritesAction;
+  QAction* m_userActivitiesAction;
   QMenu* m_tabsMenu;
 
   QAction* m_debugAction;
@@ -222,6 +224,7 @@ private:
   ObjectListWidget* m_followersWidget;
   ObjectListWidget* m_followingWidget;
   ObjectListWidget* m_favouritesWidget;
+  CollectionWidget* m_userActivitiesWidget;
 
   QLabel* m_loadIcon;
   QMovie* m_loadMovie;
