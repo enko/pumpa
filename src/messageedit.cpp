@@ -54,6 +54,13 @@ void MessageEdit::setCompletions(const QMap<QString, QString>* completions) {
 
 //------------------------------------------------------------------------------
 
+void MessageEdit::hideCompletion() {
+  if (m_completer) 
+    m_completer->popup()->hide();
+}
+
+//------------------------------------------------------------------------------
+
 // completion code partially from here:
 // http://qt-project.org/forums/viewthread/5376
 
@@ -69,7 +76,7 @@ void MessageEdit::keyPressEvent(QKeyEvent* event) {
     case Qt::Key_Return:
     case Qt::Key_Tab:
     case Qt::Key_Escape:
-      popup->hide();
+      hideCompletion();
       event->ignore();
       return;
     }
@@ -98,7 +105,7 @@ void MessageEdit::keyPressEvent(QKeyEvent* event) {
     m_model->setStringList(m_completions->keys());
     m_completer->complete(r);
   } else {
-    m_completer->popup()->hide();
+    hideCompletion();
   }
 }
 
@@ -110,7 +117,7 @@ void MessageEdit::insertCompletion(QString completion) {
 
   // qDebug() << "insertCompletion" << completion;
 
-  m_completer->popup()->hide();
+  hideCompletion();
 
   QTextCursor tc = textCursor();
   tc.select(QTextCursor::WordUnderCursor);

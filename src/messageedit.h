@@ -33,9 +33,7 @@ public:
   MessageEdit(QWidget* parent=0);
 
   void setCompletions(const QMap<QString, QString>* completions);
-  void hideCompletion() {
-    if (m_completer) m_completer->popup()->hide();
-  }
+  void hideCompletion();
 
 signals:
   void ready();
