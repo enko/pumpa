@@ -1116,11 +1116,13 @@ void PumpApp::addCompletion(QString from, QString to, bool add) {
       from.startsWith("https://"))
     return;
 
-  qDebug() << "addCompletion" << from << to << add;
-  if (add)
+  if (add) {
+    // if (!m_completions.contains(from))
+    //   qDebug() << "addCompletion" << from << to << add;
     m_completions.insert(from, to);
-  else
+  } else {
     m_completions.remove(from);
+  }
 }
 
 //------------------------------------------------------------------------------

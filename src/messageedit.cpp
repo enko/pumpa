@@ -34,6 +34,8 @@ MessageEdit::MessageEdit(QWidget* parent) : QTextEdit(parent),
   m_completer->setWidget(this);
 
   m_completer->setCaseSensitivity(Qt::CaseInsensitive);
+  m_completer->setCompletionMode(QCompleter::PopupCompletion);
+  m_completer->setModelSorting(QCompleter::UnsortedModel);
   m_completer->setMaxVisibleItems(10);
   
   m_model = new QStringListModel(this);
@@ -67,7 +69,7 @@ void MessageEdit::keyPressEvent(QKeyEvent* event) {
     case Qt::Key_Return:
     case Qt::Key_Tab:
     case Qt::Key_Escape:
-    case Qt::Key_Backtab:
+      popup->hide();
       event->ignore();
       return;
     }
@@ -103,6 +105,11 @@ void MessageEdit::keyPressEvent(QKeyEvent* event) {
 //------------------------------------------------------------------------------
 
 void MessageEdit::insertCompletion(QString completion) {
+  if (m_completer->widget() != this)
+    return;
+
+  // qDebug() << "insertCompletion" << completion;
+
   m_completer->popup()->hide();
 
   QTextCursor tc = textCursor();
