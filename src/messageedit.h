@@ -25,6 +25,9 @@
 #include <QCompleter>
 #include <QStringListModel>
 
+#include "qasactor.h"
+#include "fancyhighlighter.h"
+
 //------------------------------------------------------------------------------
 
 class MessageEdit : public QTextEdit {

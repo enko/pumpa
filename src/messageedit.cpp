@@ -30,6 +30,8 @@ MessageEdit::MessageEdit(QWidget* parent) : QTextEdit(parent),
 {
   setAcceptRichText(false);
 
+  m_highlighter = new FancyHighlighter(document());
+
   m_completer = new QCompleter(this);
   m_completer->setWidget(this);
 

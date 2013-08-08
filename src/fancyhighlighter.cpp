@@ -32,21 +32,6 @@ FancyHighlighter::FancyHighlighter(QTextDocument* doc) : QSyntaxHighlighter(doc)
 
 //------------------------------------------------------------------------------
 
-void FancyHighlighter::formatMarkup(QString text, QString begin, 
-                                    QString end, QTextCharFormat fmt,
-                                    QString nogo) {
-  QRegExp rx(QString(MD_PAIR_REGEX).arg(begin).arg(end).arg(nogo));
-
-  int index = text.indexOf(rx);
-  while (index >= 0) {
-    int length = rx.matchedLength();
-    setFormat(index, length, fmt);
-    index = text.indexOf(rx, index + length);
-  }
-}
-
-//------------------------------------------------------------------------------
-
 void FancyHighlighter::highlightBlock(const QString& text) {
   int index;
   QTextCharFormat urlHighlightFormat;
@@ -72,32 +57,4 @@ void FancyHighlighter::highlightBlock(const QString& text) {
     index = text.indexOf(rxa, index + length);
   }
 #endif // USE_ASPELL
-
-  QRegExp rxu(URL_REGEX);
-
-  index = text.indexOf(rxu);
-  while (index >= 0) {
-    int length = rxu.matchedLength();
-    setFormat(index, length, urlHighlightFormat);
-    index = text.indexOf(rxu, index + length);
-  }
-
-
-  QTextCharFormat strongFormat;
-  strongFormat.setFontWeight(QFont::Bold);
-
-  QTextCharFormat emphFormat;
-  emphFormat.setFontItalic(true);
-
-  QTextCharFormat monoFormat;
-  monoFormat.setFontFamily("monospaced");
-
-  formatMarkup(text, "\\*\\*", "\\*\\*", strongFormat);
-  formatMarkup(text, "([^\\*]|^)\\*", "\\*([^\\*]|$)", emphFormat);
-
-  formatMarkup(text, "__", "__", strongFormat);
-  formatMarkup(text, "([^_]|^)_", "_([^_]|$)", emphFormat);
-
-  // formatMarkup(text, "``", "``", monoFormat, "`");
-  formatMarkup(text, "`", "`", monoFormat);
 }
