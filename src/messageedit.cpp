@@ -97,7 +97,7 @@ void MessageEdit::keyPressEvent(QKeyEvent* event) {
     popup->setCurrentIndex(idx);
   }
 
-  if (!event->text().isEmpty() && completionPrefix.length() > 2) {
+  if (!event->text().isEmpty() && completionPrefix.length() >= 2) {
     QRect r = cursorRect();
     r.setWidth(popup->sizeHintForColumn(0) +
                popup->verticalScrollBar()->sizeHint().width());
@@ -123,6 +123,7 @@ void MessageEdit::insertCompletion(QString completion) {
   tc.select(QTextCursor::WordUnderCursor);
 
   tc.removeSelectedText();
+  tc.deletePreviousChar();
   tc.insertText(m_completions->value(completion));
   setTextCursor(tc);
 }
@@ -132,7 +133,9 @@ void MessageEdit::insertCompletion(QString completion) {
 QString MessageEdit::wordAtCursor() const {
   QTextCursor tc = textCursor();
   tc.select(QTextCursor::WordUnderCursor);
-  return tc.selectedText();
+  if (tc.document()->characterAt(tc.selectionStart()-1) == '@')
+    return tc.selectedText();
+  return "";
 }
 
 //------------------------------------------------------------------------------
