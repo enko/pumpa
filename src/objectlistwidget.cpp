@@ -59,3 +59,9 @@ ObjectListWidget::createWidget(QASAbstractObject* aObj) {
           this, SIGNAL(showContext(QASObject*)));
   return ow;
 }
+
+//------------------------------------------------------------------------------
+
+QASObjectList* ObjectListWidget::objectList() const {
+  return qobject_cast<QASObjectList*>(m_list);
+}

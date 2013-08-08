@@ -37,7 +37,7 @@ public:
   virtual void refreshTimeLabels();
   virtual void fetchNewer();
   virtual void fetchOlder();
-  void setEndpoint(QString endpoint, int asMode=-1);
+  void setEndpoint(QString endpoint, QObject* parent, int asMode=-1);
 
   int count() const { return m_object_set.size(); }
 

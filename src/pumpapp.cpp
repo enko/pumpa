@@ -116,6 +116,10 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   connectCollection(m_followingWidget, false);
   m_followingWidget->hide();
 
+  m_userActivitiesWidget = new CollectionWidget(this, max_tl);
+  connectCollection(m_userActivitiesWidget, false);
+  m_userActivitiesWidget->hide();
+
   m_firehoseWidget = new CollectionWidget(this, max_fh, 0);
   connectCollection(m_firehoseWidget);
 
@@ -174,6 +178,7 @@ void PumpApp::launchOAuthWizard() {
     connect(m_wiz, SIGNAL(rejected()), this, SLOT(exit()));
     connect(m_wiz, SIGNAL(accepted()), this, SLOT(show()));
   }
+  m_wiz->restart();
   m_wiz->show();
 }
 
@@ -187,14 +192,16 @@ void PumpApp::startPumping() {
   setWindowTitle(QString("%1 - %2").arg(CLIENT_FANCY_NAME).arg(webFinger));
 
   // Setup endpoints for our timeline widgets
-  m_inboxWidget->setEndpoint(inboxEndpoint("major"), QAS_FOLLOW);
-  m_inboxMinorWidget->setEndpoint(inboxEndpoint("minor"));
-  m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"));
-  m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"));
-  m_followersWidget->setEndpoint(apiUrl(apiUser("followers")));
-  m_followingWidget->setEndpoint(apiUrl(apiUser("following")), QAS_FOLLOW);
-  m_favouritesWidget->setEndpoint(apiUrl(apiUser("favorites")));
-  m_firehoseWidget->setEndpoint(m_s->firehoseUrl());
+  m_inboxWidget->setEndpoint(inboxEndpoint("major"), this, QAS_FOLLOW);
+  m_inboxMinorWidget->setEndpoint(inboxEndpoint("minor"), this);
+  m_directMajorWidget->setEndpoint(inboxEndpoint("direct/major"), this);
+  m_directMinorWidget->setEndpoint(inboxEndpoint("direct/minor"), this);
+  m_followersWidget->setEndpoint(apiUrl(apiUser("followers")), this);
+  m_followingWidget->setEndpoint(apiUrl(apiUser("following")), this,
+                                 QAS_FOLLOW);
+  m_favouritesWidget->setEndpoint(apiUrl(apiUser("favorites")), this);
+  m_firehoseWidget->setEndpoint(m_s->firehoseUrl(), this);
+  m_userActivitiesWidget->setEndpoint(apiUrl(apiUser("feed")), this);
   show();
 
   request("/api/user/" + m_s->userName(), QAS_SELF_PROFILE);
@@ -496,6 +503,10 @@ void PumpApp::createActions() {
   connect(m_favouritesAction, SIGNAL(triggered()),
           this, SLOT(showFavourites()));
 
+  m_userActivitiesAction = new QAction(tr("Activities"), this);
+  connect(m_userActivitiesAction, SIGNAL(triggered()),
+          this, SLOT(showUserActivities()));
+
   m_showHideAction = new QAction(showHideText(true), this);
   connect(m_showHideAction, SIGNAL(triggered()), this, SLOT(toggleVisible()));
 }
@@ -516,9 +527,10 @@ void PumpApp::createMenu() {
   menuBar()->addMenu(fileMenu);
 
   m_tabsMenu = new QMenu(tr("&Tabs"), this);
+  m_tabsMenu->addAction(m_userActivitiesAction);
+  m_tabsMenu->addAction(m_favouritesAction);
   m_tabsMenu->addAction(m_followersAction);
   m_tabsMenu->addAction(m_followingAction);
-  m_tabsMenu->addAction(m_favouritesAction);
   menuBar()->addMenu(m_tabsMenu);
 
   helpMenu = new QMenu(tr("&Help"), this);
@@ -601,22 +613,18 @@ void PumpApp::newNote(QASObject* obj) {
             this, SLOT(postImage(QString, QString, QString, int, int)));
     connect(m_messageWindow, SIGNAL(sendReply(QASObject*, QString)),
             this, SLOT(postReply(QASObject*, QString)));
+    m_messageWindow->setCompletions(&m_completions);
   }
+
   m_messageWindow->newMessage(obj);
   m_messageWindow->show();
 }
 
 //------------------------------------------------------------------------------
 
-// void PumpApp::newPicture() {
-// }
-
-//------------------------------------------------------------------------------
-
 void PumpApp::reload() {
   fetchAll(true);
   refreshTimeLabels();
-
 }
 
 //------------------------------------------------------------------------------
@@ -634,6 +642,8 @@ void PumpApp::fetchAll(bool all) {
     m_followingWidget->fetchNewer();
   if (all || m_favouritesWidget->isVisible())
     m_favouritesWidget->fetchNewer();
+  if (all || m_userActivitiesWidget->isVisible())
+    m_userActivitiesWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
@@ -809,6 +819,15 @@ void PumpApp::showFavourites() {
     m_tabWidget->addTab(m_favouritesWidget, tr("F&avorites"), false, true);
   m_tabWidget->setCurrentWidget(m_favouritesWidget);
   m_favouritesWidget->fetchNewer();
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::showUserActivities() {
+  if (m_tabWidget->indexOf(m_userActivitiesWidget) == -1)
+    m_tabWidget->addTab(m_userActivitiesWidget, tr("A&ctivities"), false, true);
+  m_tabWidget->setCurrentWidget(m_userActivitiesWidget);
+  m_userActivitiesWidget->fetchNewer();
 }
 
 //------------------------------------------------------------------------------
@@ -1096,6 +1115,35 @@ QNetworkReply* PumpApp::executeRequest(KQOAuthRequest* request,
 
 //------------------------------------------------------------------------------
 
+void PumpApp::followActor(QASActor* actor, bool doFollow) {
+  actor->setFollowed(doFollow);
+
+  QString dn = actor->displayName();
+  QString un = actor->webFinger();
+  QString from = QString("%2 (%1)").arg(dn).arg(un);
+  QString md = QString("[%1](%2)").arg(dn).arg(actor->url());
+
+  addCompletion(from, md, doFollow);
+}
+
+//------------------------------------------------------------------------------
+
+void PumpApp::addCompletion(QString from, QString to, bool add) {
+  if (from.isEmpty() || from.startsWith("http://") ||
+      from.startsWith("https://"))
+    return;
+
+  if (add) {
+    // if (!m_completions.contains(from))
+    //   qDebug() << "addCompletion" << from << to << add;
+    m_completions.insert(from, to);
+  } else {
+    m_completions.remove(from);
+  }
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   KQOAuthManager::KQOAuthError lastError = oaManager->lastError();
 
@@ -1172,11 +1220,8 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
         if (checkFollows) {
           QASActor* actor = activity->actor();
           if (activity->verb() == "post" && actor &&
-              actor->followedJson() && !actor->followed()) {
-            actor->setFollowed(true);
-            // qDebug() << "[WARNING] Setting followed "
-            //          << actor->id() << " according to feed.";
-          }
+              actor->followedJson() && !actor->followed()) 
+            followActor(actor);
         }
       }
     }
@@ -1191,7 +1236,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
       QASActor* actor = obj ? obj->asActor() : NULL;
       if (actor) {
         bool doFollow = (id & QAS_FOLLOW);
-        actor->setFollowed(doFollow);
+        followActor(actor, doFollow);
         notifyMessage(QString(doFollow ? tr("Successfully followed ") :
                               tr("Successfully unfollowed ")) +
                       actor->displayNameOrWebFinger());
@@ -1203,7 +1248,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
       for (size_t i=0; i<ol->size(); ++i) {
         QASActor* actor = ol->at(i)->asActor();
         if (actor)
-          actor->setFollowed(true);
+          followActor(actor);
       }
     }
   } else if (sid == QAS_OBJECT) {

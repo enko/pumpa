@@ -47,6 +47,9 @@ public:
 
   void newMessage(QASObject* obj);
   void clear();
+  void setCompletions(const QMap<QString, QString>* completions) {
+    if (m_textEdit) m_textEdit->setCompletions(completions); 
+  }
 
 protected:
   virtual void showEvent(QShowEvent*);

@@ -32,6 +32,8 @@ class ObjectListWidget : public ASWidget {
 public:
   ObjectListWidget(QWidget* parent);
 
+  QASObjectList* objectList() const;
+
 protected:
   virtual QASAbstractObjectList* initList(QString endpoint, QObject* parent);
   virtual void update();

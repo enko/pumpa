@@ -65,9 +65,9 @@ void ASWidget::clear() {
 
 //------------------------------------------------------------------------------
 
-void ASWidget::setEndpoint(QString endpoint, int asMode) {
+void ASWidget::setEndpoint(QString endpoint, QObject* parent, int asMode) {
   clear();
-  m_list = initList(endpoint, parent()->parent()->parent());
+  m_list = initList(endpoint, parent);
   
   if (asMode != -1)
     m_asMode |= asMode;

@@ -172,6 +172,7 @@ void MessageWindow::showEvent(QShowEvent*) {
 //------------------------------------------------------------------------------
 
 void MessageWindow::accept() {
+  m_textEdit->hideCompletion();
   QString msg = m_textEdit->toPlainText();
 
   if (m_obj == NULL) {

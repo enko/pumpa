@@ -113,6 +113,7 @@ private slots:
   void showFollowers();
   void showFollowing();
   void showFavourites();
+  void showUserActivities();
 
 protected:
   void timerEvent(QTimerEvent*);
@@ -183,6 +184,9 @@ private:
   PumpaSettingsDialog* m_settingsDialog;
   PumpaSettings* m_s;
 
+  void followActor(QASActor* actor, bool doFollow=true);
+  void addCompletion(QString from, QString to, bool add);
+
   void createActions();
   void createMenu();
 
@@ -202,6 +206,7 @@ private:
   QAction* m_followersAction;
   QAction* m_followingAction;
   QAction* m_favouritesAction;
+  QAction* m_userActivitiesAction;
   QMenu* m_tabsMenu;
 
   QAction* m_debugAction;
@@ -219,6 +224,7 @@ private:
   ObjectListWidget* m_followersWidget;
   ObjectListWidget* m_followingWidget;
   ObjectListWidget* m_favouritesWidget;
+  CollectionWidget* m_userActivitiesWidget;
 
   QLabel* m_loadIcon;
   QMovie* m_loadMovie;
@@ -240,6 +246,8 @@ private:
   QVariantMap m_imageObject;
   int m_imageTo;
   int m_imageCc;
+
+  QMap<QString, QString> m_completions;
 
   QProgressDialog* m_uploadDialog;
 

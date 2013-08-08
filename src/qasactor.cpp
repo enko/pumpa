@@ -33,13 +33,6 @@ QASActor::QASActor(QString id, QObject* parent) :
 #ifdef DEBUG_QAS
   qDebug() << "new Actor" << m_id;
 #endif
-
-  m_webFinger = m_id;
-  if (m_webFinger.startsWith("acct:"))
-    m_webFinger.remove(0, 5);
-
-  m_webFingerName = m_webFinger;
-  m_webFingerName.remove(QRegExp("@.*"));
 }
 
 //------------------------------------------------------------------------------
@@ -57,6 +50,13 @@ void QASActor::update(QVariantMap json) {
   updateVar(json, m_displayName, "displayName", ch);
   updateVar(json, m_objectType, "objectType", ch);
   updateVar(json, m_preferredUsername, "preferredUsername", ch);
+
+  m_webFinger = m_id;
+  if (m_webFinger.startsWith("http://") || m_webFinger.startsWith("https://"))
+    m_webFinger = m_preferredUsername;
+
+  if (m_webFinger.startsWith("acct:"))
+    m_webFinger.remove(0, 5);
 
   // this seems to be unreliable
   updateVar(json, m_followed_json, "pump_io", "followed", dummy);
