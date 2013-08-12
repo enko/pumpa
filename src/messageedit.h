@@ -25,6 +25,9 @@
 #include <QCompleter>
 #include <QStringListModel>
 
+#include "qasactor.h"
+#include "fancyhighlighter.h"
+
 //------------------------------------------------------------------------------
 
 class MessageEdit : public QTextEdit {
@@ -46,6 +49,7 @@ protected:
   virtual void keyPressEvent(QKeyEvent* event);
   QString wordAtCursor() const;
 
+  FancyHighlighter* m_highlighter;
   QCompleter* m_completer;
   QStringListModel* m_model;
   const QMap<QString, QString>* m_completions;

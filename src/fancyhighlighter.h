@@ -25,13 +25,10 @@
 #include "util.h"
 
 class FancyHighlighter : public QSyntaxHighlighter {
-  // Q_OBJECT
 public:
   FancyHighlighter(QTextDocument* doc);
 
 protected:
-  void formatMarkup(QString text, QString begin, QString end,
-                    QTextCharFormat fmt, QString nogo=MD_NOGO_ITEMS);
   void highlightBlock(const QString& text);
 
 #ifdef USE_ASPELL
