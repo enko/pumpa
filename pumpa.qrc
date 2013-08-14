@@ -6,5 +6,9 @@
   <file>images/broken_image.png</file>
   <file>images/loader.gif</file>
   <file>images/empty.gif</file>
+  <file>translations/pumpa_en.qm</file>
+  <file>translations/pumpa_es.qm</file>
+  <file>translations/pumpa_fr.qm</file>
+  <file>translations/pumpa_nvi.qm</file>
 </qresource>
 </RCC>
