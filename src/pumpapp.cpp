@@ -1160,9 +1160,9 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   qDebug() << response;
 #endif
 
-  // FIXME: errored requests are never deleted :-/
-  if (!lastError)
-    request->deleteLater();
+  // FIXME: fugly quick "fix" - proper fix comming later
+  // if (!lastError)
+  //   request->deleteLater();
 
   if (m_requestMap.isEmpty()) {
     setLoading(false);
