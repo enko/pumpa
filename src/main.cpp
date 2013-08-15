@@ -151,8 +151,14 @@ int main(int argc, char** argv) {
   }
   qDebug() << "Using locale" << locale;
 
+  QTranslator qtTranslator;
+  qtTranslator.load("qt_" + locale,
+                    QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+  app.installTranslator(&qtTranslator);
+
   QTranslator translator;
-  bool ok = translator.load(QString("pumpa_%1").arg(locale), "translations");
+  bool ok = translator.load(QString("pumpa_%1").arg(locale),
+                            ":/translations");
   app.installTranslator(&translator);
 
   if (ok) 

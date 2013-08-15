@@ -157,6 +157,13 @@ SOURCES += \
     kqoauthrequest_1.cpp \
     kqoauthrequest_xauth.cpp
 
+######################################################################
+# Install target
+######################################################################
+
+target.path = /usr/local/bin
+INSTALLS += target
+
 
 ######################################################################
 # Generate documentation
