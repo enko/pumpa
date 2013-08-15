@@ -1040,7 +1040,7 @@ KQOAuthRequest* PumpApp::initRequest(QString endpoint,
   oaRequest->setToken(m_s->token());
   oaRequest->setTokenSecret(m_s->tokenSecret());
   oaRequest->setHttpMethod(method); 
-  oaRequest->setTimeout(60000); // one minute time-out
+//  oaRequest->setTimeout(60000); // one minute time-out
   return oaRequest;
 }
 
