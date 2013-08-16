@@ -39,7 +39,6 @@ verb) or "pumpkin" (as a noun) :-)
 [8]: https://github.com/vmg/sundown
 [9]: https://github.com/vmg/sundown#license
 [13]: https://bugs.saz.im/pumpa
-[16]: https://fmrl.me/0xAFFE
 
 ## Installing
 
@@ -65,7 +64,9 @@ repository for Fedora 19:
 
 [Tim Schumacher][16] has a Windows installer executable at:
 
-<https://bandenkrieg.hacked.jp/~tim/pumpa/>
+<http://bandenkrieg.hacked.jp/~tim/pumpa/>
+
+[16]: https://fmrl.me/0xAFFE
 
 
 ## Build dependencies
