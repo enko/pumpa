@@ -1,4 +1,4 @@
-# Pumpa v0.7
+# Pumpa v0.7.1
 
 Greetings, fellow pumpkins!
 
@@ -11,21 +11,21 @@ e-mail: <mats@sjoberg.fi>.
 
 The Pumpa source code includes codes and graphics from other projects:
 
-- [Tim Schumacher][16] contributed several improvements and installer
-  code for Microsoft Windows systems.
-
 - The [kQOAuth library][2] is copyrighted by [Johan Paul][3] and
   licensed under LGPL 2.1.
-
-- The [sundown Markdown library][8] is copyrighted by Natacha
-  Port&eacute;, Vicent Marti and others, and
-  [permissively licensed][9].
 
 - The current (temporary?) Pumpa logo is from the
   ["Fruit and Veggie Inventory"][4] entry to the
   [Liberated Pixel Cup][5] by Joshua Taylor.  The logo is copyrighted
   by the artist and is dual licensed under the CC-BY-SA 3.0 license
   and the GNU GPL 3.0.
+
+- The [sundown Markdown library][8] is copyrighted by Natacha
+  Port&eacute;, Vicent Marti and others, and
+  [permissively licensed][9].
+
+- [Tim Schumacher][16] contributed several improvements and installer
+  code for Microsoft Windows systems.
 
 Oh, and "pumpa" is a Swedish word that means either "to pump" (as a
 verb) or "pumpkin" (as a noun) :-)
@@ -40,6 +40,20 @@ verb) or "pumpkin" (as a noun) :-)
 [9]: https://github.com/vmg/sundown#license
 [13]: https://bugs.saz.im/pumpa
 [16]: https://fmrl.me/0xAFFE
+
+## Installing
+
+At this point most people keep up with the git repository and compile
+Pumpa themselves (for instructions how to do this, see the next two
+sections).  Once Pumpa development stabilises a bit, hopefully
+packages for different platforms will appear.
+
+### Fedora repository
+
+[Matt Molyneaux](https://microca.st/moggers87) has created a
+repository for Fedora 19:
+
+<http://moggers.co.uk/~moggers87/repo/pumpa/>
 
 ## Build dependencies
   
@@ -138,6 +152,28 @@ colour is spelt wrong in the config name :-)
 
 [11]: http://qt-project.org/doc/qt-4.8/qcolor.html#setNamedColor
 [12]: http://qt-project.org/doc/qt-4.8/qsettings.html#locations-where-application-settings-are-stored
+
+
+## Debug mode
+
+If you experience crashes it may be useful to run Pumpa in debug
+mode.  Right now you'll need to recompile it for that with the
+following steps:
+
+    cd pumpa
+    make clean
+    qmake CONFIG+=debug
+    make
+    
+To run in the debugger (you need to have `gdb` installed):
+
+    gdb ./pumpa
+
+Inside gdb you then start Pumpa with the command `run`, when it has
+crashed you'll be thrown back to the debugger, then type `where`,
+which will tell you where it crashed. This information can be very
+useful (in particular the first 10-20 lines), please include it if you
+report a bug.
 
 
 ## Translations

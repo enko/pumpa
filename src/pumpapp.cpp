@@ -636,13 +636,14 @@ void PumpApp::fetchAll(bool all) {
   m_inboxMinorWidget->fetchNewer();
   m_firehoseWidget->fetchNewer();
 
-  if (all || m_followersWidget->isVisible())
+
+  if (all || tabShown(m_followersWidget))
     m_followersWidget->fetchNewer();
-  if (all || m_followingWidget->isVisible())
+  if (all || tabShown(m_followingWidget))
     m_followingWidget->fetchNewer();
-  if (all || m_favouritesWidget->isVisible())
+  if (all || tabShown(m_favouritesWidget))
     m_favouritesWidget->fetchNewer();
-  if (all || m_userActivitiesWidget->isVisible())
+  if (all || tabShown(m_userActivitiesWidget))
     m_userActivitiesWidget->fetchNewer();
 }
 
@@ -782,12 +783,18 @@ void PumpApp::userTestDoneAndFollow() {
 
 //------------------------------------------------------------------------------
 
+bool PumpApp::tabShown(ASWidget* aw) const {
+  return aw && m_tabWidget->indexOf(aw) == -1;
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::onShowContext(QASObject* obj) {
   if (!m_contextWidget) {
     m_contextWidget = new ContextWidget(this);
     connectCollection(m_contextWidget);
   }
-  if (m_tabWidget->indexOf(m_contextWidget) == -1)
+  if (tabShown(m_contextWidget))
     m_tabWidget->addTab(m_contextWidget, tr("&Context"), true, true);
 
   m_contextWidget->setObject(obj);
@@ -797,7 +804,7 @@ void PumpApp::onShowContext(QASObject* obj) {
 //------------------------------------------------------------------------------
 
 void PumpApp::showFollowers() {
-  if (m_tabWidget->indexOf(m_followersWidget) == -1)
+  if (tabShown(m_followersWidget))
     m_tabWidget->addTab(m_followersWidget, tr("&Followers"), true, true);
   m_tabWidget->setCurrentWidget(m_followersWidget);
   m_followersWidget->fetchNewer();
@@ -806,7 +813,7 @@ void PumpApp::showFollowers() {
 //------------------------------------------------------------------------------
 
 void PumpApp::showFollowing() {
-  if (m_tabWidget->indexOf(m_followingWidget) == -1)
+  if (tabShown(m_followingWidget))
     m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false, true);
   m_tabWidget->setCurrentWidget(m_followingWidget);
   m_followingWidget->fetchNewer();
@@ -815,7 +822,7 @@ void PumpApp::showFollowing() {
 //------------------------------------------------------------------------------
 
 void PumpApp::showFavourites() {
-  if (m_tabWidget->indexOf(m_favouritesWidget) == -1)
+  if (tabShown(m_favouritesWidget))
     m_tabWidget->addTab(m_favouritesWidget, tr("F&avorites"), false, true);
   m_tabWidget->setCurrentWidget(m_favouritesWidget);
   m_favouritesWidget->fetchNewer();
@@ -824,7 +831,7 @@ void PumpApp::showFavourites() {
 //------------------------------------------------------------------------------
 
 void PumpApp::showUserActivities() {
-  if (m_tabWidget->indexOf(m_userActivitiesWidget) == -1)
+  if (tabShown(m_userActivitiesWidget))
     m_tabWidget->addTab(m_userActivitiesWidget, tr("A&ctivities"), false, true);
   m_tabWidget->setCurrentWidget(m_userActivitiesWidget);
   m_userActivitiesWidget->fetchNewer();
@@ -1040,7 +1047,7 @@ KQOAuthRequest* PumpApp::initRequest(QString endpoint,
   oaRequest->setToken(m_s->token());
   oaRequest->setTokenSecret(m_s->tokenSecret());
   oaRequest->setHttpMethod(method); 
-//  oaRequest->setTimeout(60000); // one minute time-out
+  oaRequest->setTimeout(60000); // one minute time-out
   return oaRequest;
 }
 
@@ -1160,9 +1167,7 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   qDebug() << response;
 #endif
 
-  // FIXME: fugly quick "fix" - proper fix comming later
-  // if (!lastError)
-  //   request->deleteLater();
+  request->deleteLater();
 
   if (m_requestMap.isEmpty()) {
     setLoading(false);

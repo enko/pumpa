@@ -713,9 +713,19 @@ void KQOAuthManager::slotError(QNetworkReply::NetworkError error) {
 
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     QByteArray errorResponse = reply->readAll();
+
+    d->currentRequestType = KQOAuthRequest::AuthorizedRequest;
     d->r = d->requestMap.key(reply);
-    d->currentRequestType = d->r ? d->r->requestType() :
-      KQOAuthRequest::AuthorizedRequest;
+    if( d->r ) {
+        d->requestMap.remove(d->r);
+        disconnect(d->r, SIGNAL(requestTimedout()),
+                this, SLOT(requestTimeout()));
+
+        // Stop any timer we have set on the request.
+        d->r->requestTimerStop();
+        d->currentRequestType = d->r->requestType();
+    }
+
     if( d->requestIds.contains(reply) ) {
         int id = d->requestIds.value(reply);
         emit authorizedRequestReady(errorResponse, id);

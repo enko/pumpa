@@ -128,6 +128,8 @@ protected:
   }
 
 private:
+  bool tabShown(ASWidget* aw) const;
+
   KQOAuthRequest* initRequest(QString endpoint,
                               KQOAuthRequest::RequestHttpMethod method);
   QNetworkReply* executeRequest(KQOAuthRequest* request, int response_id);
