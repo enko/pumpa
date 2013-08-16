@@ -48,12 +48,25 @@ Pumpa themselves (for instructions how to do this, see the next two
 sections).  Once Pumpa development stabilises a bit, hopefully
 packages for different platforms will appear.
 
+Below are some packages or installers for different platforms.  Note
+that these are provided by third parties so I have no control over
+them, please report any problems with them to the respective
+packagers/authors.
+
 ### Fedora repository
 
 [Matt Molyneaux](https://microca.st/moggers87) has created a
 repository for Fedora 19:
 
 <http://moggers.co.uk/~moggers87/repo/pumpa/>
+
+
+### Microsoft Windows
+
+[Tim Schumacher][16] has a Windows installer executable at:
+
+<https://bandenkrieg.hacked.jp/~tim/pumpa/>
+
 
 ## Build dependencies
   
