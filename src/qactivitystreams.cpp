@@ -28,7 +28,7 @@
 //------------------------------------------------------------------------------
 
 void resetActivityStreams() {
-  // QASActor::clearCache();
+  QASActor::clearCache();
   QASObject::clearCache();
   QASActivity::clearCache();
   QASObjectList::clearCache();

@@ -19,8 +19,16 @@
 
 #include "qasactor.h"
 
+#include "util.h"
+
 #include <QRegExp>
 #include <QDebug>
+
+//------------------------------------------------------------------------------
+
+QMap<QString, QASActor*> QASActor::s_actors;
+
+void QASActor::clearCache() { deleteMap<QASActor*>(s_actors); }
 
 //------------------------------------------------------------------------------
 
@@ -83,9 +91,9 @@ QASActor* QASActor::getActor(QVariantMap json, QObject* parent) {
   QString id = json["id"].toString();
   Q_ASSERT_X(!id.isEmpty(), "getActor", serializeJsonC(json));
 
-  QASActor* act = s_objects.contains(id) ?
-    qobject_cast<QASActor*>(s_objects[id]) : new QASActor(id, parent);
-  s_objects.insert(id, act);
+  QASActor* act = s_actors.contains(id) ? s_actors[id] :
+    new QASActor(id, parent);
+  s_actors.insert(id, act);
 
   act->update(json);
   return act;
