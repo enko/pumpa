@@ -73,8 +73,9 @@ private slots:
   void followDialog();
   void onLike(QASObject* obj);
   void onShare(QASObject* obj);
-  void postNote(QString note, int to, int cc);
-  void postImage(QString msg, QString title, QString imageFile, int to, int cc);
+  void postNote(QString note, RecipientList to, RecipientList cc);
+  void postImage(QString msg, QString title, QString imageFile,
+                 RecipientList to, RecipientList cc);
   void postReply(QASObject* replyToObj, QString content);
   void follow(QString acctId, bool follow);
   void onDeleteObject(QASObject* obj);
@@ -157,7 +158,7 @@ private:
   // constructs api/user/$username/$path
   QString apiUser(QString path);
 
-  void addRecipient(QVariantMap& data, QString name, int to);
+  void addRecipient(QVariantMap& data, QString name, RecipientList to);
 
   void resetNotifications();
 
@@ -179,7 +180,8 @@ private:
   QString inboxEndpoint(QString path);
 
   void feed(QString verb, QVariantMap object, int response_id,
-            int to=RECIPIENT_EMPTY, int cc=RECIPIENT_EMPTY);
+            RecipientList to = RecipientList(),
+            RecipientList cc = RecipientList());
 
   bool sendNotification(QString summary, QString text);
   
@@ -246,10 +248,12 @@ private:
   int m_timerCount;
 
   QVariantMap m_imageObject;
-  int m_imageTo;
-  int m_imageCc;
+  RecipientList m_imageTo;
+  RecipientList m_imageCc;
 
-  QMap<QString, QString> m_completions;
+  RecipientList m_recipientLists;
+
+  MessageEdit::completion_t m_completions;
 
   QProgressDialog* m_uploadDialog;
 

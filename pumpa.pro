@@ -92,13 +92,14 @@ VPATH       += src
 
 OBJECT_HEADERS = pumpapp.h qactivitystreams.h aswidget.h		\
 	collectionwidget.h contextwidget.h json.h messagewindow.h	\
-	messageedit.h fancyhighlighter.h qaspell.h actorwidget.h	\
-	filedownloader.h richtextlabel.h oauthwizard.h tabwidget.h	\
-	util.h pumpasettingsdialog.h pumpasettings.h activitywidget.h	\
-	objectwidget.h shortobjectwidget.h fullobjectwidget.h		\
-	imagelabel.h texttoolbutton.h objectwidgetwithsignals.h		\
-	objectlistwidget.h qasabstractobject.h qasobject.h qasactor.h	\
-	qasactivity.h qasobjectlist.h qasactorlist.h qascollection.h	\
+	messageedit.h messagerecipients.h fancyhighlighter.h		\
+	qaspell.h actorwidget.h filedownloader.h richtextlabel.h	\
+	oauthwizard.h tabwidget.h util.h pumpasettingsdialog.h		\
+	pumpasettings.h activitywidget.h objectwidget.h			\
+	shortobjectwidget.h fullobjectwidget.h imagelabel.h		\
+	texttoolbutton.h objectwidgetwithsignals.h objectlistwidget.h	\
+	qasabstractobject.h qasobject.h qasactor.h qasactivity.h	\
+	qasobjectlist.h qasactorlist.h qascollection.h			\
 	qasabstractobjectlist.h
 
 OBJECT_SOURCES = $$replace(OBJECT_HEADERS, \\.h, .cpp)

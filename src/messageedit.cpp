@@ -49,7 +49,7 @@ MessageEdit::MessageEdit(QWidget* parent) : QTextEdit(parent),
 
 //------------------------------------------------------------------------------
 
-void MessageEdit::setCompletions(const QMap<QString, QString>* completions) {
+void MessageEdit::setCompletions(const completion_t* completions) {
   m_completions = completions;
   m_model->setStringList(m_completions->keys());
 }
@@ -126,8 +126,14 @@ void MessageEdit::insertCompletion(QString completion) {
 
   tc.removeSelectedText();
   tc.deletePreviousChar();
-  tc.insertText(m_completions->value(completion));
+
+  QASActor* actor = m_completions->value(completion);
+  QString newText = QString("[%1](%2)").arg(actor->displayName()).
+    arg(actor->url());
+  tc.insertText(newText);
   setTextCursor(tc);
+
+  emit addRecipient(actor);
 }
 
 //------------------------------------------------------------------------------

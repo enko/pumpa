@@ -26,7 +26,6 @@
 #include <QLabel>
 #include <QHBoxLayout>
 #include <QPushButton>
-#include <QComboBox>
 #include <QFormLayout>
 #include <QLineEdit>
 
@@ -35,6 +34,7 @@
 #include "pumpasettings.h"
 #include "texttoolbutton.h"
 #include "richtextlabel.h"
+#include "messagerecipients.h"
 
 //------------------------------------------------------------------------------
 
@@ -42,12 +42,13 @@ class MessageWindow : public QDialog {
   Q_OBJECT
 
 public:
-  MessageWindow(const PumpaSettings* s, QWidget* parent=0);
+  MessageWindow(const PumpaSettings* s, const RecipientList* rl,
+                QWidget* parent=0);
   virtual void accept();
 
   void newMessage(QASObject* obj);
   void clear();
-  void setCompletions(const QMap<QString, QString>* completions) {
+  void setCompletions(const MessageEdit::completion_t* completions) {
     if (m_textEdit) m_textEdit->setCompletions(completions); 
   }
 
@@ -55,8 +56,8 @@ protected:
   virtual void showEvent(QShowEvent*);
 
 signals:
-  void sendMessage(QString, int, int);
-  void sendImage(QString, QString, QString, int, int);
+  void sendMessage(QString, RecipientList, RecipientList);
+  void sendImage(QString, QString, QString, RecipientList, RecipientList);
   void sendReply(QASObject*, QString);
 
 private slots:
@@ -64,9 +65,11 @@ private slots:
   void onRemovePicture();
   void togglePreview();
   void updatePreview();
+  void onAddRecipient(QASActor*);
 
 private:
   void updateAddPicture();
+  void setDefaultRecipients(MessageRecipients*, int);
 
   QVBoxLayout* layout;
 
@@ -74,8 +77,6 @@ private:
   QLabel* m_markupLabel;
   QHBoxLayout* infoLayout;
 
-  QComboBox* m_toComboBox;
-  QComboBox* m_ccComboBox;
   QFormLayout* m_addressLayout;
 
   MessageEdit* m_textEdit;
@@ -96,8 +97,12 @@ private:
 
   QString m_imageFileName;
 
+  MessageRecipients* m_toRecipients;
+  MessageRecipients* m_ccRecipients;
+
   QASObject* m_obj;
   const PumpaSettings* m_s;
+  const RecipientList* m_rl;
 };
 
 #endif

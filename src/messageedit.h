@@ -35,11 +35,13 @@ class MessageEdit : public QTextEdit {
 public:
   MessageEdit(QWidget* parent=0);
 
-  void setCompletions(const QMap<QString, QString>* completions);
+  typedef QMap<QString, QASActor*> completion_t;
+  void setCompletions(const completion_t* completions);
   void hideCompletion();
 
 signals:
   void ready();
+  void addRecipient(QASActor*);
 
 protected slots:
   void insertCompletion(QString);
@@ -52,7 +54,7 @@ protected:
   FancyHighlighter* m_highlighter;
   QCompleter* m_completer;
   QStringListModel* m_model;
-  const QMap<QString, QString>* m_completions;
+  const completion_t* m_completions;
 };
 
 #endif

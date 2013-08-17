@@ -31,13 +31,13 @@ const int max_picture_size = 160;
 //------------------------------------------------------------------------------
 
 MessageWindow::MessageWindow(const PumpaSettings* s,
+                             const RecipientList* rl,
                              QWidget* parent) :
   QDialog(parent),
-  m_toComboBox(NULL),
-  m_ccComboBox(NULL),
   m_addressLayout(NULL),
   m_obj(NULL),
-  m_s(s)
+  m_s(s),
+  m_rl(rl)
 {
   setMinimumSize(QSize(400,400));
 
@@ -55,20 +55,13 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
   infoLayout->addStretch();
   infoLayout->addWidget(m_markupLabel);
 
-  QStringList addressItems;
-  addressItems << ""
-               << tr("Public")
-               << tr("Followers");
-  
-  m_toComboBox = new QComboBox(this);
-  m_toComboBox->addItems(addressItems);
-  
-  m_ccComboBox = new QComboBox(this);
-  m_ccComboBox->addItems(addressItems);
-  
+  m_toRecipients = new MessageRecipients(this);
+  m_ccRecipients = new MessageRecipients(this);
+
   m_addressLayout = new QFormLayout;
-  m_addressLayout->addRow(tr("To:"), m_toComboBox);
-  m_addressLayout->addRow(tr("Cc:"), m_ccComboBox);
+  m_addressLayout->addRow(tr("To:"), m_toRecipients);
+  m_addressLayout->addRow(tr("Cc:"), m_ccRecipients);
+  m_addressLayout->setContentsMargins(0, 0, 0, 0);
 
   m_addPictureButton = new TextToolButton(this);
   connect(m_addPictureButton, SIGNAL(clicked()), this, SLOT(onAddPicture()));
@@ -99,6 +92,8 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
   m_textEdit = new MessageEdit(this);
   connect(m_textEdit, SIGNAL(ready()), this, SLOT(accept()));
   connect(m_textEdit, SIGNAL(textChanged()), this, SLOT(updatePreview()));
+  connect(m_textEdit, SIGNAL(addRecipient(QASActor*)),
+          this, SLOT(onAddRecipient(QASActor*)));
 
   layout = new QVBoxLayout;
   layout->addLayout(infoLayout);
@@ -136,20 +131,39 @@ MessageWindow::MessageWindow(const PumpaSettings* s,
 
 //------------------------------------------------------------------------------
 
+void MessageWindow::onAddRecipient(QASActor* actor) {
+  qDebug() << "onAddRecipient" << actor->id();
+
+  m_toRecipients->addRecipient(actor);
+}
+
+//------------------------------------------------------------------------------
+
 void MessageWindow::newMessage(QASObject* obj) {
   bool isReply = (obj != NULL);
   m_obj = obj;
 
   m_infoLabel->setText(obj == NULL ? tr("Post a note") : tr("Post a reply"));
-  m_toComboBox->setCurrentIndex(m_s->defaultToAddress());
-  m_ccComboBox->setCurrentIndex(m_s->defaultCcAddress());
+  setDefaultRecipients(m_toRecipients, m_s->defaultToAddress());
+  setDefaultRecipients(m_ccRecipients, m_s->defaultCcAddress());
 
-  m_toComboBox->setVisible(!isReply);
-  m_addressLayout->labelForField(m_toComboBox)->setVisible(!isReply);
-  m_ccComboBox->setVisible(!isReply);
-  m_addressLayout->labelForField(m_ccComboBox)->setVisible(!isReply);
+  m_toRecipients->setVisible(!isReply);
+  m_addressLayout->labelForField(m_toRecipients)->setVisible(!isReply);
+  m_ccRecipients->setVisible(!isReply);
+  m_addressLayout->labelForField(m_ccRecipients)->setVisible(!isReply);
 
   updateAddPicture();
+}
+
+//------------------------------------------------------------------------------
+
+void MessageWindow::setDefaultRecipients(MessageRecipients* mr,
+                                         int defAddress) {
+  mr->clear();
+  if (defAddress == RECIPIENT_PUBLIC)
+    mr->addRecipient(m_rl->at(0));
+  if (defAddress == RECIPIENT_FOLLOWERS)
+    mr->addRecipient(m_rl->at(1));
 }
 
 //------------------------------------------------------------------------------
@@ -176,8 +190,8 @@ void MessageWindow::accept() {
   QString msg = m_textEdit->toPlainText();
 
   if (m_obj == NULL) {
-    int to = m_toComboBox->currentIndex();
-    int cc = m_ccComboBox->currentIndex();
+    RecipientList to = m_toRecipients->recipients();
+    RecipientList cc = m_ccRecipients->recipients();
 
     if (m_imageFileName.isEmpty()) {
       emit sendMessage(msg, to, cc);

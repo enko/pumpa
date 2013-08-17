@@ -59,6 +59,7 @@
 #define QAS_SELF_PROFILE 7
 #define QAS_IMAGE_UPLOAD 8
 #define QAS_IMAGE_UPDATE 9
+#define QAS_SELF_LISTS   10
 
 // The higher bits can be used for info for the whatever method is
 // handling the further processing.
