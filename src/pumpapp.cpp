@@ -1274,11 +1274,6 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
     for (size_t i=0; i<lists->size(); ++i) {
       m_recipientLists.append(lists->at(i));
     }
-    qDebug() << "RECIPIENTS LISTS";
-    for (int i=0; i<m_recipientLists.size(); ++i) {
-      QASObject* obj = m_recipientLists.at(i);
-      qDebug() << obj->displayName() << obj->type() << obj->id();
-    }
   } else if (sid == QAS_IMAGE_UPLOAD) {
     m_uploadDialog->hide();
     postImageActivity(json);

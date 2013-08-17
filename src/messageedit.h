@@ -38,6 +38,7 @@ public:
   typedef QMap<QString, QASActor*> completion_t;
   void setCompletions(const completion_t* completions);
   void hideCompletion();
+  const completion_t* getCompletions() { return m_completions; }
 
 signals:
   void ready();

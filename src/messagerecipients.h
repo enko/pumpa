@@ -23,7 +23,7 @@
 #include <QLabel>
 #include <QWidget>
 #include <QGridLayout>
-#include <QPushButton>
+#include <QToolButton>
 #include <QSignalMapper>
 
 #include "qasactor.h"
@@ -51,7 +51,7 @@ private:
   QGridLayout* m_layout;
 
   QSignalMapper* m_buttonMapper;
-  QMap<QASObject*, QPair<QLabel*, QPushButton*> > m_widgets;
+  QMap<QASObject*, QPair<QLabel*, QToolButton*> > m_widgets;
 };
 
 #endif

@@ -48,15 +48,15 @@ void MessageRecipients::addRecipient(QASObject* obj) {
     text += " (" + actor->webFinger() + ")";
   
   QLabel* label = new QLabel(text);
-  QPushButton* button = new QPushButton;
-  button->setText(tr("remove"));
+  QToolButton* button = new QToolButton;
+  button->setText(tr("-"));
   connect(button, SIGNAL(clicked()), m_buttonMapper, SLOT(map()));
   m_buttonMapper->setMapping(button, obj);
 
   m_list.append(obj);
   int row = m_list.size()-1;
   m_layout->addWidget(label, row, 0);
-  m_layout->addWidget(button, row, Qt::AlignRight);
+  m_layout->addWidget(button, row, 1);
 
   m_widgets.insert(obj, qMakePair(label, button));
 }
@@ -64,7 +64,7 @@ void MessageRecipients::addRecipient(QASObject* obj) {
 //------------------------------------------------------------------------------
 
 void MessageRecipients::removeRecipient(QASObject* obj) {
-  QPair<QLabel*, QPushButton*> widgets = m_widgets[obj];
+  QPair<QLabel*, QToolButton*> widgets = m_widgets[obj];
   m_layout->removeWidget(widgets.first);
   m_layout->removeWidget(widgets.second);
   widgets.first->deleteLater();

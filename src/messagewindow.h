@@ -48,9 +48,7 @@ public:
 
   void newMessage(QASObject* obj);
   void clear();
-  void setCompletions(const MessageEdit::completion_t* completions) {
-    if (m_textEdit) m_textEdit->setCompletions(completions); 
-  }
+  void setCompletions(const MessageEdit::completion_t* completions);
 
 protected:
   virtual void showEvent(QShowEvent*);
@@ -66,10 +64,14 @@ private slots:
   void togglePreview();
   void updatePreview();
   void onAddRecipient(QASActor*);
+  void onAddTo();
+  void onAddCc();
 
 private:
+  void addRecipientWindow(MessageRecipients*, QString);
   void updateAddPicture();
   void setDefaultRecipients(MessageRecipients*, int);
+  void addToRecipientList(QString, QASObject*);
 
   QVBoxLayout* layout;
 
@@ -85,6 +87,8 @@ private:
   QHBoxLayout* m_pictureButtonLayout;
   TextToolButton* m_addPictureButton;
   TextToolButton* m_removePictureButton;
+  TextToolButton* m_addToButton;
+  TextToolButton* m_addCcButton;
 
   RichTextLabel* m_previewLabel;
 
@@ -99,6 +103,9 @@ private:
 
   MessageRecipients* m_toRecipients;
   MessageRecipients* m_ccRecipients;
+
+  QMap<QString, QASObject*> m_recipientSelection;
+  QStringList m_recipientList;
 
   QASObject* m_obj;
   const PumpaSettings* m_s;
