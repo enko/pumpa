@@ -28,10 +28,11 @@
 #include "json.h"
 #include "util.h"
 #include "filedownloader.h"
+#include "qaspell.h"
 
 //------------------------------------------------------------------------------
 
-PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
+PumpApp::PumpApp(QString settingsFile, QString locale, QWidget* parent) : 
   QMainWindow(parent),
   m_nextRequestId(0),
   m_contextWidget(NULL),
@@ -39,8 +40,13 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_wiz(NULL),
   m_messageWindow(NULL),
   m_trayIcon(NULL),
+  m_locale(locale),
   m_uploadDialog(NULL)
 {
+  if (m_locale.isEmpty())
+    m_locale = "en_US";
+  QASpell::setLocale(m_locale);
+
   m_s = new PumpaSettings(settingsFile, this);
   resize(m_s->size());
   move(m_s->pos());

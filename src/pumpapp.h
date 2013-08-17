@@ -56,7 +56,7 @@ class PumpApp : public QMainWindow {
   Q_OBJECT
 
 public:
-  PumpApp(QString settingsFile="", QWidget* parent=0);
+  PumpApp(QString settingsFile="", QString locale="", QWidget* parent=0);
   virtual ~PumpApp();                            
 
 signals:
@@ -243,6 +243,8 @@ private:
   QSystemTrayIcon* m_trayIcon;
   QMenu* m_trayIconMenu;
   QAction* m_showHideAction;
+
+  QString m_locale;
 
   int m_timerId;
   int m_timerCount;
