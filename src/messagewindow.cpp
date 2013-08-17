@@ -23,6 +23,7 @@
 
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QInputDialog>
 
 //------------------------------------------------------------------------------
 
