@@ -45,7 +45,9 @@ PumpApp::PumpApp(QString settingsFile, QString locale, QWidget* parent) :
 {
   if (m_locale.isEmpty())
     m_locale = "en_US";
+#ifdef USE_ASPELL
   QASpell::setLocale(m_locale);
+#endif
 
   m_s = new PumpaSettings(settingsFile, this);
   resize(m_s->size());
