@@ -115,4 +115,6 @@ protected:
   static QMap<QString, QASObject*> s_objects;
 };
 
+typedef QList<QASObject*> RecipientList;
+
 #endif /* _QASOBJECT_H_ */

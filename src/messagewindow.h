@@ -26,7 +26,6 @@
 #include <QLabel>
 #include <QHBoxLayout>
 #include <QPushButton>
-#include <QComboBox>
 #include <QFormLayout>
 #include <QLineEdit>
 
@@ -35,6 +34,7 @@
 #include "pumpasettings.h"
 #include "texttoolbutton.h"
 #include "richtextlabel.h"
+#include "messagerecipients.h"
 
 //------------------------------------------------------------------------------
 
@@ -42,21 +42,20 @@ class MessageWindow : public QDialog {
   Q_OBJECT
 
 public:
-  MessageWindow(const PumpaSettings* s, QWidget* parent=0);
+  MessageWindow(const PumpaSettings* s, const RecipientList* rl,
+                QWidget* parent=0);
   virtual void accept();
 
   void newMessage(QASObject* obj);
   void clear();
-  void setCompletions(const QMap<QString, QString>* completions) {
-    if (m_textEdit) m_textEdit->setCompletions(completions); 
-  }
+  void setCompletions(const MessageEdit::completion_t* completions);
 
 protected:
   virtual void showEvent(QShowEvent*);
 
 signals:
-  void sendMessage(QString, int, int);
-  void sendImage(QString, QString, QString, int, int);
+  void sendMessage(QString, RecipientList, RecipientList);
+  void sendImage(QString, QString, QString, RecipientList, RecipientList);
   void sendReply(QASObject*, QString);
 
 private slots:
@@ -64,9 +63,15 @@ private slots:
   void onRemovePicture();
   void togglePreview();
   void updatePreview();
+  void onAddRecipient(QASActor*);
+  void onAddTo();
+  void onAddCc();
 
 private:
+  void addRecipientWindow(MessageRecipients*, QString);
   void updateAddPicture();
+  void setDefaultRecipients(MessageRecipients*, int);
+  void addToRecipientList(QString, QASObject*);
 
   QVBoxLayout* layout;
 
@@ -74,8 +79,6 @@ private:
   QLabel* m_markupLabel;
   QHBoxLayout* infoLayout;
 
-  QComboBox* m_toComboBox;
-  QComboBox* m_ccComboBox;
   QFormLayout* m_addressLayout;
 
   MessageEdit* m_textEdit;
@@ -84,6 +87,8 @@ private:
   QHBoxLayout* m_pictureButtonLayout;
   TextToolButton* m_addPictureButton;
   TextToolButton* m_removePictureButton;
+  TextToolButton* m_addToButton;
+  TextToolButton* m_addCcButton;
 
   RichTextLabel* m_previewLabel;
 
@@ -96,8 +101,15 @@ private:
 
   QString m_imageFileName;
 
+  MessageRecipients* m_toRecipients;
+  MessageRecipients* m_ccRecipients;
+
+  QMap<QString, QASObject*> m_recipientSelection;
+  QStringList m_recipientList;
+
   QASObject* m_obj;
   const PumpaSettings* m_s;
+  const RecipientList* m_rl;
 };
 
 #endif

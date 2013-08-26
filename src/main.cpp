@@ -164,6 +164,6 @@ int main(int argc, char** argv) {
   if (ok) 
     qDebug() << "Successfully loaded translation";
 
-  PumpApp papp(settingsFile);
+  PumpApp papp(settingsFile, locale);
   return app.exec();
 }

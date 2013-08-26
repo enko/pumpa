@@ -23,9 +23,14 @@
 
 //------------------------------------------------------------------------------
 
+QString QASpell::s_locale = "en_US";
+
+//------------------------------------------------------------------------------
+
 QASpell::QASpell(QObject* parent) : QObject(parent) {
   spell_config = new_aspell_config();
-  aspell_config_replace(spell_config, "lang", "en_US");
+  aspell_config_replace(spell_config, "lang",
+                        s_locale.toLocal8Bit().constData());
   aspell_config_replace(spell_config, "encoding", "ucs-2");
 
   AspellCanHaveError* possible_err = new_aspell_speller(spell_config);
@@ -43,6 +48,13 @@ QASpell::~QASpell() {
   if (spell_checker != NULL)
     delete_aspell_speller(spell_checker);
   delete_aspell_config(spell_config);
+}
+
+//------------------------------------------------------------------------------
+
+void QASpell::setLocale(QString locale) {
+  if (!locale.isEmpty())
+    s_locale = locale;
 }
 
 //------------------------------------------------------------------------------

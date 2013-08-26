@@ -22,7 +22,7 @@
 
 #define CLIENT_NAME           "pumpa"
 #define CLIENT_FANCY_NAME     "Pumpa"
-#define CLIENT_VERSION        "0.7.1"
+#define CLIENT_VERSION        "0.7.3"
 #define CLIENT_ICON           ":/images/pumpa.png"
 
 #define WEBSITE_URL           "http://saz.im/software/pumpa.html"
@@ -59,6 +59,7 @@
 #define QAS_SELF_PROFILE 7
 #define QAS_IMAGE_UPLOAD 8
 #define QAS_IMAGE_UPDATE 9
+#define QAS_SELF_LISTS   10
 
 // The higher bits can be used for info for the whatever method is
 // handling the further processing.

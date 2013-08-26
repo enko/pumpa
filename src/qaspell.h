@@ -37,10 +37,13 @@ public:
   ~QASpell();
 
   bool checkWord(const QString& word) const;
+  static void setLocale(QString locale);
 
 protected:
   AspellConfig* spell_config;
   AspellSpeller* spell_checker;
+  
+  static QString s_locale;
 };
 
 #endif /* _QASPELL_H_ */

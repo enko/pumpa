@@ -28,10 +28,11 @@
 #include "json.h"
 #include "util.h"
 #include "filedownloader.h"
+#include "qaspell.h"
 
 //------------------------------------------------------------------------------
 
-PumpApp::PumpApp(QString settingsFile, QWidget* parent) : 
+PumpApp::PumpApp(QString settingsFile, QString locale, QWidget* parent) : 
   QMainWindow(parent),
   m_nextRequestId(0),
   m_contextWidget(NULL),
@@ -39,8 +40,15 @@ PumpApp::PumpApp(QString settingsFile, QWidget* parent) :
   m_wiz(NULL),
   m_messageWindow(NULL),
   m_trayIcon(NULL),
+  m_locale(locale),
   m_uploadDialog(NULL)
 {
+  if (m_locale.isEmpty())
+    m_locale = "en_US";
+#ifdef USE_ASPELL
+  QASpell::setLocale(m_locale);
+#endif
+
   m_s = new PumpaSettings(settingsFile, this);
   resize(m_s->size());
   move(m_s->pos());
@@ -204,7 +212,22 @@ void PumpApp::startPumping() {
   m_userActivitiesWidget->setEndpoint(apiUrl(apiUser("feed")), this);
   show();
 
-  request("/api/user/" + m_s->userName(), QAS_SELF_PROFILE);
+  m_recipientLists.clear();
+
+  QVariantMap publicJson;
+  publicJson["displayName"] = tr("Public");
+  publicJson["objectType"] = "collection";
+  publicJson["id"] = PUBLIC_RECIPIENT_ID;
+  m_recipientLists.append(QASObject::getObject(publicJson, this));
+
+  QVariantMap followersJson;
+  followersJson["displayName"] = tr("Followers");
+  followersJson["objectType"] = "collection";
+  followersJson["id"] = apiUrl(apiUser("followers"));
+  m_recipientLists.append(QASObject::getObject(followersJson, this));
+
+  request(apiUser(""), QAS_SELF_PROFILE);
+  request(apiUser("lists/person"), QAS_SELF_LISTS);
   fetchAll(true);
 
   resetTimer();
@@ -605,12 +628,14 @@ void PumpApp::newNote(QASObject* obj) {
     obj = irtObj;
 
   if (!m_messageWindow) {
-    m_messageWindow = new MessageWindow(m_s, this);
-    connect(m_messageWindow, SIGNAL(sendMessage(QString, int, int)),
-            this, SLOT(postNote(QString, int, int)));
-    connect(m_messageWindow, 
-            SIGNAL(sendImage(QString, QString, QString, int, int)),
-            this, SLOT(postImage(QString, QString, QString, int, int)));
+    m_messageWindow = new MessageWindow(m_s, &m_recipientLists, this);
+    connect(m_messageWindow,
+            SIGNAL(sendMessage(QString, RecipientList, RecipientList)),
+            this, SLOT(postNote(QString, RecipientList, RecipientList)));
+    connect(m_messageWindow, SIGNAL(sendImage(QString, QString, QString,
+                                              RecipientList, RecipientList)),
+            this, SLOT(postImage(QString, QString, QString,
+                                 RecipientList, RecipientList)));
     connect(m_messageWindow, SIGNAL(sendReply(QASObject*, QString)),
             this, SLOT(postReply(QASObject*, QString)));
     m_messageWindow->setCompletions(&m_completions);
@@ -839,7 +864,7 @@ void PumpApp::showUserActivities() {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::postNote(QString content, int to, int cc) {
+void PumpApp::postNote(QString content, RecipientList to, RecipientList cc) {
   if (content.isEmpty())
     return;
 
@@ -855,8 +880,8 @@ void PumpApp::postNote(QString content, int to, int cc) {
 void PumpApp::postImage(QString msg,
                         QString title,
                         QString imageFile,
-                        int to,
-                        int cc) {
+                        RecipientList to,
+                        RecipientList cc) {
   m_imageObject.clear();
   m_imageObject["content"] = addTextMarkup(msg);
   m_imageObject["displayName"] = title;
@@ -984,20 +1009,20 @@ void PumpApp::onDeleteObject(QASObject* obj) {
 
 //------------------------------------------------------------------------------
 
-void PumpApp::addRecipient(QVariantMap& data, QString name, int to) {
-  if (to == RECIPIENT_EMPTY)
+void PumpApp::addRecipient(QVariantMap& data, QString name, RecipientList to) {
+  if (to.isEmpty())
     return;
 
   QVariantList recList;
 
-  QVariantMap rec;
-  rec["objectType"] = "collection";
-  if (to == RECIPIENT_PUBLIC)
-    rec["id"] = PUBLIC_RECIPIENT_ID;
-  else if (to == RECIPIENT_FOLLOWERS)
-    rec["id"] = apiUrl("api/user/" + m_s->userName() + "/followers");
+  for (int i=0; i<to.size(); ++i) {
+    QASObject* obj = to.at(i);
 
-  recList.append(rec);
+    QVariantMap rec;
+    rec["objectType"] = obj->type();
+    rec["id"] = obj->id();
+    recList.append(rec);
+  }
 
   data[name] = recList;
 }
@@ -1005,7 +1030,7 @@ void PumpApp::addRecipient(QVariantMap& data, QString name, int to) {
 //------------------------------------------------------------------------------
 
 void PumpApp::feed(QString verb, QVariantMap object, int response_id,
-                   int to, int cc) {
+                   RecipientList to, RecipientList cc) {
   QString endpoint = "api/user/" + m_s->userName() + "/feed";
 
   QVariantMap data;
@@ -1125,29 +1150,18 @@ QNetworkReply* PumpApp::executeRequest(KQOAuthRequest* request,
 void PumpApp::followActor(QASActor* actor, bool doFollow) {
   actor->setFollowed(doFollow);
 
-  QString dn = actor->displayName();
-  QString un = actor->webFinger();
-  QString from = QString("%2 (%1)").arg(dn).arg(un);
-  QString md = QString("[%1](%2)").arg(dn).arg(actor->url());
+  QString from = QString("%2 (%1)").arg(actor->displayName()).
+    arg(actor->webFinger());
 
-  addCompletion(from, md, doFollow);
-}
-
-//------------------------------------------------------------------------------
-
-void PumpApp::addCompletion(QString from, QString to, bool add) {
   if (from.isEmpty() || from.startsWith("http://") ||
       from.startsWith("https://"))
     return;
 
-  if (add) {
-    // if (!m_completions.contains(from))
-    //   qDebug() << "addCompletion" << from << to << add;
-    m_completions.insert(from, to);
-  } else {
+  if (doFollow)
+    m_completions.insert(from, actor);
+  else
     m_completions.remove(from);
-  }
-}
+}    
 
 //------------------------------------------------------------------------------
 
@@ -1263,6 +1277,11 @@ void PumpApp::onAuthorizedRequestReady(QByteArray response, int rid) {
   } else if (sid == QAS_SELF_PROFILE) {
     m_selfActor = QASActor::getActor(json["profile"].toMap(), this);
     m_selfActor->setYou();
+  } else if (sid == QAS_SELF_LISTS) {
+    QASObjectList* lists = QASObjectList::getObjectList(json, this, id);
+    for (size_t i=0; i<lists->size(); ++i) {
+      m_recipientLists.append(lists->at(i));
+    }
   } else if (sid == QAS_IMAGE_UPLOAD) {
     m_uploadDialog->hide();
     postImageActivity(json);

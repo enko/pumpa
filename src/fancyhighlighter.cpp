@@ -33,11 +33,12 @@ FancyHighlighter::FancyHighlighter(QTextDocument* doc) : QSyntaxHighlighter(doc)
 //------------------------------------------------------------------------------
 
 void FancyHighlighter::highlightBlock(const QString& text) {
-  int index;
   QTextCharFormat urlHighlightFormat;
   urlHighlightFormat.setForeground(QBrush(Qt::blue));
 
 #ifdef USE_ASPELL
+  int index;
+
   QTextCharFormat spellErrorFormat;
   spellErrorFormat.setFontUnderline(true);
   spellErrorFormat.setUnderlineColor(Qt::red);

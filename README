@@ -1,4 +1,4 @@
-# Pumpa v0.7.1
+# Pumpa v0.7.3
 
 Greetings, fellow pumpkins!
 
@@ -39,7 +39,6 @@ verb) or "pumpkin" (as a noun) :-)
 [8]: https://github.com/vmg/sundown
 [9]: https://github.com/vmg/sundown#license
 [13]: https://bugs.saz.im/pumpa
-[16]: https://fmrl.me/0xAFFE
 
 ## Installing
 
@@ -48,12 +47,34 @@ Pumpa themselves (for instructions how to do this, see the next two
 sections).  Once Pumpa development stabilises a bit, hopefully
 packages for different platforms will appear.
 
+Below are some packages or installers for different platforms.  Note
+that these are provided by third parties so I have no control over
+them, please report any problems with them to the respective
+packagers/authors.
+
 ### Fedora repository
 
 [Matt Molyneaux](https://microca.st/moggers87) has created a
 repository for Fedora 19:
 
 <http://moggers.co.uk/~moggers87/repo/pumpa/>
+
+
+### Microsoft Windows
+
+[Tim Schumacher][16] has a Windows installer executable at:
+
+<http://bandenkrieg.hacked.jp/~tim/pumpa/>
+
+[16]: https://fmrl.me/0xAFFE
+
+### Debian package (Spanish)
+
+[Fabián Bonetti](https://identi.ca/mamafree) makes a Debian package
+with Spanish configuration available on this page:
+
+<http://mamalibre.no-ip.org/>
+
 
 ## Build dependencies
   

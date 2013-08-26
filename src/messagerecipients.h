@@ -17,45 +17,41 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MESSAGE_EDIT_H
-#define MESSAGE_EDIT_H
+#ifndef MESSAGE_RECIPIENTS_H
+#define MESSAGE_RECIPIENTS_H
 
-#include <QTextEdit>
-#include <QKeyEvent>
-#include <QCompleter>
-#include <QStringListModel>
+#include <QLabel>
+#include <QWidget>
+#include <QGridLayout>
+#include <QToolButton>
+#include <QSignalMapper>
 
 #include "qasactor.h"
-#include "fancyhighlighter.h"
 
 //------------------------------------------------------------------------------
 
-class MessageEdit : public QTextEdit {
+class MessageRecipients : public QWidget {
   Q_OBJECT
+
 public:
-  MessageEdit(QWidget* parent=0);
+  MessageRecipients(QWidget* parent=0);
 
-  typedef QMap<QString, QASActor*> completion_t;
-  void setCompletions(const completion_t* completions);
-  void hideCompletion();
-  const completion_t* getCompletions() { return m_completions; }
+  void clear();
 
-signals:
-  void ready();
-  void addRecipient(QASActor*);
+  void addRecipient(QASObject* obj);
+  void removeRecipient(QASObject* obj);
 
-protected slots:
-  void insertCompletion(QString);
+  RecipientList recipients() const { return m_list; }
 
-protected:
-  virtual void focusInEvent(QFocusEvent *event);
-  virtual void keyPressEvent(QKeyEvent* event);
-  QString wordAtCursor() const;
+private slots:
+  void onRemoveClicked(QObject*);
 
-  FancyHighlighter* m_highlighter;
-  QCompleter* m_completer;
-  QStringListModel* m_model;
-  const completion_t* m_completions;
+private:
+  RecipientList m_list;
+  QGridLayout* m_layout;
+
+  QSignalMapper* m_buttonMapper;
+  QMap<QASObject*, QPair<QLabel*, QToolButton*> > m_widgets;
 };
 
 #endif

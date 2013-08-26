@@ -59,6 +59,8 @@ private:
 
   QString m_webFinger;
   QString m_preferredUsername;
+
+  static QMap<QString, QASActor*> s_actors;
 };
 
 #endif /* _QASACTOR_H_ */

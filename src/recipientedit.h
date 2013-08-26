@@ -17,45 +17,37 @@
   along with Pumpa.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MESSAGE_EDIT_H
-#define MESSAGE_EDIT_H
+#ifndef RECIPIENT_EDIT_H
+#define RECIPIENT_EDIT_H
 
-#include <QTextEdit>
-#include <QKeyEvent>
+#include <QLineEdit>
 #include <QCompleter>
-#include <QStringListModel>
-
-#include "qasactor.h"
-#include "fancyhighlighter.h"
+#include <QKeyEvent>
 
 //------------------------------------------------------------------------------
 
-class MessageEdit : public QTextEdit {
+class RecipientEdit : public QLineEdit {
   Q_OBJECT
 public:
-  MessageEdit(QWidget* parent=0);
-
-  typedef QMap<QString, QASActor*> completion_t;
-  void setCompletions(const completion_t* completions);
-  void hideCompletion();
-  const completion_t* getCompletions() { return m_completions; }
+  RecipientEdit(QWidget* parent=0);
+  void setChoices(QStringList choices);
 
 signals:
   void ready();
-  void addRecipient(QASActor*);
 
 protected slots:
-  void insertCompletion(QString);
+  void insertCompletion(QString completion);
 
 protected:
-  virtual void focusInEvent(QFocusEvent *event);
   virtual void keyPressEvent(QKeyEvent* event);
-  QString wordAtCursor() const;
 
-  FancyHighlighter* m_highlighter;
+  QPair<int, int> wordPosAtCursor();
+
+  void complete();
+
+  QStringList m_choices;
   QCompleter* m_completer;
-  QStringListModel* m_model;
-  const completion_t* m_completions;
 };
 
 #endif
+
