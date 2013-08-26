@@ -94,33 +94,33 @@
         <location filename="../src/fullobjectwidget.cpp" line="333"/>
         <location filename="../src/fullobjectwidget.cpp" line="350"/>
         <source>stop following</source>
-        <translation>dejar de seguir</translation>
+        <translation>dejar de seguir a</translation>
     </message>
     <message>
         <location filename="../src/fullobjectwidget.cpp" line="334"/>
         <location filename="../src/fullobjectwidget.cpp" line="350"/>
         <source>follow</source>
-        <translation>seguir</translation>
+        <translation>seguir a</translation>
     </message>
     <message>
         <location filename="../src/fullobjectwidget.cpp" line="392"/>
         <source>You like this.</source>
-        <translation type="unfinished"></translation>
+        <translation>Te gusta esto.</translation>
     </message>
     <message numerus="yes">
         <location filename="../src/fullobjectwidget.cpp" line="425"/>
         <source>and %Ln other person(s)</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>y %n persona más</numerusform>
+            <numerusform>y %n personas más</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../src/fullobjectwidget.cpp" line="429"/>
         <source>%Ln person(s) shared this.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n persona compartió esto.</numerusform>
+            <numerusform>%n personas compartieron esto.</numerusform>
         </translation>
     </message>
     <message>
@@ -131,12 +131,12 @@
         <location filename="../src/fullobjectwidget.cpp" line="396"/>
         <source>%1 like this.</source>
         <oldsource>like this.</oldsource>
-        <translation>A %1 le gusta.</translation>
+        <translation>A %1 les gusta.</translation>
     </message>
     <message>
         <location filename="../src/fullobjectwidget.cpp" line="394"/>
         <source>%1 likes this.</source>
-        <translation type="unfinished"></translation>
+        <translation>A %1 le gusta esto.</translation>
     </message>
     <message>
         <source>and 1 other person</source>
@@ -149,7 +149,7 @@
     <message>
         <location filename="../src/fullobjectwidget.cpp" line="426"/>
         <source>shared this.</source>
-        <translation>compartió esto.</translation>
+        <translation>compartió/compartieron esto.</translation>
     </message>
     <message>
         <source>1 person shared this.</source>
@@ -167,17 +167,17 @@
     <message>
         <location filename="../src/fullobjectwidget.cpp" line="549"/>
         <source>post</source>
-        <translation type="unfinished"></translation>
+        <translation>la publicación</translation>
     </message>
     <message>
         <location filename="../src/fullobjectwidget.cpp" line="552"/>
         <source>note</source>
-        <translation type="unfinished"></translation>
+        <translation>la nota</translation>
     </message>
     <message>
         <location filename="../src/fullobjectwidget.cpp" line="556"/>
         <source>image</source>
-        <translation type="unfinished"></translation>
+        <translation>la imagen</translation>
     </message>
     <message>
         <location filename="../src/fullobjectwidget.cpp" line="558"/>
@@ -235,7 +235,7 @@
     <message>
         <location filename="../src/messagewindow.cpp" line="115"/>
         <source>Preview</source>
-        <translation type="unfinished"></translation>
+        <translation>Previsualizar</translation>
     </message>
     <message>
         <location filename="../src/messagewindow.cpp" line="118"/>
@@ -316,7 +316,7 @@
     <message>
         <location filename="../src/oauthwizard.cpp" line="126"/>
         <source>In order for Pumpa to be able to read and post new messages to your pump.io account you need to grant Pumpa access via the web page. Pumpa will open the web page for you - just follow the instructions and copy &amp;amp; paste the &lt;b&gt;verifier&lt;/b&gt; text string back into the field below. (Thetoken should be automatically pre-filled.)</source>
-        <translation>Para que Pumpa pueda leer y enviar mensajes en tu cuenta de pump.io, necesitas proporcionar acces a Pumpa a través del sitio web. Pumpa abrirá la página web para tí: simplemente sigue las instrucciones y copia y pega el texto&lt;b&gt;verificador&lt;/b&gt; en el campo de más abajo. (El &apos;token&apos; debería rellenarse automáticamente).</translation>
+        <translation>Para que Pumpa pueda leer y enviar mensajes en tu cuenta de pump.io, necesitas proporcionar acceso a Pumpa a través del sitio web. Pumpa abrirá la página web para tí: simplemente sigue las instrucciones y copia y pega el texto &lt;b&gt;verificador&lt;/b&gt; en el campo de más abajo. (El &apos;token&apos; debería rellenarse automáticamente).</translation>
     </message>
     <message>
         <location filename="../src/oauthwizard.cpp" line="136"/>
@@ -500,27 +500,27 @@
     <message>
         <location filename="../src/pumpapp.cpp" line="492"/>
         <source>Ctrl+D</source>
-        <translation type="unfinished"></translation>
+        <translation>Ctrl+D</translation>
     </message>
     <message>
         <location filename="../src/pumpapp.cpp" line="496"/>
         <source>Followers</source>
-        <translation type="unfinished">Seguidores</translation>
+        <translation>Seguidores</translation>
     </message>
     <message>
         <location filename="../src/pumpapp.cpp" line="499"/>
         <source>Following</source>
-        <translation type="unfinished"></translation>
+        <translation>Siguiendo</translation>
     </message>
     <message>
         <location filename="../src/pumpapp.cpp" line="502"/>
         <source>Favorites</source>
-        <translation type="unfinished"></translation>
+        <translation>Favoritos</translation>
     </message>
     <message>
         <location filename="../src/pumpapp.cpp" line="506"/>
         <source>Activities</source>
-        <translation type="unfinished"></translation>
+        <translation>Actividades</translation>
     </message>
     <message>
         <location filename="../src/pumpapp.cpp" line="517"/>
@@ -530,7 +530,7 @@
     <message>
         <location filename="../src/pumpapp.cpp" line="529"/>
         <source>&amp;Tabs</source>
-        <translation type="unfinished"></translation>
+        <translation>Pes&amp;tañas</translation>
     </message>
     <message>
         <location filename="../src/pumpapp.cpp" line="536"/>
@@ -610,12 +610,12 @@
     <message>
         <location filename="../src/pumpapp.cpp" line="826"/>
         <source>F&amp;avorites</source>
-        <translation type="unfinished"></translation>
+        <translation>F&amp;avoritos</translation>
     </message>
     <message>
         <location filename="../src/pumpapp.cpp" line="835"/>
         <source>A&amp;ctivities</source>
-        <translation type="unfinished"></translation>
+        <translation>A&amp;ctividades</translation>
     </message>
     <message>
         <location filename="../src/pumpapp.cpp" line="1102"/>
@@ -635,7 +635,7 @@
     <message>
         <location filename="../src/pumpapp.cpp" line="1197"/>
         <source>Network or authorisation error [%1/%2] %3.</source>
-        <translation type="unfinished"></translation>
+        <translation>Error de red o de autorización [%1/%2] %3.</translation>
     </message>
     <message>
         <source>Network or authorisation error [%1/%2].</source>
@@ -774,17 +774,17 @@
     <message numerus="yes">
         <location filename="../src/util.cpp" line="140"/>
         <source>%n minute(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>hace %n minuto.</numerusform>
+            <numerusform>hace %n minutos.</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../src/util.cpp" line="142"/>
         <source>%n hour(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>hace %n hora</numerusform>
+            <numerusform>hace %n horas</numerusform>
         </translation>
     </message>
 </context>
