@@ -623,7 +623,9 @@ void PumpApp::about() {
 //------------------------------------------------------------------------------
 
 void PumpApp::newNote(QASObject* obj) {
-  QASObject* irtObj = obj ? obj->inReplyTo() : NULL;
+  QASObject* irtObj = NULL; 
+  if (obj)
+    irtObj = m_s->commentOnComments() ? obj : obj->inReplyTo();
   if (irtObj)
     obj = irtObj;
 

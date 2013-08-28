@@ -79,6 +79,10 @@ public:
     return getValue("default_cc", RECIPIENT_FOLLOWERS).toInt(); 
   }
 
+  bool commentOnComments() const {
+    return getValue("comment_on_comments", false).toBool();
+  }
+
   QString linkColor() const { return getValue("link_color", "").toString(); }
 
   QString firehoseUrl() const { 
@@ -118,6 +122,8 @@ public:
 
   void defaultToAddress(int i) { setValue("default_to", i); }
   void defaultCcAddress(int i) { setValue("default_cc", i); }
+
+  void commentOnComments(bool b) { setValue("comment_on_comments", b); }
 
 signals:
   void trayIconChanged();
