@@ -115,6 +115,7 @@ private slots:
   void showFollowing();
   void showFavourites();
   void showUserActivities();
+  void showFirehose();
 
 protected:
   void timerEvent(QTimerEvent*);
@@ -211,6 +212,7 @@ private:
   QAction* m_followingAction;
   QAction* m_favouritesAction;
   QAction* m_userActivitiesAction;
+  QAction* m_firehoseAction;
   QMenu* m_tabsMenu;
 
   QAction* m_debugAction;

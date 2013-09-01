@@ -138,7 +138,7 @@ PumpApp::PumpApp(QString settingsFile, QString locale, QWidget* parent) :
   m_tabWidget->addTab(m_directMinorWidget, tr("&Mentions"));
   m_tabWidget->addTab(m_directMajorWidget, tr("&Direct"));
   m_tabWidget->addTab(m_inboxMinorWidget, tr("Mean&while"));
-  m_tabWidget->addTab(m_firehoseWidget, tr("Fi&rehose"));
+  m_tabWidget->addTab(m_firehoseWidget, tr("Fi&rehose"), true, true);
 
   m_notifyMap->setMapping(m_inboxWidget, FEED_INBOX);
   m_notifyMap->setMapping(m_directMinorWidget, FEED_MENTIONS);
@@ -515,6 +515,9 @@ void PumpApp::createActions() {
   m_debugAction->setShortcut(tr("Ctrl+D"));
   connect(m_debugAction, SIGNAL(triggered()), this, SLOT(debugAction()));
   addAction(m_debugAction);
+  
+  m_firehoseAction = new QAction(tr("Firehose"), this);
+  connect(m_firehoseAction, SIGNAL(triggered()), this, SLOT(showFirehose()));
 
   m_followersAction = new QAction(tr("Followers"), this);
   connect(m_followersAction, SIGNAL(triggered()), this, SLOT(showFollowers()));
@@ -554,6 +557,7 @@ void PumpApp::createMenu() {
   m_tabsMenu->addAction(m_favouritesAction);
   m_tabsMenu->addAction(m_followersAction);
   m_tabsMenu->addAction(m_followingAction);
+  m_tabsMenu->addAction(m_firehoseAction);
   menuBar()->addMenu(m_tabsMenu);
 
   helpMenu = new QMenu(tr("&Help"), this);
@@ -661,9 +665,9 @@ void PumpApp::fetchAll(bool all) {
   m_directMinorWidget->fetchNewer();
   m_directMajorWidget->fetchNewer();
   m_inboxMinorWidget->fetchNewer();
-  m_firehoseWidget->fetchNewer();
 
-
+  if (all || tabShown(m_firehoseWidget))
+    m_firehoseWidget->fetchNewer();
   if (all || tabShown(m_followersWidget))
     m_followersWidget->fetchNewer();
   if (all || tabShown(m_followingWidget))
@@ -811,7 +815,7 @@ void PumpApp::userTestDoneAndFollow() {
 //------------------------------------------------------------------------------
 
 bool PumpApp::tabShown(ASWidget* aw) const {
-  return aw && m_tabWidget->indexOf(aw) == -1;
+  return aw && m_tabWidget->indexOf(aw) != -1;
 }
 
 //------------------------------------------------------------------------------
@@ -821,7 +825,7 @@ void PumpApp::onShowContext(QASObject* obj) {
     m_contextWidget = new ContextWidget(this);
     connectCollection(m_contextWidget);
   }
-  if (tabShown(m_contextWidget))
+  if (!tabShown(m_contextWidget))
     m_tabWidget->addTab(m_contextWidget, tr("&Context"), true, true);
 
   m_contextWidget->setObject(obj);
@@ -830,8 +834,17 @@ void PumpApp::onShowContext(QASObject* obj) {
 
 //------------------------------------------------------------------------------
 
+void PumpApp::showFirehose() {
+  if (!tabShown(m_firehoseWidget))
+    m_tabWidget->addTab(m_firehoseWidget, tr("Fi&rehose"), true, true);
+  m_tabWidget->setCurrentWidget(m_firehoseWidget);
+  m_firehoseWidget->fetchNewer();
+}
+
+//------------------------------------------------------------------------------
+
 void PumpApp::showFollowers() {
-  if (tabShown(m_followersWidget))
+  if (!tabShown(m_followersWidget))
     m_tabWidget->addTab(m_followersWidget, tr("&Followers"), true, true);
   m_tabWidget->setCurrentWidget(m_followersWidget);
   m_followersWidget->fetchNewer();
@@ -840,7 +853,7 @@ void PumpApp::showFollowers() {
 //------------------------------------------------------------------------------
 
 void PumpApp::showFollowing() {
-  if (tabShown(m_followingWidget))
+  if (!tabShown(m_followingWidget))
     m_tabWidget->addTab(m_followingWidget, tr("F&ollowing"), false, true);
   m_tabWidget->setCurrentWidget(m_followingWidget);
   m_followingWidget->fetchNewer();
@@ -849,7 +862,7 @@ void PumpApp::showFollowing() {
 //------------------------------------------------------------------------------
 
 void PumpApp::showFavourites() {
-  if (tabShown(m_favouritesWidget))
+  if (!tabShown(m_favouritesWidget))
     m_tabWidget->addTab(m_favouritesWidget, tr("F&avorites"), false, true);
   m_tabWidget->setCurrentWidget(m_favouritesWidget);
   m_favouritesWidget->fetchNewer();
@@ -858,7 +871,7 @@ void PumpApp::showFavourites() {
 //------------------------------------------------------------------------------
 
 void PumpApp::showUserActivities() {
-  if (tabShown(m_userActivitiesWidget))
+  if (!tabShown(m_userActivitiesWidget))
     m_tabWidget->addTab(m_userActivitiesWidget, tr("A&ctivities"), false, true);
   m_tabWidget->setCurrentWidget(m_userActivitiesWidget);
   m_userActivitiesWidget->fetchNewer();
