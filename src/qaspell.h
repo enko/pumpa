@@ -42,7 +42,8 @@ public:
 protected:
   AspellConfig* spell_config;
   AspellSpeller* spell_checker;
-  
+
+  bool ok;
   static QString s_locale;
 };
 

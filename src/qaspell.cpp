@@ -28,6 +28,7 @@ QString QASpell::s_locale = "en_US";
 //------------------------------------------------------------------------------
 
 QASpell::QASpell(QObject* parent) : QObject(parent) {
+  ok = false;
   spell_config = new_aspell_config();
   aspell_config_replace(spell_config, "lang",
                         s_locale.toLocal8Bit().constData());
@@ -40,6 +41,7 @@ QASpell::QASpell(QObject* parent) : QObject(parent) {
     return;
   }
   spell_checker = to_aspell_speller(possible_err);
+  ok = true;
 }
 
 //------------------------------------------------------------------------------
@@ -60,6 +62,9 @@ void QASpell::setLocale(QString locale) {
 //------------------------------------------------------------------------------
 
 bool QASpell::checkWord(const QString& word) const {
+  if (!ok)
+    return true;
+
   if (spell_checker == NULL) {
     qDebug() << "aspell was not initialised properly!";
     return true;
