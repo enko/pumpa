@@ -161,6 +161,8 @@ void FullObjectWidget::changeObject(QASAbstractObject* obj) {
   if (objType == "comment") {
     setLineWidth(1);
     setFrameStyle(QFrame::StyledPanel | QFrame::Plain);
+  } else {
+    setLineWidth(0);
   }
 
   if (!m_object->displayName().isEmpty()) {
