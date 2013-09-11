@@ -681,9 +681,10 @@ void PumpApp::fetchAll(bool all) {
 //------------------------------------------------------------------------------
 
 void PumpApp::loadOlder() {
-  CollectionWidget* cw = 
-    qobject_cast<CollectionWidget*>(m_tabWidget->currentWidget());
-  cw->fetchOlder();
+  ASWidget* cw = 
+    qobject_cast<ASWidget*>(m_tabWidget->currentWidget());
+  if (cw)
+    cw->fetchOlder();
 }
 
 //------------------------------------------------------------------------------
